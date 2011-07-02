@@ -88,6 +88,7 @@
 #  This function is available if the Mathematica kernel executable has been found.
 #
 #  Mathematica_ADD_CUSTOM_TARGET(
+#    target
 #    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file>
 #    [ COMMENT comment ]
 #    [ SOURCES src1 [ src2... ] ])
@@ -291,7 +292,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "1.0.1")
+set (Mathematica_CMAKE_MODULE_VERSION "1.0.2")
 
 # internal macro to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -331,8 +332,9 @@ endmacro()
 # internal macro to set a file's executable bit under UNIX
 macro(_make_file_executable _inPath)
 	if (CMAKE_HOST_UNIX)
+		file (TO_NATIVE_PATH "${_inPath}" _nativePath)
 		execute_process(
-			COMMAND chmod "-f" "+x" "${_inPath}" TIMEOUT 5)
+			COMMAND chmod "-f" "+x" "${_nativePath}" TIMEOUT 5)
 	endif()
 endmacro()
 
@@ -601,9 +603,9 @@ macro(_systemNameToSystemID _systemName _systemProcessor _outSystemIDs)
 			set (${_outSystemIDs} "MacOSX-x86")
 		elseif (${_systemProcessor} STREQUAL "x86_64")
 			set (${_outSystemIDs} "MacOSX-x86-64")
-		elseif (${_systemProcessor} STREQUAL "ppc64")
+		elseif (${_systemProcessor} MATCHES "ppc64|powerpc64")
 			set (${_outSystemIDs} "Darwin-PowerPC64")
-		elseif (${_systemProcessor} MATCHES "ppc.*")
+		elseif (${_systemProcessor} MATCHES "ppc|powerpc")
 			# different Mathematica versions use different system IDs
 			if (DEFINED Mathematica_VERSION_MAJOR)
 				if (${Mathematica_VERSION_MAJOR} GREATER 5)
@@ -772,17 +774,21 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 				list (APPEND ${_outSystemIDs} "Darwin-PowerPC64")
 			endif()
 		endif()
-		# handle ppc (Darwin or MacOSX)
-		if (DEFINED Mathematica_VERSION_MAJOR)
-			if (${Mathematica_VERSION_MAJOR} LESS 6)
-				# Mathematica versions before 6 used "Darwin" as system ID for ppc32
-				list (APPEND ${_outSystemIDs} "Darwin")
-			elseif (${Mathematica_VERSION_MAJOR} LESS 8)
-				# Mathematica version 8 dropped support for ppc32
-				list (APPEND ${_outSystemIDs} "MacOSX")
+		# handle ppc32 (Darwin or MacOSX)
+		# Mac OS X versions before Lion support ppc32 natively or through Rosetta
+		# (Mac OS X 10.7.0 is Darwin 11.0.0)
+		if ("${CMAKE_HOST_SYSTEM_VERSION}" VERSION_LESS "11.0.0")
+			if (DEFINED Mathematica_VERSION_MAJOR)
+				if (${Mathematica_VERSION_MAJOR} LESS 6)
+					# Mathematica versions before 6 used "Darwin" as system ID for ppc32
+					list (APPEND ${_outSystemIDs} "Darwin")
+				elseif (${Mathematica_VERSION_MAJOR} LESS 8)
+					# Mathematica version 8 dropped support for ppc32
+					list (APPEND ${_outSystemIDs} "MacOSX")
+				endif()
+			else()
+				list (APPEND ${_outSystemIDs} "MacOSX" "Darwin")
 			endif()
-		else()
-			list (APPEND ${_outSystemIDs} "MacOSX" "Darwin")
 		endif()
 	elseif (${_systemID} MATCHES "Linux-x86-64|Linux-IA64")
 		if (NOT DEFINED Mathematica_VERSION OR
@@ -1700,7 +1706,8 @@ macro (_add_launch_prefix _cmdVar _systemIDVar)
 		if (CMAKE_HOST_APPLE)
 			# under Mac OS X, run appropriate target architecture of executable universal binary
 			# by using the the /usr/bin/arch tool which is available since Leopard
-			if ("${CMAKE_HOST_SYSTEM_VERSION}" VERSION_LESS "10.5.0")
+			# (Mac OS X 10.5.0 is Darwin 9.0.0)
+			if ("${CMAKE_HOST_SYSTEM_VERSION}" VERSION_LESS "9.0.0")
 				message (STATUS "Executable system ID selection of ${${_systemIDVar}} is not supported, running default.")
 			elseif ("${${_systemIDVar}}" STREQUAL "MacOSX-x86")
 				list (APPEND ${_cmdVar} "/usr/bin/arch" "-i386")

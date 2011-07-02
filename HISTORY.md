@@ -1,3 +1,7 @@
+## 1.0.2 (2011-07-02)
+
+* Fix Mathematica detection on PPC equipped Macs
+
 ## 1.0.1 (2011-04-03)
 
 * Changes for undefined WIN32 variable under Cygwin with CMake 2.8.4
