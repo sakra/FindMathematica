@@ -8,14 +8,14 @@ set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/Mathematica" ${CMAKE_MODULE_PA
 
 set (CMAKE_VERBOSE_MAKEFILE Off)
 set (CMAKE_COLOR_MAKEFILE On)
-if (NOT CMAKE_CONFIGURATION_TYPES)
+if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 	set (CMAKE_BUILD_TYPE Release)
 endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS 1)
 
-set (Mathematica_USE_STATIC_LIBRARIES Off)
-set (Mathematica_USE_MINIMAL_LIBRARIES Off)
-set (Mathematica_DEBUG Off)
+option (Mathematica_USE_STATIC_LIBRARIES Off)
+option (Mathematica_USE_MINIMAL_LIBRARIES Off)
+option (Mathematica_DEBUG Off)
 
 # finds default Mathematica installation and its default components
 find_package(Mathematica)

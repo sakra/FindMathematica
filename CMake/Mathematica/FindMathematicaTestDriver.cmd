@@ -29,9 +29,9 @@ if "!INPUT_OPTION!" == "input" (
 )
 
 if "!INPUT_OPTION!" == "input" (
-	echo !TEST_INPUT! | "!TEST_EXECUTABLE!" "%~0" "%~1" "%~2" "%~3" "%~4" "%~5" "%~6" "%~7" "%~8" "%~9"
+	echo !TEST_INPUT! | "!TEST_EXECUTABLE!" %0 %1 %2 %3 %4 %5 %6 %7 %8 %9
 ) else if "!INPUT_OPTION!" == "inputfile" (
-	"!TEST_EXECUTABLE!" < "!TEST_INPUT_FILE!" "%~0" "%~1" "%~2" "%~3" "%~4" "%~5" "%~6" "%~7" "%~8" "%~9"
+	"!TEST_EXECUTABLE!" < "!TEST_INPUT_FILE!" %0 %1 %2 %3 %4 %5 %6 %7 %8 %9
 ) else (
-	"!TEST_EXECUTABLE!" "%~0" "%~1" "%~2" "%~3" "%~4" "%~5" "%~6" "%~7" "%~8" "%~9"
+	"!TEST_EXECUTABLE!" %0 %1 %2 %3 %4 %5 %6 %7 %8 %9
 )

@@ -1,3 +1,9 @@
+## 1.0.3 (2011-07-07)
+
+* work around `Splice::splict` message in `Mathematica_SPLICE_C_CODE`
+* fix build failures when build directory path contains white space characters
+* use CMake `option` command for user overridable boolean module variables
+
 ## 1.0.2 (2011-07-02)
 
 * Fix Mathematica detection on PPC equipped Macs

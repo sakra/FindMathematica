@@ -84,8 +84,8 @@ Then open the generated Visual Studio solution file with Visual Studio C++ 2010:
 
 Alternatively, you can build and test the project from the command prompt:
 
-    D:\FindMathematica\build>msbuild Mathematica-project.sln
-    D:\FindMathematica\build>ctest -C "Debug"
+    D:\FindMathematica\build>cmake --build . --config Debug
+    D:\FindMathematica\build>ctest --build-config Debug
 
 To build the FindMathematica project with Visual Studio C++ 2010 for 64-bit Windows, open a Visual
 Studio x64 cross tools command prompt in the `FindMathematica` build directory:

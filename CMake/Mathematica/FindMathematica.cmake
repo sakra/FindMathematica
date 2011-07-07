@@ -292,7 +292,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "1.0.2")
+set (Mathematica_CMAKE_MODULE_VERSION "1.0.3")
 
 # internal macro to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -1001,6 +1001,8 @@ macro(_setup_mathematica_systemIDs)
 			if (_KernelSystemID)
 				set (Mathematica_KERNEL_HOST_SYSTEM_ID "${_KernelSystemID}"
 					CACHE INTERNAL "Actual Mathematica host system ID." FORCE)
+			else()
+				message (WARNING "Cannot accurately determine Mathematica host system ID.")
 			endif()
 		endif()
 		if (DEFINED Mathematica_KERNEL_HOST_SYSTEM_ID)
@@ -1477,6 +1479,9 @@ endmacro(_get_dependent_variables)
 
 # internal macro to cleanup outdated cache variables
 macro(_cleanup_cache)
+	option (Mathematica_USE_STATIC_LIBRARIES "prefer static Mathematica libraries to dynamic libraries?" Off)
+	option (Mathematica_USE_MINIMAL_LIBRARIES "prefer minimal Mathematica libraries to full libraries?" Off)
+	option (Mathematica_DEBUG "enable FindMathematica debugging output?" Off)
 	_get_cache_variables(_CacheVariables)
 	set (_vars_to_clean "")
 	foreach (_CacheVariable IN LISTS _CacheVariables)
@@ -2018,7 +2023,8 @@ function (Mathematica_MathLink_ADD_TEST)
 		_add_launch_prefix(_launch_prefix _option_SYSTEM_ID)
 		if (_launch_prefix)
 			Mathematica_TO_NATIVE_LIST(_launch_prefixMma ${_launch_prefix})
-			set (_installCmdMma "StringJoin[ StringInsert [ ${_launch_prefixMma}, \" \", -1], ${_installCmdMma} ]" )
+			set (_installCmdMma
+				"StringJoin[ StringInsert[ ${_launch_prefixMma}, \" \", -1], StringInsert[ ${_installCmdMma}, \"\\\"\", {1,-1} ] ]" )
 		endif()
 		set (_installCmd
 			"link = Install[${_installCmdMma}]"
@@ -2107,6 +2113,7 @@ function (Mathematica_SPLICE_C_CODE _templateFile)
 	get_filename_component(_templateFileBaseName ${_templateFile} NAME_WE)
 	get_filename_component(_templateFileName ${_templateFile} NAME)
 	get_filename_component(_templateFileAbs ${_templateFile} ABSOLUTE)
+	get_filename_component(_templateFileExt ${_templateFileName} EXT)
 	set(_options "")
 	set(_oneValueArgs "OUTPUT")
 	set(_multiValueArgs "")
@@ -2125,13 +2132,25 @@ function (Mathematica_SPLICE_C_CODE _templateFile)
 	else()
 		set (_outputFileAbs "${CMAKE_CURRENT_BINARY_DIR}/${_templateFileBaseName}.c")
 	endif()
+	# Always set FormatType option to prevent Splice function fron failing with a
+	# Splice::splict error if the template file path contains more than one dot character
+	string(TOLOWER ${_templateFileExt} _templateFileExt)
+	if (${_templateFileExt} STREQUAL ".mc")
+		set (_formatType "CForm")
+	elseif (${_templateFileExt} STREQUAL ".mf")
+		set (_formatType "FortranForm")
+	elseif (${_templateFileExt} STREQUAL ".mtex")
+		set (_formatType "TeXForm")
+	else()
+		set (_formatType "Automatic")
+	endif()
 	get_filename_component(_outputFileName ${_outputFileAbs} NAME)
 	Mathematica_TO_NATIVE_PATH("${_templateFileAbs}" _templateFileMma)
 	Mathematica_TO_NATIVE_PATH("${_outputFileAbs}" _outputFileMma)
 	set (_msg "Splicing Mathematica code in ${_templateFileName} to ${_outputFileName}")
 	Mathematica_ADD_CUSTOM_COMMAND(
 		OUTPUT "${_outputFileAbs}"
-		CODE "Splice[${_templateFileMma}, ${_outputFileMma}]"
+		CODE "Splice[${_templateFileMma}, ${_outputFileMma}, FormatType->${_formatType}]"
 		DEPENDS "${_templateFileAbs}"
 		COMMENT ${_msg})
 	set_source_files_properties(${_outputFileAbs} PROPERTIES GENERATED TRUE LABELS "Mathematica")
