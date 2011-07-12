@@ -1,3 +1,8 @@
+## 1.0.4 (2011-07-12)
+
+* tested with Wolfram Lightweight Grid Manager 8.0
+* fixed some uninitiated variables
+
 ## 1.0.3 (2011-07-07)
 
 * work around `Splice::splict` message in `Mathematica_SPLICE_C_CODE`

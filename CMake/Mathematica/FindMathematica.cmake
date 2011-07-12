@@ -292,7 +292,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "1.0.3")
+set (Mathematica_CMAKE_MODULE_VERSION "1.0.4")
 
 # internal macro to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -2253,7 +2253,7 @@ function (Mathematica_MathLink_MPREP_TARGET _templateFile)
 	get_filename_component(_templateFileAbs ${_templateFile} ABSOLUTE)
 	set(_options LINE_DIRECTIVES)
 	set(_oneValueArgs OUTPUT CUSTOM_HEADER CUSTOM_TRAILER)
-	set(multiValueArgs "")
+	set(_multiValueArgs "")
 	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
 	if(_option_UNPARSED_ARGUMENTS)
 		message(FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
@@ -2311,7 +2311,7 @@ endfunction()
 function (Mathematica_MathLink_MPREP_EXPORT_FRAMES)
 	set(_options FORCE)
 	set(_oneValueArgs OUTPUT_DIRECTORY SYSTEM_ID)
-	set(multiValueArgs "")
+	set(_multiValueArgs "")
 	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
 	if (NOT _option_OUTPUT_DIRECTORY)
 		set (_option_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")

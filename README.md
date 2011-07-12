@@ -26,7 +26,7 @@ Requirements
 ------------
 
 * A Wolfram [*Mathematica*][wmma] product (*Mathematica* 5.2 to 8.0 or
-  Lightweight Grid Manager 7.0).
+  Lightweight Grid Manager 7.0 to 8.0).
 * [CMake 2.8.3][cmk] or newer. The executable `cmake` should be on the system path.
 * [Visual Studio C++][vslstd], [MinGW][mingw] or [Cygwin][cgwn] under Windows.
 * [gcc][gcc] (including g++) under Linux.
@@ -177,7 +177,7 @@ support x86_64. To get a workable project set CMake's target architecture to 32-
 
     $ cmake "-DCMAKE_OSX_ARCHITECTURES=i386" ..
 
-The module has been tested with with *Mathematica* versions 5.2 to 8.0 and Xcode 3.2 under
+The module has been tested with with *Mathematica* versions 5.2 to 8.0 and Xcode 4.0 under
 Snow Leopard (10.6) on an Intel Mac and with *Mathematica* version 7.0 and Xcode 3.1 under
 Leopard (10.5) on a PowerMac G4.
 
