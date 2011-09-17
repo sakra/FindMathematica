@@ -1,3 +1,8 @@
+## 1.1.0 (2011-09-17)
+
+* add Mathematica_BASE_DIR and Mathematica_USERBASE_DIR variables
+* fixed some character escaping issues
+
 ## 1.0.4 (2011-07-12)
 
 * tested with Wolfram Lightweight Grid Manager 8.0

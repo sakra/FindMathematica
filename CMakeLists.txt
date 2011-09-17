@@ -29,7 +29,7 @@ find_package(Mathematica)
 # finds Mathematica 5.2
 #find_package(Mathematica 5.2)
 
-enable_testing()
+include(CTest)
 
 if (${Mathematica_FOUND})
 	message(STATUS "Mathematica Version ${Mathematica_VERSION}")
@@ -43,11 +43,10 @@ if (${Mathematica_FOUND})
 	# Windows this would be "Windows-x86-64;Windows". Under a 32-bit version of Windows this
 	# would be just "Windows".
 	message(STATUS "Mathematica Host System IDs ${Mathematica_HOST_SYSTEM_IDS}")
-	# run Mathematica code while CMake is configuring and capture its output in a variable.
-	Mathematica_EXECUTE(
-		CODE "Print[StandardForm[$UserBaseDirectory]]"
-		OUTPUT_VARIABLE MATHEMATICA_USERBASE_DIR TIMEOUT 10)
-	message(STATUS "Mathematica user base directory ${MATHEMATICA_USERBASE_DIR}")
+	# Mathematica_BASE_DIR is the directory for systemwide files to be loaded by Mathematica
+	message(STATUS "Mathematica Base Directory ${Mathematica_BASE_DIR}")
+	# Mathematica_USERBASE_DIR is the directory for user-specific files to be loaded by Mathematica
+	message(STATUS "Mathematica User Base Directory ${Mathematica_USERBASE_DIR}")
 	add_subdirectory(MathematicaExamples)
 endif()
 

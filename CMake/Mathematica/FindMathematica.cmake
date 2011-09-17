@@ -20,10 +20,12 @@
 #  Mathematica_SYSTEM_IDS - list of build target platform Mathematica SystemIDs (e.g., "MacOSX", "MacOSX-x86", "MacOSX-x86-64")
 #  Mathematica_HOST_SYSTEM_ID - default host platform Mathematica SystemID (e.g., "Windows-x86-64" or "MacOSX-x86-64")
 #  Mathematica_HOST_SYSTEM_IDS - list of Mathematica SystemIDs available with host Mathematica installation
-#  Mathematica_ROOT_DIR - Mathematica installation directory valid for default target platform
-#  Mathematica_HOST_ROOT_DIR - Mathematica installation directory valid for default host platform
+#  Mathematica_ROOT_DIR - Mathematica installation directory valid for build target platform
+#  Mathematica_HOST_ROOT_DIR - Mathematica installation directory valid for host platform ($InstallationDirectory)
 #  Mathematica_KERNEL_EXECUTABLE - path to host Mathematica kernel executable
 #  Mathematica_FRONTEND_EXECUTABLE - path to host Mathematica frontend executable
+#  Mathematica_BASE_DIR - directory for systemwide files to be loaded by Mathematica ($BaseDirectory)
+#  Mathematica_USERBASE_DIR - directory for user-specific files to be loaded by Mathematica ($UserBaseDirectory)
 #  Mathematica_INCLUDE_DIR - header file mdefs.h include directory
 #  Mathematica_INCLUDE_DIRS - list of include directories for all components
 #  Mathematica_LIBRARIES - list of libraries to link against for all components
@@ -292,7 +294,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "1.0.4")
+set (Mathematica_CMAKE_MODULE_VERSION "1.1.0")
 
 # internal macro to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -453,9 +455,9 @@ function (_add_registry_search_path _registryKey _outSearchPaths)
 			if (Mathematica_FIND_VERSION AND
 				"${_productVersion}" MATCHES "${Mathematica_FIND_VERSION}")
 				# prepend if version matches requested one
-				list (INSERT ${_outSearchPaths} 0 "${_productPath}")
+				list (INSERT ${_outSearchPaths} 0 "${_path}")
 			else()
-				list (APPEND ${_outSearchPaths} "${_productPath}")
+				list (APPEND ${_outSearchPaths} "${_path}")
 			endif()
 		endif()
 	endif()
@@ -500,6 +502,7 @@ macro (_add_launch_services_search_paths _outSearchPaths)
 				COMMAND "grep" "--before-context=2" "${_bundleID}"
 				COMMAND "grep" "--only-matching" "/.*\\.app"
 				TIMEOUT 5 OUTPUT_VARIABLE _queryResult ERROR_QUIET)
+			string (REPLACE ";" "\\;" _queryResult "${_queryResult}")
 			string (REPLACE "\n" ";" _appPaths "${_queryResult}")
 			if (Mathematica_DEBUG)
 				message (STATUS "Mac OS X LaunchServices database registered apps=${_appPaths}")
@@ -1018,6 +1021,106 @@ macro(_setup_mathematica_systemIDs)
 	_get_compatible_system_IDs(${Mathematica_HOST_SYSTEM_ID} Mathematica_HOST_SYSTEM_IDS)
 endmacro()
 
+# internal macro to set up Mathematica host system IDs
+macro(_setup_mathematica_base_directory)
+	if (COMMAND Mathematica_EXECUTE)
+		# determine true $BaseDirectory
+		if (NOT DEFINED Mathematica_KERNEL_BASE_DIR)
+			Mathematica_EXECUTE(
+				CODE "Print[StandardForm[$BaseDirectory]]"
+				OUTPUT_VARIABLE _KernelBaseDir
+				TIMEOUT 5)
+			if (_KernelBaseDir)
+				set (Mathematica_KERNEL_BASE_DIR "${_KernelBaseDir}"
+					CACHE INTERNAL "Actual Mathematica $BaseDirectory." FORCE)
+			else()
+				message (WARNING "Cannot accurately determine Mathematica $BaseDirectory.")
+			endif()
+		endif()
+		if (DEFINED Mathematica_KERNEL_BASE_DIR)
+			set (Mathematica_BASE_DIR ${Mathematica_KERNEL_BASE_DIR})
+		endif()
+	endif()
+	if (NOT DEFINED Mathematica_BASE_DIR)
+		# guess Mathematica_BASE_DIR from environment
+		# environment variable MATHEMATICA_BASE may override default
+		# $BaseDirectory (see http://bit.ly/r4T4Wd)
+		if ("$ENV{MATHEMATICA_BASE}" MATCHES ".+")
+			set (Mathematica_BASE_DIR "$ENV{MATHEMATICA_BASE}")
+		elseif (CMAKE_HOST_WIN32 OR CYGWIN)
+			if ("$ENV{ALLUSERSAPPDATA}" MATCHES ".+")
+				set (Mathematica_BASE_DIR "$ENV{ALLUSERSAPPDATA}\\Mathematica")
+			elseif ("$ENV{PROGRAMDATA}" MATCHES ".+")
+				set (Mathematica_BASE_DIR "$ENV{PROGRAMDATA}\\Mathematica")
+			elseif ("$ENV{USERPROFILE}" MATCHES ".+" AND
+					"$ENV{ALLUSERSPROFILE}" MATCHES ".+" AND
+					"$ENV{APPDATA}" MATCHES ".+")
+				string (REPLACE "$ENV{USERPROFILE}" "$ENV{ALLUSERSPROFILE}"
+					Mathematica_BASE_DIR "$ENV{APPDATA}\\Mathematica")
+			endif()
+		elseif (CMAKE_HOST_APPLE)
+			set (Mathematica_BASE_DIR "/Library/Mathematica")
+		elseif (CMAKE_HOST_UNIX)
+			set (Mathematica_BASE_DIR "/usr/share/Mathematica")
+		endif()
+	endif()
+	if (DEFINED Mathematica_BASE_DIR)
+		get_filename_component(Mathematica_BASE_DIR "${Mathematica_BASE_DIR}" ABSOLUTE)
+		_to_cmake_path("${Mathematica_BASE_DIR}" Mathematica_BASE_DIR)
+	else()
+		set (Mathematica_BASE_DIR "Mathematica_BASE_DIR-NOTFOUND")
+		message (WARNING "Cannot determine Mathematica base directory.")
+	endif()
+endmacro()
+
+macro(_setup_mathematica_userbase_directory)
+	if (COMMAND Mathematica_EXECUTE)
+		# determine true $UserBaseDirectory
+		if (NOT DEFINED Mathematica_KERNEL_USERBASE_DIR)
+			Mathematica_EXECUTE(
+				CODE "Print[StandardForm[$UserBaseDirectory]]"
+				OUTPUT_VARIABLE _KernelUserBaseDir
+				TIMEOUT 5)
+			if (_KernelUserBaseDir)
+				set (Mathematica_KERNEL_USERBASE_DIR "${_KernelUserBaseDir}"
+					CACHE INTERNAL "Actual Mathematica $UserBaseDirectory." FORCE)
+			else()
+				message (WARNING "Cannot accurately determine Mathematica $UserBaseDirectory.")
+			endif()
+		endif()
+		if (DEFINED Mathematica_KERNEL_USERBASE_DIR)
+			set (Mathematica_USERBASE_DIR ${Mathematica_KERNEL_USERBASE_DIR})
+		endif()
+	endif()
+	if (NOT DEFINED Mathematica_USERBASE_DIR)
+		# guess Mathematica_USERBASE_DIR from environment
+		# environment variable MATHEMATICA_USERBASE may override default
+		# $UserBaseDirectory (see http://bit.ly/r4T4Wd)
+		if ("$ENV{MATHEMATICA_USERBASE}" MATCHES ".+")
+			set (Mathematica_USERBASE_DIR "$ENV{MATHEMATICA_USERBASE}")
+		elseif (CMAKE_HOST_WIN32 OR CYGWIN)
+			if ("$ENV{APPDATA}" MATCHES ".+")
+				set (Mathematica_USERBASE_DIR "$ENV{APPDATA}\\Mathematica")
+			endif()
+		elseif (CMAKE_HOST_APPLE)
+			if ("$ENV{HOME}" MATCHES ".+")
+				set (Mathematica_USERBASE_DIR "$ENV{HOME}/Library/Mathematica")
+			endif()
+		elseif (CMAKE_HOST_UNIX)
+			if ("$ENV{HOME}" MATCHES ".+")
+				set (Mathematica_USERBASE_DIR "$ENV{HOME}/.Mathematica")
+			endif()
+		endif()
+	endif()
+	if (DEFINED Mathematica_USERBASE_DIR)
+		get_filename_component(Mathematica_USERBASE_DIR "${Mathematica_USERBASE_DIR}" ABSOLUTE)
+		_to_cmake_path("${Mathematica_USERBASE_DIR}" Mathematica_USERBASE_DIR)
+	else()
+		set (Mathematica_USERBASE_DIR "Mathematica_USERBASE_DIR-NOTFOUND")
+		message (WARNING "Cannot determine Mathematica user base directory.")
+	endif()
+endmacro()
+
 # internal macro to find Mathematica installation
 macro(_find_mathematica)
 	_get_host_frontend_names(_FrontEndExecutables)
@@ -1357,6 +1460,8 @@ macro(_log_used_variables)
 		message (STATUS "Compiling for ${CMAKE_SYSTEM}, ${CMAKE_SYSTEM_NAME}, ${CMAKE_SYSTEM_PROCESSOR}, ${CMAKE_SYSTEM_VERSION}")
 		message (STATUS "Configuration: ${CMAKE_BUILD_TYPE}, ${CMAKE_CONFIGURATION_TYPES}")
 		message (STATUS "Configuration directory: ${CMAKE_CFG_INTDIR}")
+		message (STATUS "Project source dir: ${PROJECT_SOURCE_DIR}")
+		message (STATUS "Project binary dir: ${PROJECT_BINARY_DIR}")
 		message (STATUS "Cross compiling: ${CMAKE_CROSSCOMPILING}")
 		message (STATUS "Library prefixes: ${CMAKE_FIND_LIBRARY_PREFIXES}")
 		message (STATUS "Library suffixes: ${CMAKE_FIND_LIBRARY_SUFFIXES}")
@@ -1387,6 +1492,8 @@ macro(_log_found_variables)
 			message (STATUS "Mathematica target system IDs ${Mathematica_SYSTEM_IDS}")
 			message (STATUS "Mathematica host system ID ${Mathematica_HOST_SYSTEM_ID}")
 			message (STATUS "Mathematica host system IDs ${Mathematica_HOST_SYSTEM_IDS}")
+			message (STATUS "Mathematica base directory ${Mathematica_BASE_DIR}")
+			message (STATUS "Mathematica user base directory ${Mathematica_USERBASE_DIR}")
 			message (STATUS "Mathematica include dir ${Mathematica_INCLUDE_DIR}")
 			message (STATUS "Mathematica include dirs ${Mathematica_INCLUDE_DIRS}")
 			message (STATUS "Mathematica libraries ${Mathematica_LIBRARIES}")
@@ -1414,7 +1521,7 @@ macro(_log_found_variables)
 			message (STATUS "MathLink not found")
 		endif()
 	endif()
-	if (NOT ${Mathematica_MathLink_FOUND} AND
+	if (NOT Mathematica_MathLink_FOUND AND
 		DEFINED Mathematica_FIND_VERSION AND
 		DEFINED Mathematica_SYSTEM_ID)
 		if (APPLE AND
@@ -1453,13 +1560,15 @@ macro(_get_dependent_variables _var _outDependentVars)
 		list (APPEND ${_outDependentVars}
 			Mathematica_INCLUDE_DIR Mathematica_WolframLibrary_VERSION
 			Mathematica_WolframLibrary_INCLUDE_DIR Mathematica_WolframLibrary_LIBRARY
-			Mathematica_KERNEL_HOST_SYSTEM_ID Mathematica_MathLink_ROOT_DIR)
+			Mathematica_KERNEL_HOST_SYSTEM_ID Mathematica_MathLink_ROOT_DIR
+			Mathematica_KERNEL_BASE_DIR Mathematica_KERNEL_USERBASE_DIR)
 		_get_dependent_variables("Mathematica_MathLink_ROOT_DIR" ${_outDependentVars})
 	elseif ("_${_var}" STREQUAL "_Mathematica_HOST_ROOT_DIR" OR
 			"_${_var}" STREQUAL "_Mathematica_HOST_SYSTEM_IDS")
 		list (APPEND ${_outDependentVars}
 			Mathematica_FRONTEND_EXECUTABLE Mathematica_KERNEL_EXECUTABLE
-			Mathematica_KERNEL_HOST_SYSTEM_ID Mathematica_MathLink_HOST_ROOT_DIR)
+			Mathematica_KERNEL_HOST_SYSTEM_ID Mathematica_MathLink_HOST_ROOT_DIR
+			Mathematica_KERNEL_BASE_DIR Mathematica_KERNEL_USERBASE_DIR)
 		_get_dependent_variables("Mathematica_MathLink_HOST_ROOT_DIR" ${_outDependentVars})
 	elseif ("_${_var}" STREQUAL "_Mathematica_MathLink_ROOT_DIR")
 		list (APPEND ${_outDependentVars}
@@ -1612,6 +1721,8 @@ endmacro()
 # FindMathematica "main" starts here
 _log_used_variables()
 _setup_mathematica_systemIDs()
+_setup_mathematica_base_directory()
+_setup_mathematica_userbase_directory()
 _cleanup_cache()
 _find_mathematica()
 _find_components()
@@ -1852,8 +1963,10 @@ function (Mathematica_EXECUTE)
 	endforeach()
 endfunction(Mathematica_EXECUTE)
 
-# re-compute system IDs, now that we can query the kernel
+# re-compute system IDs and base directories, now that we can query the kernel
 _setup_mathematica_systemIDs()
+_setup_mathematica_base_directory()
+_setup_mathematica_userbase_directory()
 
 # public function for executing Mathematica code at build time as a standalone target
 function (Mathematica_ADD_CUSTOM_TARGET _targetName)

@@ -51,10 +51,20 @@ set_target_properties(DemoScript PROPERTIES FOLDER "Mathematica")
 
 # define a helper function to simplify Mathematica tests
 function (do_mathematica_test _name _cmds _expectedOutput)
-	Mathematica_add_test (NAME "${_name}" CODE "${_cmds}" ${ARGN})
-	set_tests_properties (${_name}
-		PROPERTIES PASS_REGULAR_EXPRESSION "${_expectedOutput}"
-		TIMEOUT 10)
+	foreach (_systemID ${Mathematica_SYSTEM_IDS})
+		set (_testName "Mathematica_${_systemID}_${_name}")
+		list (FIND Mathematica_HOST_SYSTEM_IDS ${_systemID} _index)
+		if (${_index} GREATER -1)
+			Mathematica_add_test (
+				NAME "${_testName}" CODE "${_cmds}"
+				SYSTEM_ID "${_systemID}" ${ARGN})
+			set_tests_properties (${_testName}
+				PROPERTIES PASS_REGULAR_EXPRESSION "${_expectedOutput}"
+				TIMEOUT 10)
+		else()
+			message (STATUS "Skipping test ${_testName}, cross-compiling from ${Mathematica_HOST_SYSTEM_ID}.")
+		endif()
+	endforeach()
 endfunction ()
 
 # tests
