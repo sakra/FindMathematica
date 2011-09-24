@@ -291,10 +291,10 @@
 #  This function is available if the MathLink executable mprep has been found.
 
 # we need the CMakeParseArguments module
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.4)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "1.1.0")
+set (Mathematica_CMAKE_MODULE_VERSION "1.1.1")
 
 # internal macro to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -311,6 +311,11 @@ endmacro()
 
 # internal macro to convert CMake path to "pure" native path without escapes
 macro(_to_native_path _inPath _outPathVariable)
+	# do not use the built-in function file (TO_NATIVE_PATH ...),
+	# which does too much or the wrong thing:
+	# it converts a CMake path to a native path but then also escapes all blanks
+	# and special characters
+	# under MinGW it produces unworkable paths with forward slashes
 	if (CYGWIN)
 		execute_process(
 			COMMAND cygpath "--mixed" "${_inPath}" TIMEOUT 5
@@ -318,23 +323,17 @@ macro(_to_native_path _inPath _outPathVariable)
 	elseif (CMAKE_HOST_UNIX)
 		# use CMake path literally under UNIX
 		set (${_outPathVariable} "${_inPath}")
+	elseif (CMAKE_HOST_WIN32)
+		string (REPLACE "/" "\\" ${_outPathVariable} "${_inPath}")
 	else()
-		# file TO_NATIVE_PATH does one thing too much
-		# it converts a CMake path to a native path but then also escapes all blanks
-		# and special characters, which is not always desirable.
-		file (TO_NATIVE_PATH "${_inPath}" _nativePath)
-		# get rid of escaped characters
-		string (REPLACE "\\\"" "\"" _nativePath "${_nativePath}")
-		string (REPLACE "\\ " " " _nativePath "${_nativePath}")
-		string (REPLACE "\\\\" "\\" _nativePath "${_nativePath}")
-		set (${_outPathVariable} "${_nativePath}")
+		message (FATAL_ERROR "Unsupported host platform ${CMAKE_HOST_SYSTEM_NAME}")
 	endif()
 endmacro()
 
 # internal macro to set a file's executable bit under UNIX
 macro(_make_file_executable _inPath)
 	if (CMAKE_HOST_UNIX)
-		file (TO_NATIVE_PATH "${_inPath}" _nativePath)
+		_to_native_path ("${_inPath}" _nativePath)
 		execute_process(
 			COMMAND chmod "-f" "+x" "${_nativePath}" TIMEOUT 5)
 	endif()
@@ -1021,7 +1020,7 @@ macro(_setup_mathematica_systemIDs)
 	_get_compatible_system_IDs(${Mathematica_HOST_SYSTEM_ID} Mathematica_HOST_SYSTEM_IDS)
 endmacro()
 
-# internal macro to set up Mathematica host system IDs
+# internal macro to set up Mathematica base directory variable
 macro(_setup_mathematica_base_directory)
 	if (COMMAND Mathematica_EXECUTE)
 		# determine true $BaseDirectory
@@ -1073,6 +1072,7 @@ macro(_setup_mathematica_base_directory)
 	endif()
 endmacro()
 
+# internal macro to set up Mathematica userbase directory variable
 macro(_setup_mathematica_userbase_directory)
 	if (COMMAND Mathematica_EXECUTE)
 		# determine true $UserBaseDirectory
@@ -1807,6 +1807,11 @@ macro(_add_test_driver _cmdVar _inputVar _inputFileVar)
 		set (_testDriver "${Mathematica_CMAKE_MODULE_DIR}/FindMathematicaTestDriver.cmd")
 	endif()
 	_make_file_executable(${_testDriver})
+	if (CYGWIN)
+		_to_cmake_path("${_testDriver}" _testDriver)
+	else()
+		_to_native_path("${_testDriver}" _testDriver)
+	endif()
 	if (DEFINED ${_inputVar})
 		list (APPEND ${_cmdVar} "${_testDriver}" "input" "${${_inputVar}}")
 	elseif (DEFINED ${_inputFileVar})
@@ -2193,8 +2198,8 @@ function (Mathematica_GENERATE_C_CODE _packageFile)
 	Mathematica_TO_NATIVE_PATH(${_cHeader} _cHeaderMma)
 	Mathematica_TO_NATIVE_STRING(${_cHeaderBaseName} _cHeaderBaseNameMma)
 	Mathematica_TO_NATIVE_STRING(${_packageFileBaseName} _packageFileBaseNameMma)
-	string (REGEX REPLACE "\n|\t| " "" _codeGenerate
-		"Needs[\"CCodeGenerator`\"]
+	string (REGEX REPLACE "\n|\t" "" _codeGenerate
+		"Needs[\"CCodeGenerator`\"]\;
 		Module[{functions=Get[${_packageFileAbsMma}]},
 			If[ListQ[functions],
 				CompoundExpression[

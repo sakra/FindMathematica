@@ -1,3 +1,7 @@
+## 1.1.1 (2011-09-24)
+
+* file path conversion fixes for Cygwin and MinGW
+
 ## 1.1.0 (2011-09-17)
 
 * add Mathematica_BASE_DIR and Mathematica_USERBASE_DIR variables
