@@ -1,6 +1,6 @@
 # FindMathematica example project
 
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.4)
 
 project (Mathematica-project)
 
@@ -13,9 +13,9 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS 1)
 
-option (Mathematica_USE_STATIC_LIBRARIES Off)
-option (Mathematica_USE_MINIMAL_LIBRARIES Off)
-option (Mathematica_DEBUG Off)
+set (Mathematica_USE_STATIC_LIBRARIES On)
+set (Mathematica_USE_MINIMAL_LIBRARIES Off)
+set (Mathematica_DEBUG Off)
 
 # finds default Mathematica installation and its default components
 find_package(Mathematica)

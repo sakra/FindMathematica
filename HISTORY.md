@@ -1,3 +1,8 @@
+## 1.1.2 (2011-10-26)
+
+* option initialization fixes
+* tested with Mathematica 8.0.4
+
 ## 1.1.1 (2011-09-24)
 
 * file path conversion fixes for Cygwin and MinGW
@@ -10,7 +15,7 @@
 ## 1.0.4 (2011-07-12)
 
 * tested with Wolfram Lightweight Grid Manager 8.0
-* fixed some uninitiated variables
+* fixed some uninitialized variables
 
 ## 1.0.3 (2011-07-07)
 

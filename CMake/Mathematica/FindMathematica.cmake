@@ -293,8 +293,12 @@
 # we need the CMakeParseArguments module
 cmake_minimum_required(VERSION 2.8.4)
 
+include(TestBigEndian)
+include(CMakeParseArguments)
+include(CMakeDependentOption)
+
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "1.1.1")
+set (Mathematica_CMAKE_MODULE_VERSION "1.1.2")
 
 # internal macro to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -671,7 +675,6 @@ macro(_get_system_IDs _outSystemIDs)
 				list (APPEND ${_outSystemIDs} ${_systemID})
 			endforeach()
 		else()
-			include(TestBigEndian)
 			# determine System ID by checking endianness and pointer size
 			TEST_BIG_ENDIAN(_isBigEndian)
 			if (_isBigEndian)
@@ -1588,9 +1591,19 @@ endmacro(_get_dependent_variables)
 
 # internal macro to cleanup outdated cache variables
 macro(_cleanup_cache)
-	option (Mathematica_USE_STATIC_LIBRARIES "prefer static Mathematica libraries to dynamic libraries?" Off)
-	option (Mathematica_USE_MINIMAL_LIBRARIES "prefer minimal Mathematica libraries to full libraries?" Off)
-	option (Mathematica_DEBUG "enable FindMathematica debugging output?" Off)
+	# only set options for variables that haven't been overriden
+	cmake_dependent_option (
+		Mathematica_USE_STATIC_LIBRARIES
+		"prefer static Mathematica libraries to dynamic libraries?"
+		On "Mathematica_USE_STATIC_LIBRARIES" Off)
+	cmake_dependent_option (
+		Mathematica_USE_MINIMAL_LIBRARIES
+		"prefer minimal Mathematica libraries to full libraries?"
+		On "Mathematica_USE_MINIMAL_LIBRARIES" Off)
+	cmake_dependent_option (
+		Mathematica_DEBUG
+		"enable FindMathematica debugging output?"
+		On "Mathematica_DEBUG" Off)
 	_get_cache_variables(_CacheVariables)
 	set (_vars_to_clean "")
 	foreach (_CacheVariable IN LISTS _CacheVariables)
@@ -1732,7 +1745,6 @@ _setup_found_variables()
 _log_found_variables()
 
 # now setup public functions based on found components
-include(CMakeParseArguments)
 
 # public function to convert a CMake string to a Mathematica string
 function(Mathematica_TO_NATIVE_STRING _inStr _outStr)

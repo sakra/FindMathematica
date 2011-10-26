@@ -27,7 +27,7 @@ Requirements
 
 * A Wolfram [*Mathematica*][wmma] product (*Mathematica* 5.2 to 8.0 or
   Lightweight Grid Manager 7.0 to 8.0).
-* [CMake 2.8.3][cmk] or newer. The executable `cmake` should be on the system path.
+* [CMake 2.8.4][cmk] or newer. The executable `cmake` should be on the system path.
 * [Visual Studio C++][vslstd], [MinGW][mingw] or [Cygwin][cgwn] under Windows.
 * [gcc][gcc] (including g++) under Linux.
 * [Xcode][xcdt] developer tools package under Mac OS X.
