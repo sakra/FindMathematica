@@ -41,12 +41,13 @@ endfunction ()
 target_link_libraries(demo_eval ${Mathematica_MathLink_LIBRARIES})
 target_link_libraries(demo_mathlink ${Mathematica_MathLink_LIBRARIES})
 
-if (DEFINED MATHEMATICA_USERBASE_DIR)
-	install(TARGETS ${_Targets}
-		LIBRARY DESTINATION
-			"${MATHEMATICA_USERBASE_DIR}/SystemFiles/LibraryResources/${Mathematica_SYSTEM_ID}"
-		CONFIGURATIONS "Release"
-	)
+if (DEFINED Mathematica_USERBASE_DIR)
+	foreach (_systemID ${Mathematica_SYSTEM_IDS})
+		install(TARGETS ${_Targets}
+			LIBRARY DESTINATION
+				"${Mathematica_USERBASE_DIR}/SystemFiles/LibraryResources/${_systemID}"
+			CONFIGURATIONS "Release")
+	endforeach()
 endif()
 
 # tests

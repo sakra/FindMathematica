@@ -43,10 +43,11 @@ Mathematica_ADD_CUSTOM_TARGET(CurrentDate
 	COMMENT "Show the current date.")
 set_target_properties(CurrentDate PROPERTIES FOLDER "Mathematica")
 
-# add a stand-alone target which runs Mathematica code from a source file
+# add a stand-alone target which runs Mathematica code from an encoded source file
+Mathematica_ENCODE(demo.m)
 Mathematica_ADD_CUSTOM_TARGET(DemoScript
-	SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/demo.m"
-	COMMENT "Run demo script.")
+	SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/demo.m"
+	COMMENT "Running demo.m")
 set_target_properties(DemoScript PROPERTIES FOLDER "Mathematica")
 
 # define a helper function to simplify Mathematica tests

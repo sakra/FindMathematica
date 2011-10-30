@@ -20,6 +20,7 @@ Features
 * Supports generating stand-alone C code from *Mathematica* code with [CCodeGenerator][ccg]
   (*Mathematica* 8 only).
 * Provides CMake interface to *Mathematica*'s [Splice][splc] function.
+* Provides CMake interface to *Mathematica*'s [Encode][encd] function.
 * Fully leverages CMake's [cross-compiling][ccrc] support.
 
 Requirements
@@ -82,10 +83,15 @@ Then open the generated Visual Studio solution file with Visual Studio C++ 2010:
 
     D:\FindMathematica\build>start Mathematica-project.sln
 
-Alternatively, you can build and test the project from the command prompt:
+Alternatively, you can build and test the project's "Debug" configuration from the command prompt:
 
     D:\FindMathematica\build>cmake --build . --config Debug
     D:\FindMathematica\build>ctest --build-config Debug
+
+To build the "Release" configuration and install the built files to your *Mathematica* user base
+directory, run:
+
+    D:\FindMathematica\build>cmake --build . --target install --config Release
 
 To build the FindMathematica project with Visual Studio C++ 2010 for 64-bit Windows, open a Visual
 Studio x64 cross tools command prompt in the `FindMathematica` build directory:
@@ -103,7 +109,6 @@ prompt:
 
     D:\FindMathematica\build>cmake -G "MinGW Makefiles" ..
     D:\FindMathematica\build>mingw32-make
-    D:\FindMathematica\build>ctest
 
 Under [Cygwin][cgwn] the FindMathematica module requires the Cygwin version of CMake, which
 is different to the regular Windows CMake version.
@@ -114,7 +119,6 @@ commands in the `FindMathematica` root directory:
     $ cd build
     $ cmake ..
     $ make
-    $ ctest
 
 The module has been tested with *Mathematica* versions 5.2 to 8.0 and Visual Studio C++ 2008 under
 Windows XP, with *Mathematica* versions 7.0 to 8.0 and Visual Studio C++ 2010 under Windows 7,
@@ -130,7 +134,12 @@ in the `FindMathematica` root directory and enter the following commands:
     $ cd build
     $ cmake ..
     $ make
-    $ ctest
+
+Optionally, you can run all tests and install the built files to your *Mathematica* user base
+directory:
+
+    $ make test
+    $ make install
 
 FindMathematica supports building 32-bit and 64-bit MathLink executables and LibraryLink shared
 libraries using the appropriate link libraries that ship with the Linux version of *Mathematica*.
@@ -154,7 +163,12 @@ change to the `FindMathematica` root directory and enter the following commands:
     $ cd build
     $ cmake ..
     $ make
-    $ ctest
+
+Optionally, you can run all tests and install the built files to your *Mathematica* user base
+directory:
+
+    $ make test
+    $ make install
 
 To build the FindMathematica project with the Xcode project generator, run CMake with the
 following arguments:
@@ -192,6 +206,7 @@ Known Issues
 [cgwn]:http://www.cygwin.com/
 [cmk]:http://www.cmake.org/cmake/resources/software.html
 [cmtut]:http://www.cmake.org/cmake/help/cmake_tutorial.html
+[encd]:http://reference.wolfram.com/mathematica/ref/Encode.html
 [gcc]:http://gcc.gnu.org/
 [mingw]:http://www.mingw.org/
 [mprp]:http://reference.wolfram.com/mathematica/ref/program/mprep.html

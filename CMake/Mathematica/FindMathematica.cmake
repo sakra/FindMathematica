@@ -128,7 +128,7 @@
 #  This function is available if the Mathematica kernel executable has been found.
 #
 #  Mathematica_ADD_TEST(
-#    NAME name
+#    NAME testname
 #    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file> | COMMAND <command> [arg ...]
 #    [ SYSTEM_ID systemID ]
 #    [ INPUT text | INPUT_FILE file ]
@@ -153,7 +153,7 @@
 #  set_tests_properties.
 #
 #  Mathematica_ADD_LIBRARY(
-#    name
+#    libraryname
 #    source1 source2 ... sourceN)
 #  This function adds a MODULE library target which builds a Wolfram Library from the given sources.
 #  The generated dynamic library is loadable into the Mathematica kernel by using the function
@@ -164,14 +164,14 @@
 #  requires Mathematica 8).
 #
 #  Mathematica_WolframLibrary_SET_PROPERTIES(
-#    testname [ testname...]
+#    libraryname [ libraryname...]
 #    [ PROPERTIES prop1 value1 prop2 value2 ])
 #  This function makes sure that the file names of the given WolframLibrary shared libraries follow
 #  the naming conventions expected by Mathematica upon locating a library with FindLibrary.
 #  The other options are passed through to the CMake command set_target_properties.
 #
 #  Mathematica_WolframLibrary_ADD_TEST(
-#    NAME name
+#    NAME testname
 #    TARGET <WolframLibrary target>
 #    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file>
 #    [ SYSTEM_ID systemID ]
@@ -224,6 +224,32 @@
 #  output file with a different name.
 #  This function is available if the Mathematica kernel executable has been found.
 #
+#  Mathematica_ENCODE(
+#    <input file>
+#    [ OUTPUT <output file> ]
+#    [ KEY <encoding key> ]
+#    [ MACHINE_ID <machine ID> ])
+#  This function adds a custom target which runs the Mathematica function Encode on the input file.
+#  Encoded files contain only printable ASCII characters (see http://bit.ly/snozeT).
+#  By default the encoded output file is created with the same name in the CMAKE_CURRENT_BINARY_DIR.
+#  The OUTPUT option can be used to produce an output file with a different name. The KEY option
+#  specifies a string to be used as encoding key. The MACHINE_ID option makes the encoded file
+#  readable only on a computer with the given $MachineID.
+#  This function is available if the Mathematica kernel executable has been found.
+#
+#  Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES(
+#    targetname [ targetname...])
+#  Under Mac OS X this function replaces the default install names used for Mathematica shared
+#  libraries with absolute paths to those shared libraries for the given targets. On other platforms
+#  the functions does not have an effect.
+#  E.g., in Mathematica 8 the default install name for the MathLink shared library is:
+#  @executable_path/../Frameworks/mathlink.framework/Versions/3.16/mathlink
+#  This path won't work for stand-alone executables that link to the dynamic MathLink library, 
+#  unless the mathlink framework directory is added to the DYLD_LIBRARY_PATH environment variable.
+#  This function replaces the reference to the default install name in the given target executable
+#  with the absolute path to the MathLink library, which will work without requiring the
+#  DYLD_LIBRARY_PATH environment variable to be set.
+#
 #  Mathematica_MathLink_MPREP_TARGET(
 #    <mprep template file>
 #    [ OUTPUT <C source file>
@@ -252,7 +278,7 @@
 #  This function is available if the MathLink executable mprep has been found.
 #
 #  Mathematica_MathLink_ADD_TEST(
-#    NAME name
+#    NAME testname
 #    TARGET <MathLink executable target>
 #    [ CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file> ]
 #    [ SYSTEM_ID systemID ]
@@ -298,7 +324,7 @@ include(CMakeParseArguments)
 include(CMakeDependentOption)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "1.1.2")
+set (Mathematica_CMAKE_MODULE_VERSION "1.2.0")
 
 # internal macro to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -1731,6 +1757,30 @@ macro(_find_components)
 	list (REMOVE_DUPLICATES Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG)
 endmacro()
 
+# internal helper function to compute the install name of a shared library under Mac OS X
+macro(_get_install_name _libraryPath _libraryInstallName _libraryAbsPath)
+	if (APPLE)
+		set (${_libraryInstallName} "")
+		set (${_libraryAbsPath} "")
+		if (IS_DIRECTORY "${_libraryPath}")
+			# framework folder
+			get_filename_component(_name "${_libraryPath}" NAME_WE)
+			set (_path "${_libraryPath}/${_name}")
+		elseif ("${_libraryPath}" MATCHES "\\.dylib$")
+			# shared library
+			set (_path "${_libraryPath}")
+		else()
+			set (_path False)
+		endif()
+		if (_path AND EXISTS "${_path}")
+			get_filename_component(${_libraryAbsPath} ${_path} ABSOLUTE)
+			execute_process(
+				COMMAND otool "-D" "-X" "${${_libraryAbsPath}}" TIMEOUT 5
+				OUTPUT_VARIABLE ${_libraryInstallName} OUTPUT_STRIP_TRAILING_WHITESPACE)
+		endif()
+	endif()
+endmacro()
+
 # FindMathematica "main" starts here
 _log_used_variables()
 _setup_mathematica_systemIDs()
@@ -2262,7 +2312,7 @@ function (Mathematica_SPLICE_C_CODE _templateFile)
 	else()
 		set (_outputFileAbs "${CMAKE_CURRENT_BINARY_DIR}/${_templateFileBaseName}.c")
 	endif()
-	# Always set FormatType option to prevent Splice function fron failing with a
+	# Always set FormatType option to prevent Splice function from failing with a
 	# Splice::splict error if the template file path contains more than one dot character
 	string(TOLOWER ${_templateFileExt} _templateFileExt)
 	if (${_templateFileExt} STREQUAL ".mc")
@@ -2285,6 +2335,52 @@ function (Mathematica_SPLICE_C_CODE _templateFile)
 		COMMENT ${_msg})
 	set_source_files_properties(${_outputFileAbs} PROPERTIES GENERATED TRUE LABELS "Mathematica")
 endfunction(Mathematica_SPLICE_C_CODE)
+
+# public function to add target that runs Mathematica Encode function on input file
+function (Mathematica_ENCODE _inputFile)
+	get_filename_component(_inputFileName ${_inputFile} NAME)
+	get_filename_component(_inputFileNameAbs ${_inputFile} ABSOLUTE)
+	set(_options "")
+	set(_oneValueArgs "OUTPUT" "KEY" "MACHINE_ID")
+	set(_multiValueArgs "")
+	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
+	if(_option_UNPARSED_ARGUMENTS)
+		message(FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
+	endif()
+	if (_option_OUTPUT)
+		if (IS_ABSOLUTE ${_option_OUTPUT})
+			set (_outputFileAbs "${_option_OUTPUT}")
+		else()
+			set (_outputFileAbs "${CMAKE_CURRENT_BINARY_DIR}/${_option_OUTPUT}")
+		endif()
+	else()
+		set (_outputFileAbs "${CMAKE_CURRENT_BINARY_DIR}/${_inputFileName}")
+	endif()
+	get_filename_component(_outputFileName ${_outputFileAbs} NAME)
+	Mathematica_TO_NATIVE_PATH("${_inputFileNameAbs}" _inputFileMma)
+	Mathematica_TO_NATIVE_PATH("${_outputFileAbs}" _outputFileMma)
+	if ("${_inputFileName}" STREQUAL "${_outputFileName}")
+		set (_msg "Encoding ${_inputFileName}")
+	else()
+		set (_msg "Encoding ${_inputFileName} to ${_outputFileName}")
+	endif()
+	set (_code "Encode[ ${_inputFileMma}, ${_outputFileMma}")
+	if (_option_KEY)
+		Mathematica_TO_NATIVE_STRING("${_option_KEY}" _keyMma)
+		set (_code "${_code}, ${_keyMma}")
+	endif()
+	if (_option_MACHINE_ID)
+		Mathematica_TO_NATIVE_STRING("${_option_MACHINE_ID}" _machineIDMma)
+		set (_code "${_code}, MachineID->${_machineIDMma}")
+	endif()
+	set (_code "${_code}]")
+	Mathematica_ADD_CUSTOM_COMMAND(
+		OUTPUT "${_outputFileAbs}"
+		CODE "${_code}"
+		DEPENDS "${_inputFileNameAbs}"
+		COMMENT "${_msg}")
+	set_source_files_properties(${_outputFileAbs} PROPERTIES GENERATED TRUE LABELS "Mathematica")
+endfunction(Mathematica_ENCODE)
 
 endif (Mathematica_KERNEL_EXECUTABLE)
 
@@ -2313,6 +2409,27 @@ function(Mathematica_WolframLibrary_SET_PROPERTIES)
 	endif()
 endfunction(Mathematica_WolframLibrary_SET_PROPERTIES)
 
+# public function for fixing shared library references to dynamic Mathematica runtime library und Mac OS X
+function (Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES)
+	if (APPLE)
+		foreach(_target ${ARGV})
+			get_target_property(_targetType ${_target} TYPE)
+			if (NOT ${_targetType} STREQUAL "STATIC_LIBRARY")
+				get_target_property(_targetLocation ${_target} LOCATION)
+				foreach(_library "${Mathematica_WolframLibrary_LIBRARY}" "${Mathematica_MathLink_LIBRARY}")
+					_get_install_name("${_library}" _libraryInstallName _libraryAbsPath)
+					if (_libraryInstallName)
+						add_custom_command (TARGET ${_target}
+							POST_BUILD COMMAND "${CMAKE_INSTALL_NAME_TOOL}"
+								"-change" "${_libraryInstallName}" "${_libraryAbsPath}"
+							"${_targetLocation}" VERBATIM)
+					endif()
+				endforeach()
+			endif()
+		endforeach()
+	endif()
+endfunction()
+
 # public function for creating dynamic library loadable with LibraryLink
 function(Mathematica_ADD_LIBRARY _libraryName)
 	add_library (${_libraryName} MODULE ${ARGN})
@@ -2321,7 +2438,7 @@ endfunction()
 
 if (Mathematica_KERNEL_EXECUTABLE)
 
-# public function to simplify testing MathLink programs
+# public function to simplify testing WolframLibrary targets
 function (Mathematica_WolframLibrary_ADD_TEST)
 	set(_options "")
 	set(_oneValueArgs NAME SCRIPT TARGET INPUT INPUT_FILE SYSTEM_ID)

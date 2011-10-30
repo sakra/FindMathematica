@@ -69,14 +69,19 @@ foreach (_Example ${_Examples})
 	target_link_libraries (${_TargetName} ${Mathematica_MathLink_LIBRARIES})
 	list (APPEND _Targets ${_TargetName})
 	set_target_properties(${_TargetName} PROPERTIES FOLDER "MathLink")
+	set_target_properties(${_TargetName} PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}")
 endforeach()
 
-if (DEFINED MATHEMATICA_USERBASE_DIR)
-	install(TARGETS ${_Targets}
-		RUNTIME DESTINATION
-			"${MATHEMATICA_USERBASE_DIR}/SystemFiles/Kernel/Binaries/${Mathematica_SYSTEM_ID}"
-		CONFIGURATIONS "Release"
-	)
+# fix MathLink shared library references under Mac OS X
+Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES(${_Targets})
+
+if (DEFINED Mathematica_USERBASE_DIR)
+	foreach (_systemID ${Mathematica_SYSTEM_IDS})
+		install(TARGETS ${_Targets}
+			RUNTIME DESTINATION
+				"${Mathematica_USERBASE_DIR}/SystemFiles/Kernel/Binaries/${_systemID}"
+			CONFIGURATIONS "Release")
+	endforeach()
 endif()
 
 # define a helper function to simplify adding MathLink executable tests

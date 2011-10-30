@@ -13,8 +13,8 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS 1)
 
-set (Mathematica_USE_STATIC_LIBRARIES On)
-set (Mathematica_USE_MINIMAL_LIBRARIES Off)
+set (Mathematica_USE_STATIC_LIBRARIES Off)
+set (Mathematica_USE_MINIMAL_LIBRARIES On)
 set (Mathematica_DEBUG Off)
 
 # finds default Mathematica installation and its default components

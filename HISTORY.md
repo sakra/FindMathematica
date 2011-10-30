@@ -1,3 +1,10 @@
+## 1.2.0 (2011-10-30)
+
+* add Mathematica_ENCODE function
+* add Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES function
+* fixed use of Mathematica_USERBASE_DIR in examples
+* fixed RPATH issues under Linux
+
 ## 1.1.2 (2011-10-26)
 
 * option initialization fixes

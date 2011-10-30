@@ -8,25 +8,32 @@ Mathematica_GENERATE_C_CODE(compute.m OUTPUT compute.c)
 add_executable (compute compute_main.c compute.c)
 set_target_properties(compute PROPERTIES FOLDER "CodeGeneration")
 target_link_libraries (compute ${Mathematica_WolframLibrary_LIBRARIES})
+set_target_properties(compute PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}")
 
 # add CMake executable target for multiple Mathematica functions
 Mathematica_GENERATE_C_CODE(functions.m)
 add_executable (functions functions.c functions.m.c)
 set_target_properties(functions PROPERTIES FOLDER "CodeGeneration")
 target_link_libraries (functions ${Mathematica_WolframLibrary_LIBRARIES})
+set_target_properties(functions PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}")
 
 # add CMake static library target for Mathematica control system expression
 Mathematica_GENERATE_C_CODE(control.m OUTPUT control.c)
 add_library (control STATIC control.c)
 set_target_properties(control PROPERTIES FOLDER "CodeGeneration")
 target_link_libraries (control ${Mathematica_WolframLibrary_LIBRARIES})
+set_target_properties(control PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}")
 
-if (DEFINED MATHEMATICA_USERBASE_DIR)
-	install(TARGETS compute functions
-		RUNTIME DESTINATION
-			"${MATHEMATICA_USERBASE_DIR}/SystemFiles/Kernel/Binaries/${Mathematica_SYSTEM_ID}"
-		CONFIGURATIONS "Release"
-	)
+# fix MathLink shared library references under Mac OS X
+Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES(compute functions)
+
+if (DEFINED Mathematica_USERBASE_DIR)
+	foreach (_systemID ${Mathematica_SYSTEM_IDS})
+		install(TARGETS compute functions
+			RUNTIME DESTINATION
+				"${Mathematica_USERBASE_DIR}/SystemFiles/Kernel/Binaries/${_systemID}"
+			CONFIGURATIONS "Release")
+	endforeach()
 endif()
 
 # define a helper function to simplify adding CodeGeneration tests
