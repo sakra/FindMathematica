@@ -49,8 +49,8 @@ function (do_mathematica_codegeneration_test _target _expectedOutputRegEx)
 				COMMAND "$<TARGET_FILE:${_target}>"
 				SYSTEM_ID "${_systemID}" ${ARGN})
 			Mathematica_set_tests_properties(${_testName}
-				PROPERTIES PASS_REGULAR_EXPRESSION "${_expectedOutputRegEx}"
-				TIMEOUT 15)
+				PROPERTIES TIMEOUT 15
+				PASS_REGULAR_EXPRESSION "${_expectedOutputRegEx}")
 		else()
 			message (STATUS "Skipping test ${_testName}, cross-compiling from ${Mathematica_HOST_SYSTEM_ID}.")
 		endif()

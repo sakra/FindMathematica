@@ -59,9 +59,9 @@ function (do_mathematica_test _name _cmds _expectedOutput)
 			Mathematica_add_test (
 				NAME "${_testName}" CODE "${_cmds}"
 				SYSTEM_ID "${_systemID}" ${ARGN})
-			set_tests_properties (${_testName}
-				PROPERTIES PASS_REGULAR_EXPRESSION "${_expectedOutput}"
-				TIMEOUT 10)
+			Mathematica_set_tests_properties (${_testName}
+				PROPERTIES TIMEOUT 10
+				PASS_REGULAR_EXPRESSION "${_expectedOutput}")
 		else()
 			message (STATUS "Skipping test ${_testName}, cross-compiling from ${Mathematica_HOST_SYSTEM_ID}.")
 		endif()

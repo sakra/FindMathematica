@@ -1,3 +1,10 @@
+## 1.2.1 (2011-11-04)
+
+* Windows registry search fix
+* add work-around for Windows cmd.exe quotation problem
+* fix bug in function that sets up version variables
+* make code more robust against exceptional usage cases
+
 ## 1.2.0 (2011-10-30)
 
 * add Mathematica_ENCODE function
