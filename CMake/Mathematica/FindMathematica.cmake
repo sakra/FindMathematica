@@ -76,6 +76,7 @@
 #
 #  Mathematica_EXECUTE(
 #    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file>
+#    [ SYSTEM_ID systemID ]
 #    [ TIMEOUT seconds ]
 #    [ RESULT_VARIABLE variable ]
 #    [ OUTPUT_VARIABLE variable ]
@@ -85,6 +86,11 @@
 #  This function executes Mathematica code at CMake configuration time. The Mathematica code can
 #  be either specified as a list of in-line Mathematica statements or as path to a Mathematica
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
+#  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
+#  E.g., on Windows-x86-64 you can set the SYSTEM_ID option to "Windows" to run the 32-bit kernel
+#  executable. On Linux-x86-64 set the SYSTEM_ID option to "Linux" to run the 32-bit version of the
+#  kernel. On Mac OS X you can set the SYSTEM_ID option to "MacOSX-x86" to execute the 32-bit
+#  portion of the Mathematica kernel universal binary.
 #  The working directory of the Mathematica child process is set to the CMAKE_CURRENT_BINARY_DIR.
 #  The other options are passed through to the CMake command execute_process.
 #  This function is available if the Mathematica kernel executable has been found.
@@ -92,11 +98,13 @@
 #  Mathematica_ADD_CUSTOM_TARGET(
 #    target
 #    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file>
+#    [ SYSTEM_ID systemID ]
 #    [ COMMENT comment ]
 #    [ SOURCES src1 [ src2... ] ])
 #  This function adds a target that executes Mathematica code at build time. The Mathematica code can
 #  be either specified as a list of in-line Mathematica statements or as path to a Mathematica
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
+#  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
 #  The working directory of the Mathematica child process is set to the CMAKE_CURRENT_BINARY_DIR.
 #  The other options are passed through to the CMake command add_custom_target.
 #  This function is available if the Mathematica kernel executable has been found.
@@ -104,12 +112,14 @@
 #  Mathematica_ADD_CUSTOM_COMMAND(
 #    OUTPUT output1 [output2 ...]
 #    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file>
+#    [ SYSTEM_ID systemID ]
 #    [ DEPENDS [ depends ...] ]
 #    [ COMMENT comment] [APPEND])
 #  This function adds a target that executes Mathematica code to generate output files. The Mathematica
 #  code is responsible for generating the specified output files. The Mathematica code can be either
 #  specified as a list of in-line Mathematica statements or as path to a Mathematica script file.
 #  Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
+#  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
 #  The working directory of the Mathematica child process is set to the CMAKE_CURRENT_BINARY_DIR.
 #  The other options are passed through to the CMake command add_custom_command.
 #  This function is available if the Mathematica kernel executable has been found.
@@ -118,11 +128,13 @@
 #    TARGET target
 #    PRE_BUILD | PRE_LINK | POST_BUILD
 #    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file>
+#    [ SYSTEM_ID systemID ]
 #    [ COMMENT comment ])
 #  This function adds Mathematica code to an existing target which is run before or after building
 #  the target. The Mathematica will only execute when the target itself is built. The Mathematica code
 #  can be either specified as a list of in-line Mathematica statements or as path to a Mathematica
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
+#  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
 #  The working directory of the Mathematica child process is set to the CMAKE_CURRENT_BINARY_DIR.
 #  The other options are passed through to the CMake command add_custom_command.
 #  This function is available if the Mathematica kernel executable has been found.
@@ -244,7 +256,7 @@
 #  the function does not have an effect.
 #  E.g., in Mathematica 8 the default install name for the MathLink shared library is:
 #  @executable_path/../Frameworks/mathlink.framework/Versions/3.16/mathlink
-#  This path won't work for stand-alone executables that link to the dynamic MathLink library, 
+#  This path won't work for stand-alone executables that link to the dynamic MathLink library,
 #  unless the mathlink framework directory is added to the DYLD_LIBRARY_PATH environment variable.
 #  This function replaces the reference to the default install name in the given target executable
 #  with the absolute path to the MathLink library, which will work without requiring the
@@ -324,7 +336,7 @@ include(CMakeParseArguments)
 include(CMakeDependentOption)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "1.2.1")
+set (Mathematica_CMAKE_MODULE_VERSION "1.2.2")
 
 # internal macro to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -637,9 +649,9 @@ macro(_systemNameToSystemID _systemName _systemProcessor _outSystemIDs)
 		elseif (${_systemProcessor} MATCHES "ppc64|powerpc64")
 			set (${_outSystemIDs} "Darwin-PowerPC64")
 		elseif (${_systemProcessor} MATCHES "ppc|powerpc")
-			# different Mathematica versions use different system IDs
-			if (DEFINED Mathematica_VERSION_MAJOR)
-				if (${Mathematica_VERSION_MAJOR} GREATER 5)
+			if (DEFINED Mathematica_VERSION)
+				# Mathematica versions before 6 used "Darwin" as system ID for ppc32
+				if (NOT ${Mathematica_VERSION} VERSION_LESS "6.0")
 					set (${_outSystemIDs} "MacOSX")
 				else()
 					set (${_outSystemIDs} "Darwin")
@@ -658,9 +670,9 @@ macro(_systemNameToSystemID _systemName _systemProcessor _outSystemIDs)
 		endif()
 	elseif (${_systemName} STREQUAL "SunOS")
 		if (${_systemProcessor} MATCHES "^sparc")
-			# different Mathematica versions use different system IDs
-			if (DEFINED Mathematica_VERSION_MAJOR)
-				if (${Mathematica_VERSION_MAJOR} GREATER 5)
+			if (DEFINED Mathematica_VERSION)
+				# Mathematica versions before 6 used "UltraSPARC" as system ID for Solaris
+				if (NOT ${Mathematica_VERSION} VERSION_LESS "6.0")
 					set (${_outSystemIDs} "Solaris-SPARC")
 				else()
 					set (${_outSystemIDs} "UltraSPARC")
@@ -711,9 +723,9 @@ macro(_get_system_IDs _outSystemIDs)
 				if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 					set (${_outSystemIDs} "Darwin-PowerPC64")
 				else()
-					# different Mathematica versions use different system IDs
-					if (DEFINED Mathematica_VERSION_MAJOR)
-						if (${Mathematica_VERSION_MAJOR} GREATER 5)
+					if (DEFINED Mathematica_VERSION)
+						# Mathematica versions before 6 used "Darwin" as system ID for ppc32
+						if (NOT ${Mathematica_VERSION} VERSION_LESS "6.0")
 							set (${_outSystemIDs} "MacOSX")
 						else()
 							set (${_outSystemIDs} "Darwin")
@@ -775,7 +787,7 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 	set (${_outSystemIDs} "")
 	if (${_systemID} STREQUAL "Windows-x86-64")
 		if (NOT DEFINED Mathematica_VERSION OR
-			"${Mathematica_VERSION}" VERSION_GREATER "5.1")
+			NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
 			# Mathematica version 5.2 added support for Windows-x86-64
 			list (APPEND ${_outSystemIDs} "Windows-x86-64")
 		endif()
@@ -785,11 +797,11 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 		if (${_systemID} STREQUAL "MacOSX-x86-64")
 			if (DEFINED Mathematica_VERSION)
 				# Mathematica version 6 added support for MacOSX-x86-64
-				if (${Mathematica_VERSION_MAJOR} GREATER 5)
+				if (NOT ${Mathematica_VERSION} VERSION_LESS "6.0")
 					list (APPEND ${_outSystemIDs} "MacOSX-x86-64")
 				endif()
 				# Mathematica version 5.2 added support for MacOSX-x86
-				if (${Mathematica_VERSION} VERSION_GREATER "5.1")
+				if (NOT ${Mathematica_VERSION} VERSION_LESS "5.2")
 					list (APPEND ${_outSystemIDs} "MacOSX-x86")
 				endif()
 			else()
@@ -797,13 +809,13 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 			endif()
 		elseif (${_systemID} STREQUAL "MacOSX-x86")
 			if (NOT DEFINED Mathematica_VERSION OR
-				"${Mathematica_VERSION}" VERSION_GREATER "5.1")
+				NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
 				# Mathematica version 5.2 added support for MacOSX-x86
 				list (APPEND ${_outSystemIDs} "MacOSX-x86")
 			endif()
 		elseif (${_systemID} STREQUAL "Darwin-PowerPC64")
 			if (NOT DEFINED Mathematica_VERSION OR
-				("${Mathematica_VERSION}" VERSION_GREATER "5.1" AND
+				(NOT "${Mathematica_VERSION}" VERSION_LESS "5.2" AND
 				"${Mathematica_VERSION}" VERSION_LESS "6.0"))
 				# Only Mathematica version 5.2 supports Darwin-PowerPC64
 				list (APPEND ${_outSystemIDs} "Darwin-PowerPC64")
@@ -813,11 +825,11 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 		# Mac OS X versions before Lion support ppc32 natively or through Rosetta
 		# (Mac OS X 10.7.0 is Darwin 11.0.0)
 		if ("${CMAKE_HOST_SYSTEM_VERSION}" VERSION_LESS "11.0.0")
-			if (DEFINED Mathematica_VERSION_MAJOR)
-				if (${Mathematica_VERSION_MAJOR} LESS 6)
+			if (DEFINED Mathematica_VERSION)
+				if (${Mathematica_VERSION} VERSION_LESS "6.0")
 					# Mathematica versions before 6 used "Darwin" as system ID for ppc32
 					list (APPEND ${_outSystemIDs} "Darwin")
-				elseif (${Mathematica_VERSION_MAJOR} LESS 8)
+				elseif (${Mathematica_VERSION} VERSION_LESS "8.0")
 					# Mathematica version 8 dropped support for ppc32
 					list (APPEND ${_outSystemIDs} "MacOSX")
 				endif()
@@ -827,7 +839,7 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 		endif()
 	elseif (${_systemID} MATCHES "Linux-x86-64|Linux-IA64")
 		if (NOT DEFINED Mathematica_VERSION OR
-			"${Mathematica_VERSION}" VERSION_GREATER "5.1")
+			NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
 			# Mathematica version 5.2 added support for 64-bit
 			list (APPEND ${_outSystemIDs} ${_systemID})
 		endif()
@@ -1383,8 +1395,8 @@ macro(_setup_mathematica_version_variables)
 		elseif (Mathematica_MathLink_INCLUDE_DIR AND
 			EXISTS "${Mathematica_MathLink_INCLUDE_DIR}/mathlink.h")
 			# parse version number from mathlink.h
-			file (STRINGS "${Mathematica_MathLink_INCLUDE_DIR}/mathlink.h" _versionLine REGEX
-				".*define.*MLMATHVERSION.*")
+			file (STRINGS "${Mathematica_MathLink_INCLUDE_DIR}/mathlink.h" _versionLine
+				REGEX ".*define.*MLMATHVERSION.*")
 		else()
 			set (_versionLine "")
 		endif()
@@ -1558,14 +1570,14 @@ macro(_log_found_variables)
 			message (STATUS "MathLink not found")
 		endif()
 	endif()
-	if (NOT Mathematica_MathLink_FOUND AND
-		DEFINED Mathematica_FIND_VERSION AND
-		DEFINED Mathematica_SYSTEM_ID)
-		if (APPLE AND
-			${Mathematica_FIND_VERSION} VERSION_EQUAL "5.2" AND
-			${Mathematica_SYSTEM_ID} STREQUAL "MacOSX-x86-64")
-			message (WARNING "Mathematica 5.2 for Mac OS X does not support x86_64, run cmake with option -DCMAKE_OSX_ARCHITECTURES=i386.")
-		endif()
+	if (APPLE AND DEFINED Mathematica_SYSTEM_IDS AND
+		DEFINED Mathematica_FIND_VERSION_MAJOR AND DEFINED Mathematica_FIND_VERSION_MINOR AND
+		"${Mathematica_FIND_VERSION_MAJOR}" EQUAL 5 AND "${Mathematica_FIND_VERSION_MINOR}" EQUAL 2)
+		foreach (_systemID ${Mathematica_SYSTEM_IDS})
+			if (${_systemID} STREQUAL "MacOSX-x86-64")
+				message (WARNING "Mathematica 5.2 for Mac OS X does not support x86_64, run cmake with option -DCMAKE_OSX_ARCHITECTURES=i386.")
+			endif()
+		endforeach()
 	endif()
 endmacro(_log_found_variables)
 
@@ -1624,19 +1636,19 @@ endmacro(_get_dependent_variables)
 
 # internal macro to cleanup outdated cache variables
 macro(_cleanup_cache)
-	# only set options for variables that haven't been overriden
+	# only set options for variables that haven't been overridden
 	cmake_dependent_option (
 		Mathematica_USE_STATIC_LIBRARIES
 		"prefer static Mathematica libraries to dynamic libraries?"
-		On "Mathematica_USE_STATIC_LIBRARIES" Off)
+		ON "Mathematica_USE_STATIC_LIBRARIES" OFF)
 	cmake_dependent_option (
 		Mathematica_USE_MINIMAL_LIBRARIES
 		"prefer minimal Mathematica libraries to full libraries?"
-		On "Mathematica_USE_MINIMAL_LIBRARIES" Off)
+		ON "Mathematica_USE_MINIMAL_LIBRARIES" OFF)
 	cmake_dependent_option (
 		Mathematica_DEBUG
 		"enable FindMathematica debugging output?"
-		On "Mathematica_DEBUG" Off)
+		ON "Mathematica_DEBUG" OFF)
 	_get_cache_variables(_CacheVariables)
 	set (_vars_to_clean "")
 	foreach (_CacheVariable IN LISTS _CacheVariables)
@@ -1652,12 +1664,13 @@ macro(_cleanup_cache)
 	endforeach()
 	if (_vars_to_clean)
 		list (REMOVE_DUPLICATES _vars_to_clean)
-		message (STATUS "Mathematica search parameters changed, restart search ...")
+		message (STATUS "Mathematica environment changed, restart search ...")
 		if (Mathematica_DEBUG)
 			message("Unset ${_vars_to_clean}")
 		endif()
 		foreach (_CacheVariable IN LISTS _vars_to_clean)
 			unset(${_CacheVariable} CACHE)
+			unset(${_CacheVariable})
 		endforeach()
 	endif()
 endmacro()
@@ -1823,12 +1836,12 @@ function (Mathematica_TO_NATIVE_LIST _outList)
 	foreach (_elem ${ARGN})
 		Mathematica_TO_NATIVE_STRING(${_elem} _elemStr)
 		if (${_list} STREQUAL "{")
-			set (_list "{ ${_elemStr}")
+			set (_list "{${_elemStr}")
 		else()
-			set (_list "${_list}, ${_elemStr}")
+			set (_list "${_list},${_elemStr}")
 		endif()
 	endforeach()
-	set (${_outList} "${_list} }" PARENT_SCOPE)
+	set (${_outList} "${_list}}" PARENT_SCOPE)
 endfunction()
 
 # public function to initialize Mathematica test properties
@@ -1939,8 +1952,8 @@ macro(_add_kernel_launch_code _cmdVar _systemIDVar)
 		_to_native_path("${Mathematica_KERNEL_EXECUTABLE}" _kernelExecutable)
 		list (APPEND ${_cmdVar} "${_kernelExecutable}")
 		if (DEFINED ${_systemIDVar})
-			if (DEFINED Mathematica_VERSION_MAJOR AND
-				"${Mathematica_VERSION_MAJOR}" GREATER 7)
+			if (DEFINED Mathematica_VERSION AND
+				NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
 				# Mathematica 8 kernel wrapper shell script supports option -SystemID
 				list (APPEND ${_cmdVar} "-SystemID" "${${_systemIDVar}}")
 			elseif (NOT "${_systemIDVar}" STREQUAL "${Mathematica_HOST_SYSTEM_ID}")
@@ -1977,9 +1990,10 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar)
 			else()
 				set (_currentCodeSegment "${_codeSegment}")
 			endif()
-			if (_codeSegment MATCHES "Needs\\[[^]]+\\]" OR
-				_codeSegment MATCHES "Install\\[[^]]+\\]" OR
-				_codeSegment STREQUAL "Quit[]")
+			# flush current CompoundExpression when a Get[...], Needs[...] or Install[...]
+			# expression is encountered, so that new context definitions become effective
+			# immediately for subsequent commands
+			if (_codeSegment MATCHES "(Get|Needs|Install|Quit)\\[[^]]*\\]")
 				if (_currentCodeSegmentCompound OR
 					(CMAKE_HOST_WIN32 AND NOT _currentCodeSegment MATCHES " "))
 					# note that the blanks around the CompoundExpression argument below are
@@ -1995,8 +2009,8 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar)
 		endforeach()
 		list (APPEND ${_cmdVar} "-noprompt" ${_codeSegments})
 	elseif (DEFINED ${_scriptVar})
-		if (DEFINED Mathematica_VERSION_MAJOR AND
-			"${Mathematica_VERSION_MAJOR}" GREATER 7)
+		if (DEFINED Mathematica_VERSION AND
+			NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
 			# script option is supported since Mathematica 8
 			_to_native_path("${${_scriptVar}}" _scriptFile)
 			list (APPEND ${_cmdVar} "-script" "${_scriptFile}" )
@@ -2039,7 +2053,7 @@ function (Mathematica_EXECUTE)
 			if (_key MATCHES "_VARIABLE$")
 				list (APPEND _cmd ${_key} "${${_value}}")
 				list (APPEND _variables "${${_value}}")
-			elseif(NOT _key MATCHES "SCRIPT|CODE")
+			elseif (NOT _key MATCHES "SCRIPT|CODE|SYSTEM_ID")
 				list (APPEND _cmd ${_key} "${${_value}}")
 			endif()
 		endif()

@@ -140,11 +140,11 @@ do_mathlink_test(counter
 12
 32"
 CODE
-"link2=Install[First[link]]
-?AddToCounter
-Print[counter`AddToCounter[link,11]]
-Print[counter`AddToCounter[link2,12]]
-Print[counter`AddToCounter[link,21]]
+"link2=Install[First[link]]"
+"?AddToCounter
+Print[AddToCounter[link,11]]
+Print[AddToCounter[link2,12]]
+Print[AddToCounter[link,21]]
 Uninstall[link2]"
 )
 

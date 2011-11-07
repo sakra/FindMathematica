@@ -1,3 +1,9 @@
+## 1.2.2 (2011-11-07)
+
+* properly document `SYSTEM_ID` option
+* stricter *Mathematica* version checks
+* fix bug in `Mathematica_EXECUTE` with handling of `SYSTEM_ID` option
+
 ## 1.2.1 (2011-11-04)
 
 * Windows registry search fix
@@ -7,15 +13,15 @@
 
 ## 1.2.0 (2011-10-30)
 
-* add Mathematica_ENCODE function
-* add Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES function
-* fixed use of Mathematica_USERBASE_DIR in examples
+* add `Mathematica_ENCODE` function
+* add `Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES` function
+* fixed use of `Mathematica_USERBASE_DIR` in examples
 * fixed RPATH issues under Linux
 
 ## 1.1.2 (2011-10-26)
 
 * option initialization fixes
-* tested with Mathematica 8.0.4
+* tested with *Mathematica* 8.0.4
 
 ## 1.1.1 (2011-09-24)
 
@@ -23,7 +29,7 @@
 
 ## 1.1.0 (2011-09-17)
 
-* add Mathematica_BASE_DIR and Mathematica_USERBASE_DIR variables
+* add `Mathematica_BASE_DIR` and `Mathematica_USERBASE_DIR` variables
 * fixed some character escaping issues
 
 ## 1.0.4 (2011-07-12)
@@ -39,12 +45,12 @@
 
 ## 1.0.2 (2011-07-02)
 
-* Fix Mathematica detection on PPC equipped Macs
+* Fix *Mathematica* detection on PPC equipped Macs
 
 ## 1.0.1 (2011-04-03)
 
 * Changes for undefined WIN32 variable under Cygwin with CMake 2.8.4
-* Tested with Mathematica 8.0.1
+* Tested with *Mathematica* 8.0.1
 * Code cleanup
 
 ## 1.0.0 (2010-12-05)
