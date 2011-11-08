@@ -38,19 +38,19 @@ if ("${Mathematica_VERSION_MAJOR}" GREATER 5)
 endif()
 
 # add a stand-alone target which runs Mathematica code
-Mathematica_ADD_CUSTOM_TARGET(CurrentDate
+Mathematica_ADD_CUSTOM_TARGET(CurrentDate ALL
 	CODE "Print[DateString[]]"
 	COMMENT "Show the current date.")
 set_target_properties(CurrentDate PROPERTIES FOLDER "Mathematica")
 
 # add a stand-alone target which runs Mathematica code from an encoded source file
 Mathematica_ENCODE(demo.m)
-Mathematica_ADD_CUSTOM_TARGET(DemoScript
+Mathematica_ADD_CUSTOM_TARGET(DemoScript ALL
 	SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/demo.m"
 	COMMENT "Running demo.m")
 set_target_properties(DemoScript PROPERTIES FOLDER "Mathematica")
 
-# define a helper function to simplify Mathematica tests
+# define a helper function to simplify CMake Mathematica tests
 function (do_mathematica_test _name _cmds _expectedOutput)
 	foreach (_systemID ${Mathematica_SYSTEM_IDS})
 		set (_testName "Mathematica_${_systemID}_${_name}")

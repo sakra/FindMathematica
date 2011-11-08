@@ -1,3 +1,9 @@
+## 1.2.3 (2011-11-08)
+
+* fix cache cleanup bug
+* use functions instead of macros to work around Windows backslash problem
+* improve `Mathematica_ADD_CUSTOM_TARGET` documentation
+
 ## 1.2.2 (2011-11-07)
 
 * properly document `SYSTEM_ID` option
