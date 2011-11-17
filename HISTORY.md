@@ -1,3 +1,8 @@
+## 1.2.4 (2011-11-17)
+
+* preserve user defined overrides upon option initialization
+* don't set `RUN_SERIAL` option in `Mathematica_SET_TESTS_PROPERTIES`
+
 ## 1.2.3 (2011-11-08)
 
 * fix cache cleanup bug
