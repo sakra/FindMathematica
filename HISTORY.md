@@ -1,3 +1,7 @@
+## 1.2.5 (2011-12-02)
+
+* fix bug in launch services database search code under Mac OS X
+
 ## 1.2.4 (2011-11-17)
 
 * preserve user defined overrides upon option initialization

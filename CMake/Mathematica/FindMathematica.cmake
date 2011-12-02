@@ -336,7 +336,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "1.2.4")
+set (Mathematica_CMAKE_MODULE_VERSION "1.2.5")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -538,7 +538,7 @@ function (_add_launch_services_search_paths _outSearchPaths)
 				COMMAND
 					"/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
 					"-dump"
-				COMMAND "grep" "--before-context=2" "${_bundleID}"
+				COMMAND "grep" "--before-context=2" " ${_bundleID} "
 				COMMAND "grep" "--only-matching" "/.*\\.app"
 				TIMEOUT 10 OUTPUT_VARIABLE _queryResult ERROR_QUIET)
 			string (REPLACE ";" "\\;" _queryResult "${_queryResult}")
