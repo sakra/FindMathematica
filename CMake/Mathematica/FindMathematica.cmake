@@ -336,7 +336,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "1.2.5")
+set (Mathematica_CMAKE_MODULE_VERSION "1.2.6")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -1192,6 +1192,9 @@ macro(_find_mathematica)
 			NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
 		)
 	endif()
+	# Mathematica_ROOT_DIR is initialized to Mathematica_HOST_ROOT_DIR by default
+	# upon cross-compiling Mathematica_ROOT_DIR needs to be manually set to the correct
+	# Mathematica installation folder for the target platform
 	if (NOT EXISTS "${Mathematica_ROOT_DIR}")
 		set (Mathematica_ROOT_DIR ${Mathematica_HOST_ROOT_DIR}
 			CACHE PATH "Mathematica target installation root directory.")
@@ -1536,7 +1539,7 @@ macro(_log_found_variables)
 		if (${Mathematica_FOUND})
 			message (STATUS "Mathematica ${Mathematica_VERSION} found")
 			message (STATUS "Mathematica target root dir ${Mathematica_ROOT_DIR}")
-			message (STATUS "Mathematica host root dir ${Mathematica_ROOT_DIR}")
+			message (STATUS "Mathematica host root dir ${Mathematica_HOST_ROOT_DIR}")
 			message (STATUS "Mathematica kernel ${Mathematica_KERNEL_EXECUTABLE}")
 			message (STATUS "Mathematica frontend ${Mathematica_FRONTEND_EXECUTABLE}")
 			message (STATUS "Mathematica target system ID ${Mathematica_SYSTEM_ID}")

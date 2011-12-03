@@ -1,3 +1,7 @@
+## 1.2.6 (2011-12-03)
+
+* fix debug output
+
 ## 1.2.5 (2011-12-02)
 
 * fix bug in launch services database search code under Mac OS X
