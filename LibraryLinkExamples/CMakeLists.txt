@@ -131,3 +131,5 @@ CODE
 MyFunction::info=\"`1`\"
 Print[fun[1,2]]"
 )
+
+add_convenience_test_target(LibraryLinkTests "LibraryLink")

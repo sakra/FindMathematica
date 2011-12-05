@@ -1,0 +1,91 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[      2635,         82]
+NotebookOptionsPosition[      2235,         64]
+NotebookOutlinePosition[      2591,         80]
+CellTagsIndexPosition[      2548,         77]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{"Needs", "[", "\"\<MUnit`\>\"", "]"}]], "Input",
+ CellChangeTimes->{{3.529128159042341*^9, 3.5291281704430304`*^9}, {
+  3.529128292798725*^9, 3.5291282935908213`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"QuotedForm", "[", "s_", "]"}], ":=", 
+  RowBox[{"\"\<\\\"\>\"", "<>", 
+   RowBox[{"ToString", "[", "s", "]"}], "<>", "\"\<\\\"\>\""}]}]], "Input",
+ CellChangeTimes->{{3.529128188711361*^9, 3.52912819337704*^9}, {
+  3.529128251976328*^9, 3.5291282752076674`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"Test", "[", 
+  RowBox[{
+   RowBox[{"QuotedForm", "[", "\"\<Foo\>\"", "]"}], ",", 
+   "\"\<\\\"Foo\\\"\>\""}], "]"}]], "Input",
+ CellChangeTimes->{{3.529128197654723*^9, 3.52912821752089*^9}, {
+  3.529128281550008*^9, 3.5291283225253468`*^9}, {3.529128441017398*^9, 
+  3.5291284475680532`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"Test", "[", 
+  RowBox[{
+   RowBox[{"QuotedForm", "[", "42", "]"}], ",", "\"\<\\\"42\\\"\>\""}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.529128197654723*^9, 3.52912821752089*^9}, {
+  3.529128281550008*^9, 3.5291283225253468`*^9}, {3.529128441017398*^9, 
+  3.5291284475680532`*^9}, {3.529128750702873*^9, 3.52912876477142*^9}, {
+  3.529128828004924*^9, 3.529128830601372*^9}}],
+
+Cell[BoxData[
+ RowBox[{"Test", "[", 
+  RowBox[{
+   RowBox[{"QuotedForm", "[", 
+    RowBox[{"N", "[", 
+     RowBox[{"Pi", ",", "3"}], "]"}], "]"}], ",", "\"\<\\\"3.14\\\"\>\""}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.529128197654723*^9, 3.52912821752089*^9}, {
+  3.529128281550008*^9, 3.5291283225253468`*^9}, {3.529128441017398*^9, 
+  3.5291284475680532`*^9}, {3.529128750702873*^9, 3.52912876477142*^9}, {
+  3.529128797189969*^9, 3.529128818978294*^9}}]
+},
+WindowSize->{740, 867},
+WindowMargins->{{Automatic, 215}, {29, Automatic}},
+FrontEndVersion->"8.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (October 5, \
+2011)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 190, 3, 27, "Input"],
+Cell[750, 25, 297, 6, 27, "Input"],
+Cell[1050, 33, 317, 7, 27, "Input"],
+Cell[1370, 42, 400, 8, 27, "Input"],
+Cell[1773, 52, 458, 10, 27, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)

@@ -5,7 +5,29 @@ include_directories(${Mathematica_INCLUDE_DIRS})
 set (_TemplateExamples addtwo.tm bitops.tm counter.tm reverse.tm sumalist.tm)
 set (_Targets "")
 
-if (CMAKE_CROSSCOMPILING)
+if (NOT CMAKE_CROSSCOMPILING)
+
+	# add a CMake executable target for each MathLink template based example
+	foreach (_Example ${_TemplateExamples})
+		get_filename_component(_TargetName ${_Example} NAME_WE)
+		if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}" AND
+			EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_TargetName}.c")
+			Mathematica_MathLink_add_executable (${_TargetName} ${_Example} ${_TargetName}.c)
+		elseif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}")
+			Mathematica_MathLink_MPREP_TARGET(${_Example} OUTPUT ${_Example}.c)
+			add_executable (${_TargetName} WIN32 ${_Example}.c)
+			target_link_libraries (${_TargetName} ${Mathematica_MathLink_LIBRARIES})
+		endif()
+		set_target_properties(${_TargetName} PROPERTIES FOLDER "MathLink")
+		list (APPEND _Targets ${_TargetName})
+	endforeach()
+
+	# export mprep header and trailer code for the current target platform
+	Mathematica_MathLink_MPREP_EXPORT_FRAMES(
+		OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/mprep-frames"
+		SYSTEM_ID ${Mathematica_SYSTEM_ID})
+
+else()
 
 	# Processing MathLink templates with mprep upon cross-compiling requires using a
 	# custom mprep header and mprep trailer compatible to the target platform.
@@ -36,29 +58,7 @@ if (CMAKE_CROSSCOMPILING)
 		endforeach()
 	endif()
 
-else()
-
-	# add a CMake executable target for each MathLink template based example
-	foreach (_Example ${_TemplateExamples})
-		get_filename_component(_TargetName ${_Example} NAME_WE)
-		if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}" AND
-			EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_TargetName}.c")
-			Mathematica_MathLink_add_executable (${_TargetName} ${_Example} ${_TargetName}.c)
-		elseif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}")
-			Mathematica_MathLink_MPREP_TARGET(${_Example} OUTPUT ${_Example}.c)
-			add_executable (${_TargetName} WIN32 ${_Example}.c)
-			target_link_libraries (${_TargetName} ${Mathematica_MathLink_LIBRARIES})
-		endif()
-		set_target_properties(${_TargetName} PROPERTIES FOLDER "MathLink")
-		list (APPEND _Targets ${_TargetName})
-	endforeach()
-
-	# export mprep header and trailer code for the current target platform
-	Mathematica_MathLink_MPREP_EXPORT_FRAMES(
-		OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/mprep-frames"
-		SYSTEM_ID ${Mathematica_SYSTEM_ID})
-
-endif(CMAKE_CROSSCOMPILING)
+endif()
 
 set(_Examples factor.c factor2.c factor3.c quotient.c)
 
@@ -173,9 +173,11 @@ INPUT "369")
 do_mathlink_test(factor3
 # Expected output regular expression
 "Integer to factor: \n *List \\[\n *List \\[3 , 2 ], \n *List \\[41 , 1 ]]\n"
-INPUT "369")
+INPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/test_input.txt")
 
 do_mathlink_test(quotient
 # Expected output regular expression
 "Two integers m/n: quotient = 1570\n"
 INPUT "4711/3")
+
+add_convenience_test_target(MathLinkTests "MathLink")

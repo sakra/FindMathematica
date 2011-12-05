@@ -11,27 +11,49 @@ Features
 * Finds *Mathematica* versions from 5.2 to 8.0.
 * Finds include directories and libraries for [MathLink][mtlnk].
 * Finds include directories and libraries for [LibraryLink][wll] (*Mathematica* 8 only).
-* Provides exact version information for *Mathematica*, MathLink and LibraryLink.
+* Finds installation directory and JAR file of [J/Link][jlnk].
+* Finds installation directory of Wolfram MUnit testing package.
+* Provides exact version information for *Mathematica*, MathLink, LibraryLink, J/Link and MUnit.
 * Allows for running *Mathematica* code during CMake configure or build time.
 * Allows for running *Mathematica* code as a pre-link, pre-build or post-build action.
 * Allows for running *Mathematica* code in CMake test targets.
+* Allows for running *Mathematica* MUnit test files and suites as CMake test targets.
 * Supports generating C code from MathLink template files using [mprep][mprp].
 * Supports building dynamic libraries loadable with [LibraryLink][wll] (*Mathematica* 8 only).
 * Supports generating stand-alone C code from *Mathematica* code with [CCodeGenerator][ccg]
   (*Mathematica* 8 only).
 * Provides CMake interface to *Mathematica*'s [Splice][splc] function.
 * Provides CMake interface to *Mathematica*'s [Encode][encd] function.
+* Supports generating *Mathematica* documentation with the DocumentationBuild package.
 * Fully leverages CMake's [cross-compiling][ccrc] support.
 
 Requirements
 ------------
 
-* A Wolfram [*Mathematica*][wmma] product (*Mathematica* 5.2 to 8.0 or
-  Lightweight Grid Manager 7.0 to 8.0).
+* A Wolfram [*Mathematica*][wmma] product (*Mathematica* 5.2 to 8.0 or grid*Mathematica* 7.0 to 8.0).
 * [CMake 2.8.4][cmk] or newer. The executable `cmake` should be on the system path.
 * [Visual Studio C++][vslstd], [MinGW][mingw] or [Cygwin][cgwn] under Windows.
 * [gcc][gcc] (including g++) under Linux.
 * [Xcode][xcdt] developer tools package under Mac OS X.
+
+CMake MUnit support requires the installation of the Wolfram MUnit package. MUnit ships with
+[Wolfram*Workbench*][wwkb] 2.0. The JAR file `com.wolfram.eclipse.testing_2.0.126.jar` in the
+`plugins` subfolder of the Workbench installation folder contains different MUnit package versions
+for *Mathematica* versions 5.2 to 8.0.
+
+Extract the MUnit package version appropriate for your installed *Mathematica* version from the
+JAR file to a directory on the *Mathematica* `$Path` (e.g., `$BaseDirectory/Applications` or
+`$UserBaseDirectory/Applications`). Alternatively you can copy the MUnit package to the
+FindMathematica module directory which is automatically prepended to `$Path` when the *Mathematica*
+kernel is launched through the FindMathematica module.
+
+Generating *Mathematica* documentation with FindMathematica requires the installation of two
+documentation build packages, which also ship with [Wolfram*Workbench*][wwkb] 2.0. The JAR file
+`com.wolfram.eclipse.paclet.develop_2.0.138.jar` in the `plugins` subfolder of the Workbench
+installation folder contains the package folders `DocumentationBuild` and `Transmogrify`. These
+must be copied to a directory on the *Mathematica* `$Path`. The DocumentationBuild package also
+requires the installation of [Apache Ant][aant]. In order for Apache Ant to be found by CMake,
+the environment variable `ANT_HOME` needs to point to Apache Ant's installation directory.
 
 Installation
 ------------
@@ -68,6 +90,8 @@ provided by the FindMathematica module:
 * `LibraryLinkExamples` build all standard LibraryLink example files (e.g., `demo.c`,
   `demo_shared.c`, `demo_string.c`).
 * `CodeGenerationExamples` builds binaries from *Mathematica* compiled functions exported to C.
+* `MUnitExamples` demonstrate how to run *Mathematica* MUnit test files as CMake tests.
+* `DocumentationExamples` demonstrate how to build *Mathematica* documentation.
 
 ### Windows Usage Hints
 
@@ -92,6 +116,10 @@ To build the "Release" configuration and install the built files to your *Mathem
 directory, run:
 
     D:\FindMathematica\build>cmake --build . --target install --config Release
+
+To build the *Mathematica* documentation in notebook format, run:
+
+    D:\FindMathematica\build>cmake --build . --config Debug --target documentation
 
 To build the FindMathematica project with Visual Studio C++ 2010 for 64-bit Windows, open a Visual
 Studio x64 cross tools command prompt in the `FindMathematica` build directory:
@@ -170,6 +198,10 @@ directory:
     $ make test
     $ make install
 
+To build the *Mathematica* documentation in notebook format, run:
+
+    $ make documentation
+
 To build the FindMathematica project with the Xcode project generator, run CMake with the
 following arguments:
 
@@ -201,6 +233,7 @@ Known Issues
 * On Windows Cygwin generated LibraryLink DLLs cannot be loaded by the *Mathematica* 8 kernel.
 * On Windows linking to the `WolframRTL_Static_Minimal.lib` library under Cygwin or MinGW fails.
 
+[aant]:http://ant.apache.org/
 [ccg]:http://reference.wolfram.com/mathematica/CCodeGenerator/guide/CCodeGenerator.html
 [ccrc]:http://www.cmake.org/Wiki/CMake_Cross_Compiling
 [cgwn]:http://www.cygwin.com/
@@ -208,6 +241,7 @@ Known Issues
 [cmtut]:http://www.cmake.org/cmake/help/cmake_tutorial.html
 [encd]:http://reference.wolfram.com/mathematica/ref/Encode.html
 [gcc]:http://gcc.gnu.org/
+[jlnk]:http://www.wolfram.com/solutions/mathlink/jlink/
 [mingw]:http://www.mingw.org/
 [mprp]:http://reference.wolfram.com/mathematica/ref/program/mprep.html
 [mtlnk]:http://reference.wolfram.com/mathematica/guide/MathLinkAPI.html
@@ -215,4 +249,5 @@ Known Issues
 [vslstd]:http://msdn.microsoft.com/vstudio/
 [wll]:http://reference.wolfram.com/mathematica/guide/LibraryLink.html
 [wmma]:http://www.wolfram.com/mathematica/
+[wwkb]:http://www.wolfram.com/products/workbench/
 [xcdt]:http://developer.apple.com/tools/xcode/

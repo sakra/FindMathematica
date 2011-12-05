@@ -61,3 +61,5 @@ endfunction ()
 
 do_mathematica_codegeneration_test(compute "compute 417.15")
 do_mathematica_codegeneration_test(functions "square 416.16\ncube 8489.66")
+
+add_convenience_test_target(CodeGenerationTests "CodeGeneration")

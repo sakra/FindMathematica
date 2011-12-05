@@ -8,12 +8,13 @@
 #  Mathematica_FIND_COMPONENTS - Set of Mathematica components requested upon find_package
 #  Mathematica_FIND_REQUIRED_MathLink- True if REQUIRED option was given for component MathLink
 #  Mathematica_FIND_REQUIRED_WolframLibrary- True if REQUIRED option was given for component WolframLibrary
+#  Mathematica_FIND_REQUIRED_MUnit - True if REQUIRED option was given for component MUnit
 #  Mathematica_USE_STATIC_LIBRARIES - if True prefer static libraries to dynamic libraries (defaults to False)
 #  Mathematica_USE_MINIMAL_LIBRARIES - if True prefer minimal libraries to full libraries (defaults to False)
 #  Mathematica_DEBUG - If True enable debugging output (defaults to False)
 #
 # The module defines the following variables:
-#  Mathematica_CMAKE_MODULE_DIR - directory containing the FindMathematica module
+#  Mathematica_CMAKE_MODULE_DIR - directory containing the FindMathematica module (always prepended to $Path)
 #  Mathematica_CMAKE_MODULE_VERSION - FindMathematica module version
 #  Mathematica_FOUND - True if Mathematica installation and all required components are found
 #  Mathematica_SYSTEM_ID - default build target platform Mathematica SystemID (e.g., "Windows" or "Linux")
@@ -62,43 +63,79 @@
 #  Mathematica_MathLink_VERSION_STRING - MathLink version string given as "interface.revision"
 #  Mathematica_MathLink_VERSION_COUNT - MathLink number of version components (usually 2)
 #
+# The module defines the following variables for component JLink:
+#  Mathematica_JLink_FOUND - True if Mathematica installation has J/Link SDK
+#  Mathematica_JLink_PACKAGE_DIR - J/Link package root directory
+#  Mathematica_JLink_JAR_FILE - Full path to J/Link JAR file
+#  Mathematica_JLink_VERSION - J/Link version number given as "major.minor.patch"
+#  Mathematica_JLink_VERSION_MAJOR - J/Link major version number
+#  Mathematica_JLink_VERSION_MINOR - J/Link minor version number
+#  Mathematica_JLink_VERSION_PATCH - J/Link patch version number
+#  Mathematica_JLink_VERSION_STRING - J/Link version string given as "major.minor.patch"
+#  Mathematica_JLink_VERSION_COUNT - JLink number of version components (usually 3)
+#
+# The module defines the following variables for component MUnit:
+#  Mathematica_MUnit_FOUND - True if Mathematica installation has the Wolfram MUnit package
+#  Mathematica_MUnit_PACKAGE_FILE - MUnit package file
+#  Mathematica_MUnit_PACKAGE_DIR - MUnit package root directory
+#  Mathematica_MUnit_VERSION - MUnit version number given as "major.minor.patch"
+#  Mathematica_MUnit_VERSION_MAJOR - MUnit major version number
+#  Mathematica_MUnit_VERSION_MINOR - MUnit minor version number
+#  Mathematica_MUnit_VERSION_PATCH - MUnit patch version number
+#  Mathematica_MUnit_VERSION_STRING - MUnit version string given as "major.minor.patch"
+#  Mathematica_MUnit_VERSION_COUNT - MUnit number of version components (usually 3)
+#
 # Depending on the Mathematica version and components found, the module defines following functions:
 #
-#  Mathematica_TO_NATIVE_STRING(_inStr _outStr)
+#  Mathematica_TO_NATIVE_STRING(string result)
 #  converts a CMake string to a Mathematica InputForm string usable verbatim in Mathematica code.
 #
-#  Mathematica_TO_NATIVE_PATH(_inPathStr _outPathStr)
-#  converts a CMake file path to a Mathematica InputForm file path for the native platform usable
-#  verbatim in Mathematica code.
-#
-#  Mathematica_TO_NATIVE_LIST(_outList [element ...])
+#  Mathematica_TO_NATIVE_LIST(result [element ...])
 #  converts a CMake list to a Mathematica InputForm list usable verbatim in Mathematica code.
 #
+#  Mathematica_TO_NATIVE_PATH(path result)
+#  converts a CMake file path to a Mathematica InputForm file path for the native platform usable
+#  verbatim in Mathematica code. The input can be a single CMake path or a CMake path list.
+#  If multiple consecutive paths in the CMake path list share the same directory portion, the
+#  function produces a compact Mathematica code representation using Map and ToFileName.
+#
 #  Mathematica_EXECUTE(
-#    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file>
+#    [ CODE <Mathematica stmnt> [ stmnt ...] ]
+#    [ SCRIPT <Mathematica script file> ]
 #    [ SYSTEM_ID systemID ]
+#    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ]
 #    [ TIMEOUT seconds ]
-#    [ RESULT_VARIABLE variable ]
-#    [ OUTPUT_VARIABLE variable ]
-#    [ ERROR_VARIABLE variable ]
-#    [ OUTPUT_FILE file ]
-#    [ ERROR_FILE file ])
+#    [ RESULT_VARIABLE <result variable> ]
+#    [ OUTPUT_VARIABLE <output variable> [ CACHE [DOC "cache documentation string"] ] ]
+#    [ ERROR_VARIABLE <error variable> ]
+#    [ INPUT_FILE <file> ]
+#    [ OUTPUT_FILE <file> ]
+#    [ ERROR_FILE <file> ])
 #  This function executes Mathematica code at CMake configuration time. The Mathematica code can
 #  be either specified as a list of in-line Mathematica statements or as path to a Mathematica
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
+#  If the optional CACHE argument is specified, the captured result of the executed Mathematica
+#  code is added to a cache variable named <output variable>. The execution will not be repeated
+#  unless the variable is cleared or the result is the Mathematica expression $Failed or $Aborted,
+#  or a false CMake constant.
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
 #  E.g., on Windows-x86-64 you can set the SYSTEM_ID option to "Windows" to run the 32-bit kernel
 #  executable. On Linux-x86-64 set the SYSTEM_ID option to "Linux" to run the 32-bit version of the
 #  kernel. On Mac OS X you can set the SYSTEM_ID option to "MacOSX-x86" to execute the 32-bit
 #  portion of the Mathematica kernel universal binary.
+#  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
+#  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
 #  The working directory of the Mathematica child process is set to the CMAKE_CURRENT_BINARY_DIR.
 #  The other options are passed through to the CMake command execute_process.
 #  This function is available if the Mathematica kernel executable has been found.
 #
 #  Mathematica_ADD_CUSTOM_TARGET(
-#    target [ALL]
-#    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file>
+#    targetname [ALL]
+#    [ CODE <Mathematica stmnt> [ stmnt ...] ]
+#    [ SCRIPT <Mathematica script file> ]
+#    [ DEPENDS <depend> [ <depend> ... ] ]
 #    [ SYSTEM_ID systemID ]
+#    [ KERNEL_OPTIONS <flag> [ <flag> ...] ]
 #    [ COMMENT comment ]
 #    [ SOURCES src1 [ src2... ] ])
 #  This function adds a target that executes Mathematica code at build time. The Mathematica code can
@@ -106,13 +143,19 @@
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
 #  The working directory of the Mathematica child process is set to the CMAKE_CURRENT_BINARY_DIR.
+#  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
+#  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
 #  The other options are passed through to the CMake command add_custom_target.
 #  This function is available if the Mathematica kernel executable has been found.
 #
 #  Mathematica_ADD_CUSTOM_COMMAND(
-#    OUTPUT output1 [output2 ...]
-#    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file>
+#    OUTPUT output1 [ output2 ... ]
+#    [ CODE <Mathematica stmnt> [ stmnt ...] ]
+#    [ SCRIPT <Mathematica script file> ]
+#    [ MAIN_DEPENDENCY depend ]
+#    [ DEPENDS [ <depend> ... ] ]
 #    [ SYSTEM_ID systemID ]
+#    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ]
 #    [ DEPENDS [ depends ...] ]
 #    [ COMMENT comment] [APPEND])
 #  This function adds a target that executes Mathematica code to generate output files. The Mathematica
@@ -120,6 +163,8 @@
 #  specified as a list of in-line Mathematica statements or as path to a Mathematica script file.
 #  Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
+#  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
+#  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
 #  The working directory of the Mathematica child process is set to the CMAKE_CURRENT_BINARY_DIR.
 #  The other options are passed through to the CMake command add_custom_command.
 #  This function is available if the Mathematica kernel executable has been found.
@@ -127,13 +172,17 @@
 #  Mathematica_ADD_CUSTOM_COMMAND(
 #    TARGET target
 #    PRE_BUILD | PRE_LINK | POST_BUILD
-#    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file>
+#    [ CODE <Mathematica stmnt> [ stmnt ...] ]
+#    [ SCRIPT <Mathematica script file> ]
 #    [ SYSTEM_ID systemID ]
+#    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ]
 #    [ COMMENT comment ])
 #  This function adds Mathematica code to an existing target which is run before or after building
 #  the target. The Mathematica will only execute when the target itself is built. The Mathematica code
 #  can be either specified as a list of in-line Mathematica statements or as path to a Mathematica
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
+#  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
+#  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
 #  The working directory of the Mathematica child process is set to the CMAKE_CURRENT_BINARY_DIR.
 #  The other options are passed through to the CMake command add_custom_command.
@@ -141,8 +190,11 @@
 #
 #  Mathematica_ADD_TEST(
 #    NAME testname
-#    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file> | COMMAND <command> [arg ...]
+#    [ CODE <Mathematica stmnt> [ stmnt ...] ]
+#    [ SCRIPT <Mathematica script file> ]
+#    [ COMMAND <command> [arg ...] ]
 #    [ SYSTEM_ID systemID ]
+#    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ]
 #    [ INPUT text | INPUT_FILE file ]
 #    [ CONFIGURATIONS [ Debug | Release | ... ] ])
 #  This function adds a CMake test to the project which runs Mathematica code. The code can
@@ -152,8 +204,12 @@
 #  This is necessary for testing LibraryLink dynamic libraries which require an architecture
 #  compatible kernel executable. E.g., on Windows-x86-64 you can set the SYSTEM_ID option to
 #  "Windows" to run the 32-bit kernel executable.
+#  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
+#  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
 #  The string specified by the INPUT option is fed to the Mathematica kernel as standard input.
 #  The INPUT_FILE option specifies a file that is fed to the Mathematica kernel as standard input.
+#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be queried in
+#  the Mathematica code by using the Environment function.
 #  The other options are passed through to the CMake command add_test.
 #  This function is available if the Mathematica kernel executable has been found.
 #
@@ -185,15 +241,17 @@
 #  Mathematica_WolframLibrary_ADD_TEST(
 #    NAME testname
 #    TARGET <WolframLibrary target>
-#    CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file>
+#    [ CODE <Mathematica stmnt> [ stmnt ...] ]
+#    [ SCRIPT <Mathematica script file> ]
 #    [ SYSTEM_ID systemID ]
+#    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ]
 #    [ INPUT text | INPUT_FILE file ]
 #    [ CONFIGURATIONS [ Debug | Release | ... ] ])
 #  This function adds a CMake test which loads the WolframLibrary target library and then runs
 #  Mathematica test code. The Mathematica code specified in a CODE or SCRIPT option is wrapped
 #  into code that loads the WolframLibrary target shared library in the following way:
-#      $LibraryPath=DirectoryName[ <WolframLibrary target> ]
 #      LibraryLoad[ <WolframLibrary target> ]
+#      Print[LibraryLink`$LibraryError]
 #      <Mathematica stmnts> | Get[<Mathematica script file>]
 #      LibraryUnload[ <WolframLibrary target> ]
 #  The string specified by the INPUT option is fed to the Mathematica kernel as standard input.
@@ -201,12 +259,17 @@
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this test.
 #  E.g., on Mac OS X you can set the SYSTEM_ID option to "MacOSX-x86" to execute the 32-bit portion
 #  of the Mathematica kernel universal binary.
+#  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
+#  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
+#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be queried in
+#  the Mathematica code by using the Environment function.
 #  The other options are passed through to the CMake command add_test.
 #  This function is available if the Mathematica kernel executable has been found and if the
 #  Mathematica installation supports LibraryLink (this requires Mathematica 8).
 #
 #  Mathematica_GENERATE_C_CODE(
 #    <Mathematica script file>
+#    [ DEPENDS [ <depend> ... ] ]
 #    [ OUTPUT <C source file> ])
 #  This function uses the CCodeGenerator package to convert Mathematica code to C code that can be
 #  run independently from Mathematica. Upon running the C code only requires the Wolfram Runtime Library
@@ -220,8 +283,9 @@
 #  The function then adds a custom target which runs the Mathematica function CCodeGenerate to produce
 #  a C source file and a C header file that contains the compiled Mathematica functions. The output files
 #  are created in the CMAKE_CURRENT_BINARY_DIR. The names of the source file and the header file are
-#  obtained by adding the extensions .c and .h to the Mathematica script file name respectively. The
-#  OUTPUT option can be used to produce output files with different names.
+#  obtained by adding the extensions .c and .h to the Mathematica script file name respectively.
+#  The DEPENDS option specifies additional files on which the generated C code file depends.
+#  The OUTPUT option can be used to produce output files with different names.
 #  This function is available if the Mathematica kernel executable has been found and if the
 #  Mathematica installation has a Wolfram Runtime Library (this requires Mathematica 8).
 #
@@ -237,17 +301,45 @@
 #  This function is available if the Mathematica kernel executable has been found.
 #
 #  Mathematica_ENCODE(
-#    <input file>
-#    [ OUTPUT <output file> ]
+#    <input file> [ <input file> ... ]
+#    [ OUTPUT <output file> [ <output file> ... ] ]
+#    [ COMMENT comment ]
 #    [ KEY <encoding key> ]
-#    [ MACHINE_ID <machine ID> ])
-#  This function adds a custom target which runs the Mathematica function Encode on the input file.
-#  Encoded files contain only printable ASCII characters (see http://bit.ly/snozeT).
-#  By default the encoded output file is created with the same name in the CMAKE_CURRENT_BINARY_DIR.
-#  The OUTPUT option can be used to produce an output file with a different name. The KEY option
-#  specifies a string to be used as encoding key. The MACHINE_ID option makes the encoded file
-#  readable only on a computer with the given $MachineID.
+#    [ MACHINE_ID <machine ID> ]
+#    [ CHECK_TIMESTAMPS ] )
+#  This function adds a custom target which runs the Mathematica function Encode on the given input files.
+#  Mathematica encoded files contain only printable ASCII characters (see http://bit.ly/snozeT).
+#  By default each encoded output files is created with the same name as the corresponding input file
+#  in CMAKE_CURRENT_BINARY_DIR. The OUTPUT option can be used to create the output files in
+#  a different folder or with different names.
+#  The COMMENT option lets you customize the log message printed when the Encode function is invoked.
+#  The KEY option specifies a string to be used as the encoding key.
+#  The MACHINE_ID option makes the encoded file readable only on a computer with the given $MachineID.
+#  If the CHECK_TIMESTAMPS option is given, the encoded output file is only generated if it does not
+#  yet exist or if the existing one is older than the corresponding input file.
 #  This function is available if the Mathematica kernel executable has been found.
+#
+#  Mathematica_FIND_PACKAGE(
+#    <variable> <package name>
+#    [ DOC "cache documentation string" ]
+#    [ SYSTEM_ID systemID ]
+#    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ])
+#  This function finds the full CMake style path of the Mathematica package file that would get
+#  loaded by the command Get[<package name>]. A cache entry named by <variable> will be created
+#  to store the result. If the full path to the package file is found the result is stored in
+#  the variable and the search will not be repeated unless the variable is cleared. If nothing
+#  is found, the result will be <variable>-NOTFOUND, and the search will be attempted again the
+#  next time Mathematica_FIND_PACKAGE is invoked with the same variable.
+#  The argument after DOC will be used for the documentation string in the cache.
+#  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
+#  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
+#  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
+#  This function is available if the Mathematica kernel executable has been found.
+#
+#  Mathematica_GET_PACKAGE_DIR(
+#    <variable> <package file>)
+#  Given the full path of a file inside a Mathematica package, this function locates the root
+#  directory of the Mathematica package and returns it in <variable>.
 #
 #  Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES(
 #    targetname [ targetname...])
@@ -292,8 +384,10 @@
 #  Mathematica_MathLink_ADD_TEST(
 #    NAME testname
 #    TARGET <MathLink executable target>
-#    [ CODE <Mathematica stmnt> [ stmnt ...] | SCRIPT <Mathematica script file> ]
+#    [ CODE <Mathematica stmnt> [ stmnt ...] ]
+#    [ SCRIPT <Mathematica script file> ]
 #    [ SYSTEM_ID systemID ]
+#    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ]
 #    [ INPUT text | INPUT_FILE file ]
 #    [ CONFIGURATIONS [ Debug | Release | ... ] ])
 #  This function adds a CMake test which runs the MathLink target executable in one of two ways:
@@ -309,6 +403,10 @@
 #  The INPUT_FILE option specifies a file that is fed to the launched executable as standard input.
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this test.
 #  E.g., on Linux-x86-64 set the SYSTEM_ID option to "Linux" to run the 32-bit version of the kernel.
+#  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
+#  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
+#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be queried in
+#  the Mathematica code by using the Environment function.
 #  This function is available if the Mathematica kernel executable has been found and if the
 #  Mathematica installation has a MathLink SDK.
 #
@@ -327,6 +425,79 @@
 #  E.g., exporting the Mathematica 8 mprep frames under 32-bit Windows will produce the files
 #  mprep_header_Windows.txt and mprep_trailer_Windows.txt.
 #  This function is available if the MathLink executable mprep has been found.
+#
+#  Mathematica_MUnit_RESOLVE_SUITE(
+#    result [RELATIVE path]
+#    <Mathematica test file> [ <Mathematica test file> ... ] )
+#  This function resolves TestSuite[{ ... }] expressions in the given MUnit test files (.mt)
+#  into the list of underlying MUnit test files. The test file names are interpreted relative to
+#  the test suite file. By default the function returns the absolute paths of the parsed test
+#  files. If the RELATIVE option is specified, results will be returned as a relative path to
+#  the given path. If a given test file does not contain a TestSuite expression, its path will
+#  be returned instead.
+#  This function is available if the MUnit package and the Mathematica kernel executable have been found.
+#
+#  Mathematica_MUnit_ADD_TEST(
+#    NAME testname
+#    [ CODE <Mathematica stmnt> [ stmnt ...] ]
+#    SCRIPT <Mathematica test script or notebook>
+#    [ LOGGERS <Mathematica stmnt> ]
+#    [ SYSTEM_ID systemID ]
+#    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ])
+#    [ INPUT text | INPUT_FILE file ]
+#    [ TIMEOUT seconds ]
+#    [ CONFIGURATIONS [ Debug | Release | ... ] ])
+#  This function adds a CMake test which runs a Wolfram MUnit test file (.mt) or notebook.
+#  If the test file contains a TestSuite[{ ... }] expression, all the test files that
+#  belong to the suite will be run.
+#  The Mathematica code specified with the CODE option can be used to initialize
+#  the kernel state before the MUnit test file is run.
+#  The CMake test will only succeed if all MUnit test expressions in the test file pass.
+#  The test is run with the Wolfram MUnit test package in the following way:
+#      Needs["MUnit`"]
+#      <Mathematica stmnts>
+#      TestRun[ <Mathematica test script or notebook> ]
+#  The LOGGERS options is passed through to the TestRun function and specifies the list
+#  of MUnit loggers to use (E.g., "{VerbosePrintLogger[]}").
+#  The function requires the Wolfram MUnit package to be available on the Mathematica $Path.
+#  The string specified by the INPUT option is fed to the Mathematica kernel as standard input.
+#  The INPUT_FILE option specifies a file that is fed to the Mathematica kernel as standard input.
+#  The TIMEOUT option will be used to initialize to TIMEOUT property of the generated CMake test.
+#  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this test.
+#  E.g., on 64-bit Windows you can set the SYSTEM_ID option to "Windows" to execute the 32-bit version
+#  of the Mathematica kernel.
+#  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
+#  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
+#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be queried in
+#  the Mathematica code by using the Environment function.
+#  The other options are passed through to the CMake command add_test.
+#  This function is available if the MUnit package and the Mathematica kernel executable have been found.
+#
+#  Mathematica_ADD_DOCUMENTATION(
+#    targetname [ ALL ]
+#    [ DOCUMENTATION_TYPE "Notebook" | "HTML" ]
+#    [ INPUT_DIRECTORY dir ]
+#    [ OUTPUT_DIRECTORY dir ]
+#    [ APPLICATION_NAME name ]
+#    [ LANGUAGE name ]
+#    [ COMMENT comment ]
+#    [ SOURCES src1 [ src2... ] ])
+#  This function adds a CMake target which builds documentation from previously authored Mathematica
+#  documentation notebooks (e.g., guide pages, symbol pages and tutorial pages).
+#  The function requires the Mathematica packages "DocumentationBuild" and "Transmogrify" to be available
+#  on the Mathematica $Path. The documentation is generated by invoking Apache Ant build scripts provided
+#  by the DocumentationBuild package.
+#  The build script looks for documentation notebooks in the given INPUT_DIRECTORY and writes the built
+#  documentation to the given OUTPUT_DIRECTORY. If omitted, INPUT_DIRECTORY defaults to
+#  CMAKE_CURRENT_SOURCE_DIR and OUTPUT_DIRECTORY defaults to CMAKE_CURRENT_BINARY_DIR.
+#  Previously built documentation files in OUTPUT_DIRECTORY are removed before the Ant script is invoked.
+#  DOCUMENTATION_TYPE specifies the type of the built documentation with "Notebook" being the default.
+#  APPLICATION_NAME gives the base name of the generated documentation links (defaults to PROJECT_NAME).
+#  LANGUAGE sets the documentation language (e.g., "Japanese"). It defaults to "English" if omitted.
+#  The other options are passed through to the CMake command add_custom_target.
+#  If the required Mathematica packages or Apache Ant are not found, the generated CMake target will just
+#  generate an empty documentation folder.
+#  This function is available if J/Link and the Mathematica kernel executable have been found.
 
 # we need the CMakeParseArguments module
 cmake_minimum_required(VERSION 2.8.4)
@@ -336,7 +507,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "1.2.6")
+set (Mathematica_CMAKE_MODULE_VERSION "2.0.0")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -785,6 +956,43 @@ macro(_get_host_system_IDs _outSystemIDs)
 	endif()
 endmacro()
 
+macro(_get_supported_systemIDs _version _outSystemIDs)
+	if (NOT "${_version}" VERSION_LESS "8.0")
+		set (${_outSystemIDs}
+			"Windows" "Windows-x86-64"
+			"Linux" "Linux-x86-64"
+			"MacOSX-x86" "MacOSX-x86-64")
+	elseif (NOT "${_version}" VERSION_LESS "7.0")
+		set (${_outSystemIDs}
+			"Windows" "Windows-x86-64"
+			"Linux" "Linux-x86-64"
+			"MacOSX-x86" "MacOSX-x86-64" "MacOSX"
+			"Solaris-SPARC" "Solaris-x86-64")
+	elseif (NOT "${_version}" VERSION_LESS "6.0")
+		set (${_outSystemIDs}
+			"Windows" "Windows-x86-64"
+			"Linux" "Linux-x86-64" "Linux-IA64"
+			"MacOSX-x86" "MacOSX-x86-64" "MacOSX"
+			"Solaris-SPARC" "Solaris-x86-64"
+			"AIX-Power64")
+	elseif (NOT "${_version}" VERSION_LESS "5.2")
+		set (${_outSystemIDs}
+			"Windows" "Windows-x86-64"
+			"Linux" "Linux-x86-64" "Linux-IA64"
+			"MacOSX-x86" "Darwin-PowerPC64" "Darwin"
+			"UltraSPARC" "Solaris-x86-64"
+			"AIX-Power64" "DEC-AXP" "HPUX-PA64" "IRIX-MIPS64")
+	else()
+		# platforms probably supported before 5.2?
+		set (${_outSystemIDs}
+			"Windows"
+			"Linux" "Linux-x86-64" "Linux-IA64" "Linux-PPC"
+			"Darwin"
+			"Solaris" "SGI"
+			"IBM-RISC" "DEC-AXP" "HP-RISC" "IRIX-MIPS32" "IRIX-MIPS64")
+	endif()
+endmacro()
+
 macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 	set (${_outSystemIDs} "")
 	if (${_systemID} STREQUAL "Windows-x86-64")
@@ -1042,23 +1250,18 @@ macro(_setup_mathematica_systemIDs)
 	if (COMMAND Mathematica_EXECUTE)
 		# determine true host system ID which depends on both Mathematica version
 		# and OS variant by running Mathematica kernel
-		if (NOT DEFINED Mathematica_KERNEL_HOST_SYSTEM_ID)
-			Mathematica_EXECUTE(
-				CODE "Print[StandardForm[$SystemID]]"
-				OUTPUT_VARIABLE _KernelSystemID
-				TIMEOUT 5)
-			if (_KernelSystemID)
-				set (Mathematica_KERNEL_HOST_SYSTEM_ID "${_KernelSystemID}"
-					CACHE INTERNAL "Actual Mathematica host system ID." FORCE)
-			else()
-				message (WARNING "Cannot accurately determine Mathematica host system ID.")
-			endif()
-		endif()
-		if (DEFINED Mathematica_KERNEL_HOST_SYSTEM_ID)
-			set (Mathematica_HOST_SYSTEM_ID ${Mathematica_KERNEL_HOST_SYSTEM_ID})
+		Mathematica_EXECUTE(
+			CODE "Print[StandardForm[$SystemID]]"
+			OUTPUT_VARIABLE Mathematica_KERNEL_HOST_SYSTEM_ID
+			CACHE DOC "Actual Mathematica host system ID."
+			TIMEOUT 10)
+		if (NOT Mathematica_KERNEL_HOST_SYSTEM_ID)
+			message (WARNING "Cannot accurately determine Mathematica host system ID.")
 		endif()
 	endif()
-	if (NOT DEFINED Mathematica_HOST_SYSTEM_ID)
+	if (Mathematica_KERNEL_HOST_SYSTEM_ID)
+		set (Mathematica_HOST_SYSTEM_ID ${Mathematica_KERNEL_HOST_SYSTEM_ID})
+	else()
 		# guess host system ID from the environment
 		_get_host_system_IDs(_HostSystemIDs)
 		# default to first ID in _HostSystemIDs
@@ -1071,23 +1274,18 @@ endmacro()
 macro(_setup_mathematica_base_directory)
 	if (COMMAND Mathematica_EXECUTE)
 		# determine true $BaseDirectory
-		if (NOT DEFINED Mathematica_KERNEL_BASE_DIR)
-			Mathematica_EXECUTE(
-				CODE "Print[StandardForm[$BaseDirectory]]"
-				OUTPUT_VARIABLE _KernelBaseDir
-				TIMEOUT 5)
-			if (_KernelBaseDir)
-				set (Mathematica_KERNEL_BASE_DIR "${_KernelBaseDir}"
-					CACHE INTERNAL "Actual Mathematica $BaseDirectory." FORCE)
-			else()
-				message (WARNING "Cannot accurately determine Mathematica $BaseDirectory.")
-			endif()
-		endif()
-		if (DEFINED Mathematica_KERNEL_BASE_DIR)
-			set (Mathematica_BASE_DIR ${Mathematica_KERNEL_BASE_DIR})
+		Mathematica_EXECUTE(
+			CODE "Print[StandardForm[$BaseDirectory]]"
+			OUTPUT_VARIABLE Mathematica_KERNEL_BASE_DIR
+			CACHE DOC "Actual Mathematica $BaseDirectory."
+			TIMEOUT 10)
+		if (NOT Mathematica_KERNEL_BASE_DIR)
+			message (WARNING "Cannot accurately determine Mathematica $BaseDirectory.")
 		endif()
 	endif()
-	if (NOT DEFINED Mathematica_BASE_DIR)
+	if (Mathematica_KERNEL_BASE_DIR)
+		set (Mathematica_BASE_DIR ${Mathematica_KERNEL_BASE_DIR})
+	else ()
 		# guess Mathematica_BASE_DIR from environment
 		# environment variable MATHEMATICA_BASE may override default
 		# $BaseDirectory (see http://bit.ly/r4T4Wd)
@@ -1110,7 +1308,7 @@ macro(_setup_mathematica_base_directory)
 			set (Mathematica_BASE_DIR "/usr/share/Mathematica")
 		endif()
 	endif()
-	if (DEFINED Mathematica_BASE_DIR)
+	if (Mathematica_BASE_DIR)
 		get_filename_component(Mathematica_BASE_DIR "${Mathematica_BASE_DIR}" ABSOLUTE)
 		_to_cmake_path("${Mathematica_BASE_DIR}" Mathematica_BASE_DIR)
 	else()
@@ -1123,23 +1321,18 @@ endmacro()
 macro(_setup_mathematica_userbase_directory)
 	if (COMMAND Mathematica_EXECUTE)
 		# determine true $UserBaseDirectory
-		if (NOT DEFINED Mathematica_KERNEL_USERBASE_DIR)
-			Mathematica_EXECUTE(
-				CODE "Print[StandardForm[$UserBaseDirectory]]"
-				OUTPUT_VARIABLE _KernelUserBaseDir
-				TIMEOUT 5)
-			if (_KernelUserBaseDir)
-				set (Mathematica_KERNEL_USERBASE_DIR "${_KernelUserBaseDir}"
-					CACHE INTERNAL "Actual Mathematica $UserBaseDirectory." FORCE)
-			else()
-				message (WARNING "Cannot accurately determine Mathematica $UserBaseDirectory.")
-			endif()
-		endif()
-		if (DEFINED Mathematica_KERNEL_USERBASE_DIR)
-			set (Mathematica_USERBASE_DIR ${Mathematica_KERNEL_USERBASE_DIR})
+		Mathematica_EXECUTE(
+			CODE "Print[StandardForm[$UserBaseDirectory]]"
+			OUTPUT_VARIABLE Mathematica_KERNEL_USERBASE_DIR
+			CACHE DOC "Actual Mathematica $UserBaseDirectory."
+			TIMEOUT 10)
+		if (NOT Mathematica_KERNEL_USERBASE_DIR)
+			message (WARNING "Cannot accurately determine Mathematica $UserBaseDirectory.")
 		endif()
 	endif()
-	if (NOT DEFINED Mathematica_USERBASE_DIR)
+	if (Mathematica_KERNEL_USERBASE_DIR)
+		set (Mathematica_USERBASE_DIR ${Mathematica_KERNEL_USERBASE_DIR})
+	else ()
 		# guess Mathematica_USERBASE_DIR from environment
 		# environment variable MATHEMATICA_USERBASE may override default
 		# $UserBaseDirectory (see http://bit.ly/r4T4Wd)
@@ -1159,7 +1352,7 @@ macro(_setup_mathematica_userbase_directory)
 			endif()
 		endif()
 	endif()
-	if (DEFINED Mathematica_USERBASE_DIR)
+	if (Mathematica_USERBASE_DIR)
 		get_filename_component(Mathematica_USERBASE_DIR "${Mathematica_USERBASE_DIR}" ABSOLUTE)
 		_to_cmake_path("${Mathematica_USERBASE_DIR}" Mathematica_USERBASE_DIR)
 	else()
@@ -1195,7 +1388,8 @@ macro(_find_mathematica)
 	# Mathematica_ROOT_DIR is initialized to Mathematica_HOST_ROOT_DIR by default
 	# upon cross-compiling Mathematica_ROOT_DIR needs to be manually set to the correct
 	# Mathematica installation folder for the target platform
-	if (NOT EXISTS "${Mathematica_ROOT_DIR}")
+	if (NOT DEFINED Mathematica_ROOT_DIR OR
+		NOT EXISTS "${Mathematica_ROOT_DIR}")
 		set (Mathematica_ROOT_DIR ${Mathematica_HOST_ROOT_DIR}
 			CACHE PATH "Mathematica target installation root directory.")
 	endif()
@@ -1360,33 +1554,66 @@ macro(_find_mathlink)
 	endif()
 endmacro(_find_mathlink)
 
-# internal helper macro to setup version related variables
+# internal macro to find J/Link SDK inside Mathematica installation
+macro(_find_jlink)
+	if (NOT DEFINED Mathematica_ROOT_DIR)
+		_find_mathematica()
+	endif()
+	find_path (Mathematica_JLink_PACKAGE_DIR
+		NAMES "JLink.jar"
+		HINTS
+			"${Mathematica_ROOT_DIR}/SystemFiles/Links/JLink"
+			"${Mathematica_ROOT_DIR}/AddOns/JLink"
+		DOC "J/Link SDK root directory."
+		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
+	)
+	if (EXISTS "${Mathematica_JLink_PACKAGE_DIR}")
+		set (Mathematica_JLink_JAR_FILE "${Mathematica_JLink_PACKAGE_DIR}/JLink.jar")
+	else()
+		set (Mathematica_JLink_JAR_FILE "Mathematica_JLink_JAR_FILE-NOTFOUND")
+	endif()
+endmacro()
+
+# internal macro to find MUnit package
+macro(_find_munit_package)
+	if (COMMAND Mathematica_FIND_PACKAGE)
+		Mathematica_FIND_PACKAGE(Mathematica_MUnit_PACKAGE_FILE "MUnit`MUnit`")
+		# determine enclosing MUnit package directory
+		if (Mathematica_MUnit_PACKAGE_FILE)
+			Mathematica_GET_PACKAGE_DIR(Mathematica_MUnit_PACKAGE_DIR "${Mathematica_MUnit_PACKAGE_FILE}")
+		endif()
+	endif()
+	if (NOT DEFINED Mathematica_MUnit_PACKAGE_DIR)
+		set (Mathematica_MUnit_PACKAGE_DIR "Mathematica_MUnit_PACKAGE_DIR-NOTFOUND")
+	endif()
+endmacro()
+
+# internal helper macro to setup version related variables from existing _VERSION variable
 macro(_setup_package_version_variables _packageName)
 	if (DEFINED ${_packageName}_VERSION)
-		if (${${_packageName}_VERSION} MATCHES "[0-9]+\\.[0-9]+\\.[0-9]+")
-			string (REGEX REPLACE "([0-9]+)\\.[0-9]+\\.[0-9]+" "\\1" ${_packageName}_VERSION_MAJOR
-				${${_packageName}_VERSION})
-			string (REGEX REPLACE "[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" ${_packageName}_VERSION_MINOR
-				${${_packageName}_VERSION})
-			string (REGEX REPLACE "[0-9]+\\.[0-9]+\\.([0-9]+)" "\\1" ${_packageName}_VERSION_PATCH
-				${${_packageName}_VERSION})
-			set (${_packageName}_VERSION_COUNT 3)
-		elseif (${${_packageName}_VERSION} MATCHES "[0-9]+\\.[0-9]+")
-			string (REGEX REPLACE "([0-9]+)\\.[0-9]+" "\\1" ${_packageName}_VERSION_MAJOR
-				${${_packageName}_VERSION})
-			string (REGEX REPLACE "[0-9]+\\.([0-9]+)" "\\1" ${_packageName}_VERSION_MINOR
-				${${_packageName}_VERSION})
-			set (${_packageName}_VERSION_COUNT 2)
+		if (${${_packageName}_VERSION} MATCHES "([0-9]*)\\.?([0-9]*)\\.?([0-9]*)\\.?([0-9]*)")
+			set (${_packageName}_VERSION_MAJOR "${CMAKE_MATCH_1}")
+			set (${_packageName}_VERSION_MINOR "${CMAKE_MATCH_2}")
+			set (${_packageName}_VERSION_PATCH "${CMAKE_MATCH_3}")
+			set (${_packageName}_VERSION_TWEAK "${CMAKE_MATCH_4}")
+			if ("${${_packageName}_VERSION_TWEAK}" MATCHES ".+")
+				set (${_packageName}_VERSION_COUNT 4)
+			elseif ("${${_packageName}_VERSION_PATCH}" MATCHES ".+")
+				set (${_packageName}_VERSION_COUNT 3)
+			elseif ("${${_packageName}_VERSION_MINOR}" MATCHES ".+")
+				set (${_packageName}_VERSION_COUNT 2)
+			elseif ("${${_packageName}_VERSION_MAJOR}" MATCHES ".+")
+				set (${_packageName}_VERSION_COUNT 1)
+			endif()
 		else()
-			set (${_packageName}_VERSION_MAJOR ${${_packageName}_VERSION})
-			set (${_packageName}_VERSION_COUNT 1)
-		endif()
-		if (NOT DEFINED ${_packageName}_VERSION_STRING)
-			set (${_packageName}_VERSION_STRING ${${_packageName}_VERSION})
+			set (${_packageName}_VERSION_COUNT 0)
 		endif()
 	else()
 		set (${_packageName}_VERSION_COUNT 0)
-		set (${_packageName}_VERSION_STRING "")
+		set (${_packageName}_VERSION "")
+	endif()
+	if (NOT DEFINED ${_packageName}_VERSION_STRING)
+		set (${_packageName}_VERSION_STRING ${${_packageName}_VERSION})
 	endif()
 endmacro()
 
@@ -1406,8 +1633,7 @@ macro(_setup_mathematica_version_variables)
 			set (_versionLine "")
 		endif()
 		if (_versionLine)
-			string (REGEX REPLACE "[^0-9]*([0-9]+\\.[0-9]+\\.[0-9]+).*" "\\1"
-				_versionStr "${_versionLine}")
+			string (REGEX REPLACE "[^0-9]*([0-9]+(\\.[0-9]+)*).*" "\\1" _versionStr "${_versionLine}")
 			if (DEFINED _versionStr)
 				set (Mathematica_VERSION "${_versionStr}"
 					CACHE INTERNAL "Mathematica version." FORCE)
@@ -1423,10 +1649,12 @@ macro(_setup_wolframlibrary_version_variables)
 		set (_file "${Mathematica_WolframLibrary_INCLUDE_DIR}/WolframLibrary.h")
 		if (EXISTS "${_file}")
 			file (STRINGS "${_file}" _versionLine REGEX ".*define.*WolframLibraryVersion.*")
-			string (REGEX REPLACE "[^0-9]*([0-9]+).*" "\\1" _versionStr "${_versionLine}")
-			if (DEFINED _versionStr)
-				set (Mathematica_WolframLibrary_VERSION "${_versionStr}"
-					CACHE INTERNAL "WolframLibrary version." FORCE)
+			if (_versionLine)
+				string (REGEX REPLACE "[^0-9]*([0-9]+(\\.[0-9]+)*).*" "\\1" _versionStr "${_versionLine}")
+				if (DEFINED _versionStr)
+					set (Mathematica_WolframLibrary_VERSION "${_versionStr}"
+						CACHE INTERNAL "WolframLibrary version." FORCE)
+				endif()
 			endif()
 		endif()
 	endif()
@@ -1452,6 +1680,44 @@ macro(_setup_mathlink_version_variables)
 		endif()
 	endif()
 	_setup_package_version_variables(Mathematica_MathLink)
+endmacro()
+
+# internal macro to setup J/Link version related variables
+macro(_setup_jlink_version_variables)
+	if (NOT Mathematica_JLink_VERSION)
+		set (_file "${Mathematica_JLink_PACKAGE_DIR}/Source/Java/com/wolfram/jlink/KernelLink.java")
+		if (EXISTS "${_file}")
+			file (STRINGS "${_file}" _versionLine REGEX ".*String.*VERSION.*")
+			string (REGEX REPLACE "[^0-9]*([0-9]+(\\.[0-9]+)*).*" "\\1" _versionStr "${_versionLine}")
+			if (DEFINED _versionStr)
+				set (Mathematica_JLink_VERSION "${_versionStr}"
+					CACHE INTERNAL "J/Link version." FORCE)
+			endif()
+		endif()
+	endif()
+	_setup_package_version_variables(Mathematica_JLink)
+endmacro()
+
+# internal macro to setup MUnit version related variables
+macro(_setup_munit_package_version_variables)
+	if (NOT Mathematica_MUnit_VERSION)
+		set (_file "${Mathematica_MUnit_PACKAGE_FILE}")
+		if (EXISTS "${_file}")
+			file (STRINGS "${_file}" _mUnitVersionNumberLine REGEX ".*`\\$VersionNumber.*")
+			file (STRINGS "${_file}" _mUnitReleaseNumberLine REGEX ".*`\\$ReleaseNumber.*")
+			file (STRINGS "${_file}" _mUnitVersionLine REGEX ".*`\\$Version.*")
+			string (REGEX REPLACE "[^0-9]*([0-9]+\\.[0-9]+).*" "\\1" _mUnitVersionNumber
+				${_mUnitVersionNumberLine})
+			string (REGEX REPLACE "[^0-9]*([0-9]+).*" "\\1" _mUnitReleaseNumber
+				${_mUnitReleaseNumberLine})
+			if (DEFINED _mUnitVersionNumber AND DEFINED _mUnitReleaseNumber)
+				set (_versionStr "${_mUnitVersionNumber}.${_mUnitReleaseNumber}")
+				set (Mathematica_MUnit_VERSION "${_versionStr}"
+					CACHE INTERNAL "MUnit version." FORCE)
+			endif()
+		endif()
+	endif()
+	_setup_package_version_variables(Mathematica_MUnit)
 endmacro()
 
 # internal macro to setup WolframLibrary library related variables
@@ -1527,6 +1793,8 @@ macro(_log_used_variables)
 		message (STATUS "Find components: ${Mathematica_FIND_COMPONENTS}")
 		message (STATUS "Find required MathLink: ${Mathematica_FIND_REQUIRED_MathLink}")
 		message (STATUS "Find required WolframLibrary: ${Mathematica_FIND_REQUIRED_WolframLibrary}")
+		message (STATUS "Find required J/Link: ${Mathematica_FIND_REQUIRED_JLink}")
+		message (STATUS "Find required MUnit: ${Mathematica_FIND_REQUIRED_MUnit}")
 		message (STATUS "Use static libraries: ${Mathematica_USE_STATIC_LIBRARIES}")
 		message (STATUS "Use minimal libraries: ${Mathematica_USE_MINIMAL_LIBRARIES}")
 	endif()
@@ -1574,6 +1842,19 @@ macro(_log_found_variables)
 		else()
 			message (STATUS "MathLink not found")
 		endif()
+		if (${Mathematica_JLink_FOUND})
+			message (STATUS "J/Link ${Mathematica_JLink_VERSION} found")
+			message (STATUS "J/Link package dir ${Mathematica_JLink_PACKAGE_DIR}")
+			message (STATUS "J/Link JAR file ${Mathematica_JLink_JAR_FILE}")
+		else()
+			message (STATUS "J/Link not found")
+		endif()
+		if (${Mathematica_MUnit_FOUND})
+			message (STATUS "MUnit ${Mathematica_MUnit_VERSION} found")
+			message (STATUS "MUnit package dir ${Mathematica_MUnit_PACKAGE_DIR}")
+		else()
+			message (STATUS "MUnit not found")
+		endif()
 	endif()
 	if (APPLE AND DEFINED Mathematica_SYSTEM_IDS AND
 		DEFINED Mathematica_FIND_VERSION_MAJOR AND DEFINED Mathematica_FIND_VERSION_MINOR AND
@@ -1596,7 +1877,9 @@ macro(_get_cache_variables _CacheVariables)
 		Mathematica_ROOT_DIR
 		Mathematica_HOST_ROOT_DIR
 		Mathematica_MathLink_ROOT_DIR
-		Mathematica_MathLink_HOST_ROOT_DIR)
+		Mathematica_MathLink_HOST_ROOT_DIR
+		Mathematica_JLink_PACKAGE_DIR
+		Mathematica_MUnit_PACKAGE_FILE)
 endmacro()
 
 # internal macro returns cache variables that are dependent on the given variable
@@ -1621,21 +1904,26 @@ macro(_get_dependent_cache_variables _var _outDependentVars)
 		list (APPEND ${_outDependentVars}
 			Mathematica_FRONTEND_EXECUTABLE Mathematica_KERNEL_EXECUTABLE
 			Mathematica_KERNEL_HOST_SYSTEM_ID Mathematica_MathLink_HOST_ROOT_DIR
-			Mathematica_KERNEL_BASE_DIR Mathematica_KERNEL_USERBASE_DIR)
+			Mathematica_KERNEL_BASE_DIR Mathematica_KERNEL_USERBASE_DIR
+			Mathematica_JLink_PACKAGE_DIR Mathematica_MUnit_PACKAGE_FILE)
 		_get_dependent_cache_variables("Mathematica_MathLink_HOST_ROOT_DIR" ${_outDependentVars})
+		_get_dependent_cache_variables("Mathematica_JLink_PACKAGE_DIR" ${_outDependentVars})
+		_get_dependent_cache_variables("Mathematica_MUnit_PACKAGE_FILE" ${_outDependentVars})
 	elseif ("_${_var}" STREQUAL "_Mathematica_MathLink_ROOT_DIR")
 		list (APPEND ${_outDependentVars}
 			Mathematica_MathLink_VERSION Mathematica_MathLink_INCLUDE_DIR
 			Mathematica_MathLink_LIBRARY)
 	elseif ("_${_var}" STREQUAL "_Mathematica_MathLink_HOST_ROOT_DIR")
-		list (APPEND ${_outDependentVars}
-			Mathematica_MathLink_MPREP_EXECUTABLE)
+		list (APPEND ${_outDependentVars} Mathematica_MathLink_MPREP_EXECUTABLE)
 	elseif ("_${_var}" STREQUAL "_Mathematica_USE_STATIC_LIBRARIES")
 		list (APPEND ${_outDependentVars}
 			Mathematica_WolframLibrary_LIBRARY Mathematica_MathLink_LIBRARY)
 	elseif ("_${_var}" STREQUAL "_Mathematica_USE_MINIMAL_LIBRARIES")
-		list (APPEND ${_outDependentVars}
-			Mathematica_WolframLibrary_LIBRARY)
+		list (APPEND ${_outDependentVars} Mathematica_WolframLibrary_LIBRARY)
+	elseif ("_${_var}" STREQUAL "Mathematica_JLink_PACKAGE_DIR")
+		list (APPEND ${_outDependentVars} Mathematica_JLink_VERSION)
+	elseif ("_${_var}" STREQUAL "_Mathematica_MUnit_PACKAGE_FILE")
+		list (APPEND ${_outDependentVars} Mathematica_MUnit_VERSION)
 	endif()
 endmacro(_get_dependent_cache_variables)
 
@@ -1701,6 +1989,10 @@ macro(_update_cache)
 		Mathematica_MathLink_INCLUDE_DIR
 		Mathematica_MathLink_LIBRARY
 		Mathematica_MathLink_MPREP_EXECUTABLE
+		Mathematica_KERNEL_HOST_SYSTEM_ID
+		Mathematica_KERNEL_BASE_DIR
+		Mathematica_KERNEL_USERBASE_DIR
+		Mathematica_MUnit_PACKAGE_FILE
 	)
 	_get_cache_variables(_CacheVariables)
 	foreach (_CacheVariable IN LISTS _CacheVariables)
@@ -1726,18 +2018,24 @@ macro(_get_required_vars _component _outVars)
 	elseif (${_component} STREQUAL "WolframLibrary")
 		set (${_outVars}
 			Mathematica_WolframLibrary_LIBRARY Mathematica_WolframLibrary_INCLUDE_DIR)
+	elseif (${_component} STREQUAL "JLink")
+		set (${_outVars}
+			Mathematica_JLink_PACKAGE_DIR Mathematica_JLink_JAR_FILE)
+	elseif (${_component} STREQUAL "MUnit")
+		set (${_outVars}
+			Mathematica_MUnit_PACKAGE_DIR)
 	endif()
 endmacro()
 
 macro(_get_components_to_find _outComponents)
 	if (Mathematica_FIND_VERSION_MAJOR)
 		if (${Mathematica_FIND_VERSION_MAJOR} GREATER 7)
-			list (APPEND ${_outComponents} "MathLink" "WolframLibrary")
+			list (APPEND ${_outComponents} "MathLink" "WolframLibrary" "JLink" "MUnit")
 		else()
-			list (APPEND ${_outComponents} "MathLink")
+			list (APPEND ${_outComponents} "MathLink" "JLink" "MUnit")
 		endif()
 	else()
-		list (APPEND ${_outComponents} "MathLink" "WolframLibrary")
+		list (APPEND ${_outComponents} "MathLink" "WolframLibrary" "JLink" "MUnit")
 	endif()
 	list (APPEND ${_outComponents} ${Mathematica_FIND_COMPONENTS})
 	list (REMOVE_DUPLICATES ${_outComponents})
@@ -1781,6 +2079,12 @@ macro(_find_components)
 			_find_wolframlibrary()
 			_setup_wolframlibrary_version_variables()
 			_setup_wolframlibrary_library_variables()
+		elseif (${_component} STREQUAL "JLink")
+			_find_jlink()
+			_setup_jlink_version_variables()
+		elseif (${_component} STREQUAL "MUnit")
+			_find_munit_package()
+			_setup_munit_package_version_variables()
 		else()
 			message (FATAL_ERROR "Unknown Mathematica component ${_component}")
 		endif()
@@ -1817,16 +2121,12 @@ endmacro()
 
 # FindMathematica "main" starts here
 _log_used_variables()
-_setup_mathematica_base_directory()
-_setup_mathematica_userbase_directory()
 _setup_mathematica_systemIDs()
 _cleanup_cache()
+_setup_mathematica_base_directory()
+_setup_mathematica_userbase_directory()
 _find_mathematica()
-_find_components()
 _setup_mathematica_version_variables()
-_update_cache()
-_setup_found_variables()
-_log_found_variables()
 
 # now setup public functions based on found components
 
@@ -1835,13 +2135,6 @@ function(Mathematica_TO_NATIVE_STRING _inStr _outStr)
 	string (REPLACE "\\" "\\\\" _str ${_inStr})
 	string (REPLACE "\"" "\\\"" _str ${_str})
 	set (${_outStr} "\"${_str}\"" PARENT_SCOPE)
-endfunction()
-
-# public function to convert a CMake path to a Mathematica path
-function (Mathematica_TO_NATIVE_PATH _inPathStr _outPathStr)
-	_to_native_path("${_inPathStr}" _path)
-	Mathematica_TO_NATIVE_STRING("${_path}" _path)
-	set (${_outPathStr} "${_path}" PARENT_SCOPE)
 endfunction()
 
 # public function to convert a CMake list to a Mathematica list
@@ -1856,6 +2149,54 @@ function (Mathematica_TO_NATIVE_LIST _outList)
 		endif()
 	endforeach()
 	set (${_outList} "${_list}}" PARENT_SCOPE)
+endfunction()
+
+# public function to convert CMake paths to Mathematica paths
+function (Mathematica_TO_NATIVE_PATH _inPathStr _outPathStr)
+	list (LENGTH _inPathStr _len)
+	if (_len EQUAL 0)
+		set (${_outPathStr} "" PARENT_SCOPE)
+	elseif (_len EQUAL 1)
+		_to_native_path("${_inPathStr}" _nativePath)
+		Mathematica_TO_NATIVE_STRING("${_nativePath}" _pathMma)
+		set (${_outPathStr} "${_pathMma}" PARENT_SCOPE)
+	else()
+		set (_lastDir "")
+		set (_names "")
+		set (_nativePathsMma "")
+		set (_hasMapPaths FALSE)
+		set (_requiresList FALSE)
+		foreach (_path IN LISTS _inPathStr ITEMS "")
+			get_filename_component(_dir "${_path}" PATH)
+			get_filename_component(_name "${_path}" NAME)
+			if (_lastDir AND NOT "${_dir}" STREQUAL "${_lastDir}")
+				list (LENGTH _names _nameCount)
+				if (_nameCount GREATER 1)
+					Mathematica_TO_NATIVE_PATH("${_lastDir}" _commonDirMma)
+					Mathematica_TO_NATIVE_LIST(_namesMma ${_names})
+					set (_code "Map[ToFileName[${_commonDirMma},#]&,${_namesMma}]")
+					set (_hasMapPaths TRUE)
+				else()
+					Mathematica_TO_NATIVE_PATH("${_lastDir}/${_names}" _code)
+				endif()
+				if (_nativePathsMma)
+					set (_nativePathsMma "${_nativePathsMma},${_code}")
+					set (_requiresList TRUE)
+				else()
+					set (_nativePathsMma "${_code}")
+				endif()
+				set (_names "")
+			endif()
+			set (_lastDir "${_dir}")
+			list (APPEND _names "${_name}")
+		endforeach()
+		if (_requiresList AND _hasMapPaths)
+			set (_nativePathsMma "Flatten[{${_nativePathsMma}}]")
+		elseif (_requiresList)
+			set (_nativePathsMma "{${_nativePathsMma}}")
+		endif()
+		set (${_outPathStr} "${_nativePathsMma}" PARENT_SCOPE)
+	endif()
 endfunction()
 
 # public function to initialize Mathematica test properties
@@ -1894,7 +2235,7 @@ function (Mathematica_SET_TESTS_PROPERTIES)
 endfunction(Mathematica_SET_TESTS_PROPERTIES)
 
 # internal macro to return test driver for host platform
-macro(_add_test_driver _cmdVar _inputVar _inputFileVar)
+function(_add_test_driver _cmdVar _testName _inputVar _inputFileVar)
 	if (CMAKE_HOST_UNIX)
 		set (_testDriver "${Mathematica_CMAKE_MODULE_DIR}/FindMathematicaTestDriver.sh")
 	elseif (CMAKE_HOST_WIN32)
@@ -1906,14 +2247,16 @@ macro(_add_test_driver _cmdVar _inputVar _inputFileVar)
 	else()
 		_to_native_path("${_testDriver}" _testDriver)
 	endif()
+	list (APPEND ${_cmdVar} "${_testDriver}" "${_testName}" "$<CONFIGURATION>")
 	if (DEFINED ${_inputVar})
-		list (APPEND ${_cmdVar} "${_testDriver}" "input" "${${_inputVar}}")
+		list (APPEND ${_cmdVar} "input" "${${_inputVar}}")
 	elseif (DEFINED ${_inputFileVar})
-		list (APPEND ${_cmdVar} "${_testDriver}" "inputfile" "${${_inputFileVar}}")
+		list (APPEND ${_cmdVar} "inputfile" "${${_inputFileVar}}")
 	else()
-		list (APPEND ${_cmdVar} "${_testDriver}" "noinput")
+		list (APPEND ${_cmdVar} "noinput")
 	endif()
-endmacro()
+	set (${_cmdVar} ${${_cmdVar}} PARENT_SCOPE)
+endfunction()
 
 # internal macro to add platform specific executable launch prefix
 macro (_add_launch_prefix _cmdVar _systemIDVar)
@@ -1939,7 +2282,7 @@ macro (_add_launch_prefix _cmdVar _systemIDVar)
 	endif()
 endmacro()
 
-macro(_add_kernel_launch_code _cmdVar _systemIDVar)
+macro(_add_kernel_launch_code _cmdVar _systemIDVar _kernelOptionsVar)
 	if (CMAKE_HOST_WIN32 OR CYGWIN)
 		set (_kernelExecutable "${Mathematica_KERNEL_EXECUTABLE}")
 		if (DEFINED ${_systemIDVar})
@@ -1975,15 +2318,22 @@ macro(_add_kernel_launch_code _cmdVar _systemIDVar)
 	else()
 		message (FATAL_ERROR "Unsupported host platform ${CMAKE_HOST_SYSTEM_NAME}")
 	endif()
+	if (DEFINED ${_kernelOptionsVar})
+		list (APPEND ${_cmdVar} ${${_kernelOptionsVar}})
+	else()
+		list (APPEND ${_cmdVar} "-noinit" "-noprompt")
+	endif()
 endmacro(_add_kernel_launch_code)
 
 # internal macro to translate CODE or SCRIPT option to Mathematica launch command
-macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar)
-	_add_kernel_launch_code(${_cmdVar} ${_systemIDVar})
+macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar _kernelOptionsVar)
+	_add_kernel_launch_code(${_cmdVar} ${_systemIDVar} ${_kernelOptionsVar})
+	Mathematica_TO_NATIVE_PATH("${Mathematica_CMAKE_MODULE_DIR}" _cmakeModuleDirMma)
 	if (DEFINED ${_codeVar})
 		# collect all CODE sections into a single CompoundExpression
 		set (_codeSegments "")
-		set (_currentCodeSegment "")
+		# always prepend the FindMathematica module directory to the Mathematica $Path
+		set (_currentCodeSegment "PrependTo[$Path,${_cmakeModuleDirMma}]")
 		set (_currentCodeSegmentCompound False)
 		foreach (_codeSegment IN LISTS ${_codeVar} ITEMS "Quit[]")
 			if ("${_codeSegment}" MATCHES "\n")
@@ -2017,8 +2367,13 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar)
 				set (_currentCodeSegmentCompound False)
 			endif()
 		endforeach()
-		list (APPEND ${_cmdVar} "-noprompt" ${_codeSegments})
-	elseif (DEFINED ${_scriptVar})
+		list (APPEND ${_cmdVar} ${_codeSegments})
+	endif()
+	if (DEFINED ${_scriptVar})
+		# always prepend the FindMathematica module directory to the Mathematica $Path
+		if (NOT DEFINED ${_codeVar})
+			list (APPEND ${_cmdVar} "-run" "PrependTo[$Path,${_cmakeModuleDirMma}]" )
+		endif()
 		if (DEFINED Mathematica_VERSION AND
 			NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
 			# script option is supported since Mathematica 8
@@ -2027,7 +2382,7 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar)
 		else()
 			# for versions earlier than 8 use Get to load script
 			Mathematica_TO_NATIVE_PATH("${${_scriptVar}}" _scriptMma)
-			list (APPEND ${_cmdVar} "-noprompt" "-run" "Get[${_scriptMma}]" "-run" "Quit[]")
+			list (APPEND ${_cmdVar} "-run" "Get[${_scriptMma}]" "-run" "Quit[]")
 		endif()
 	endif()
 endmacro(_add_script_or_code)
@@ -2037,22 +2392,30 @@ if (Mathematica_KERNEL_EXECUTABLE)
 # public function for executing Mathematica code file at configuration time
 function (Mathematica_EXECUTE)
 	set(_options "")
+	list(APPEND _options CACHE)
 	set(_oneValueArgs
 		SCRIPT SYSTEM_ID
-		OUTPUT_FILE ERROR_FILE
+		INPUT_FILE OUTPUT_FILE ERROR_FILE
 		RESULT_VARIABLE OUTPUT_VARIABLE ERROR_VARIABLE
-		TIMEOUT)
-	set(_multiValueArgs CODE)
+		TIMEOUT DOC)
+	set(_multiValueArgs CODE KERNEL_OPTIONS)
 	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
 	if(_option_UNPARSED_ARGUMENTS)
 		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
 	elseif (NOT _option_CODE AND NOT _option_SCRIPT)
 		message (FATAL_ERROR "Either the keyword CODE or SCRIPT must be present.")
-	elseif (_option_CODE AND _option_SCRIPT)
-		message (FATAL_ERROR "Keywords CODE and SCRIPT are mutually exclusive.")
+	endif()
+	if (_option_CACHE AND _option_OUTPUT_VARIABLE)
+		if (DEFINED "${_option_OUTPUT_VARIABLE}")
+			set (_var "${${_option_OUTPUT_VARIABLE}}")
+			if (_var AND NOT "${_var}" MATCHES "\\$Failed|\\$Aborted")
+				# use result from cache if is not a false constant, $Failed or $Aborted
+				return()
+			endif()
+		endif()
 	endif()
 	set (_cmd COMMAND)
-	_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID)
+	_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
 	if (_option_CODE)
 		list (APPEND _cmd OUTPUT_STRIP_TRAILING_WHITESPACE)
 		list (APPEND _cmd ERROR_STRIP_TRAILING_WHITESPACE)
@@ -2063,7 +2426,7 @@ function (Mathematica_EXECUTE)
 			if (_key MATCHES "_VARIABLE$")
 				list (APPEND _cmd ${_key} "${${_value}}")
 				list (APPEND _variables "${${_value}}")
-			elseif (NOT _key MATCHES "SCRIPT|CODE|SYSTEM_ID")
+			elseif (NOT _key MATCHES "SCRIPT|CODE|SYSTEM_ID|DOC")
 				list (APPEND _cmd ${_key} "${${_value}}")
 			endif()
 		endif()
@@ -2073,6 +2436,14 @@ function (Mathematica_EXECUTE)
 		message (STATUS "execute_process: ${_cmd}")
 	endif()
 	execute_process (${_cmd})
+	# put result to cache
+	if (_option_CACHE AND _option_OUTPUT_VARIABLE)
+		if (NOT _option_DOC)
+			set (_option_DOC "Mathematica_EXECUTE kernel output.")
+		endif()
+		set (${_option_OUTPUT_VARIABLE}
+			"${${_option_OUTPUT_VARIABLE}}" CACHE STRING "${_option_DOC}" FORCE)
+	endif()
 	# propagate variables to parent scope
 	foreach (_var IN LISTS _variables)
 		if (DEFINED ${_var})
@@ -2081,38 +2452,34 @@ function (Mathematica_EXECUTE)
 	endforeach()
 endfunction(Mathematica_EXECUTE)
 
-# re-compute system IDs and base directories, now that we can query the kernel
-_setup_mathematica_systemIDs()
-_setup_mathematica_base_directory()
-_setup_mathematica_userbase_directory()
-
 # public function for executing Mathematica code at build time as a standalone target
 function (Mathematica_ADD_CUSTOM_TARGET _targetName)
 	set(_options ALL)
 	set(_oneValueArgs SCRIPT COMMENT SYSTEM_ID)
-	set(_multiValueArgs CODE SOURCES)
+	set(_multiValueArgs CODE DEPENDS SOURCES KERNEL_OPTIONS)
 	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
 	if(_option_UNPARSED_ARGUMENTS)
 		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
 	elseif (NOT _option_CODE AND NOT _option_SCRIPT)
 		message (FATAL_ERROR "Either the keyword CODE or SCRIPT must be present.")
-	elseif (_option_CODE AND _option_SCRIPT)
-		message (FATAL_ERROR "Keywords CODE and SCRIPT are mutually exclusive.")
 	endif()
 	set (_cmd "${_targetName}")
 	if (_option_ALL)
 		list(APPEND _cmd "ALL")
 	endif()
 	list(APPEND _cmd COMMAND)
-	_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID)
+	_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
 	if (_option_SCRIPT)
-		list (APPEND _cmd DEPENDS "${_option_SCRIPT}")
+		list (APPEND _option_DEPENDS ${_option_SCRIPT})
+	endif()
+	if (_option_DEPENDS)
+		list (APPEND _cmd DEPENDS ${_option_DEPENDS})
 	endif()
 	if (_option_COMMENT)
-		list(APPEND _cmd COMMENT "${_option_COMMENT}")
+		list(APPEND _cmd COMMENT ${_option_COMMENT})
 	endif()
 	if (_option_SOURCES)
-		list(APPEND _cmd SOURCES "${_option_SOURCES}")
+		list(APPEND _cmd SOURCES ${_option_SOURCES})
 	endif()
 	list (APPEND _cmd WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" VERBATIM)
 	if (Mathematica_DEBUG)
@@ -2124,25 +2491,23 @@ endfunction(Mathematica_ADD_CUSTOM_TARGET)
 # public function for executing Mathematica code at build time to produce output files
 function (Mathematica_ADD_CUSTOM_COMMAND)
 	set(_options PRE_BUILD PRE_LINK POST_BUILD APPEND)
-	set(_oneValueArgs SCRIPT COMMENT TARGET SYSTEM_ID)
-	set(_multiValueArgs CODE OUTPUT DEPENDS)
+	set(_oneValueArgs SCRIPT COMMENT MAIN_DEPENDENCY TARGET SYSTEM_ID)
+	set(_multiValueArgs CODE OUTPUT DEPENDS KERNEL_OPTIONS)
 	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
 	if(_option_UNPARSED_ARGUMENTS)
 		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
 	elseif (NOT _option_CODE AND NOT _option_SCRIPT)
 		message (FATAL_ERROR "Either the keyword CODE or SCRIPT must be present.")
-	elseif (_option_CODE AND _option_SCRIPT)
-		message (FATAL_ERROR "Keywords CODE and SCRIPT are mutually exclusive.")
 	elseif (NOT _option_OUTPUT AND NOT _option_TARGET)
 		message (FATAL_ERROR "Either the keyword OUTPUT or TARGET must be present.")
 	elseif (_option_OUTPUT AND _option_TARGET)
 		message (FATAL_ERROR "Keywords OUTPUT and TARGET are mutually exclusive.")
 	endif()
 	if (_option_OUTPUT)
-		set (_cmd OUTPUT "${_option_OUTPUT}")
+		set (_cmd OUTPUT ${_option_OUTPUT})
 	endif()
 	if (_option_TARGET)
-		set (_cmd TARGET "${_option_TARGET}")
+		set (_cmd TARGET ${_option_TARGET})
 	endif()
 	if (_option_PRE_BUILD)
 		list(APPEND _cmd PRE_BUILD)
@@ -2154,12 +2519,18 @@ function (Mathematica_ADD_CUSTOM_COMMAND)
 		list(APPEND _cmd POST_BUILD)
 	endif()
 	list(APPEND _cmd COMMAND)
-	_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID)
+	_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	if (_option_MAIN_DEPENDENCY)
+		list(APPEND _cmd MAIN_DEPENDENCY ${_option_MAIN_DEPENDENCY})
+	endif()
+	if (_option_SCRIPT AND _option_OUTPUT)
+		list (APPEND _option_DEPENDS ${_option_SCRIPT})
+	endif()
 	if (_option_DEPENDS)
-		list(APPEND _cmd DEPENDS "${_option_DEPENDS}")
+		list(APPEND _cmd DEPENDS ${_option_DEPENDS})
 	endif()
 	if (_option_COMMENT)
-		list(APPEND _cmd COMMENT "${_option_COMMENT}")
+		list(APPEND _cmd COMMENT ${_option_COMMENT})
 	endif()
 	list (APPEND _cmd WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" VERBATIM)
 	if (_option_APPEND)
@@ -2175,7 +2546,7 @@ endfunction(Mathematica_ADD_CUSTOM_COMMAND)
 function (Mathematica_ADD_TEST)
 	set(_options "")
 	set(_oneValueArgs NAME SCRIPT INPUT INPUT_FILE SYSTEM_ID)
-	set(_multiValueArgs CODE CONFIGURATIONS COMMAND)
+	set(_multiValueArgs CODE CONFIGURATIONS COMMAND KERNEL_OPTIONS)
 	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
 	if(_option_UNPARSED_ARGUMENTS)
 		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
@@ -2183,16 +2554,14 @@ function (Mathematica_ADD_TEST)
 		message (FATAL_ERROR "Mandatory parameter NAME is missing.")
 	elseif (NOT _option_CODE AND NOT _option_SCRIPT AND NOT _option_COMMAND)
 		message (FATAL_ERROR "Either the keyword CODE, SCRIPT or COMMAND must be present.")
-	elseif (_option_CODE AND _option_SCRIPT)
-		message (FATAL_ERROR "Keywords CODE and SCRIPT are mutually exclusive.")
 	endif()
 	set (_cmd NAME "${_option_NAME}" COMMAND)
-	_add_test_driver(_cmd _option_INPUT _option_INPUT_FILE)
+	_add_test_driver(_cmd "${_option_NAME}" _option_INPUT _option_INPUT_FILE)
 	if (_option_COMMAND)
 		_add_launch_prefix(_cmd _option_SYSTEM_ID)
 		list (APPEND _cmd ${_option_COMMAND})
 	else()
-		_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID)
+		_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
 	endif()
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
@@ -2244,65 +2613,184 @@ function (Mathematica_SPLICE_C_CODE _templateFile)
 	Mathematica_TO_NATIVE_PATH("${_outputFileAbs}" _outputFileMma)
 	set (_msg "Splicing Mathematica code in ${_templateFileName} to ${_outputFileName}")
 	Mathematica_ADD_CUSTOM_COMMAND(
-		OUTPUT "${_outputFileAbs}"
 		CODE "Splice[${_templateFileMma}, ${_outputFileMma}, FormatType->${_formatType}]"
+		OUTPUT "${_outputFileAbs}"
 		DEPENDS "${_templateFileAbs}"
 		COMMENT ${_msg})
 	set_source_files_properties(${_outputFileAbs} PROPERTIES GENERATED TRUE LABELS "Mathematica")
 endfunction(Mathematica_SPLICE_C_CODE)
 
-# public function to add target that runs Mathematica Encode function on input file
-function (Mathematica_ENCODE _inputFile)
-	get_filename_component(_inputFileName ${_inputFile} NAME)
-	get_filename_component(_inputFileNameAbs ${_inputFile} ABSOLUTE)
+# public function to add target that runs Mathematica Encode function on input files
+function (Mathematica_ENCODE)
+	set(_options "CHECK_TIMESTAMPS")
+	set(_oneValueArgs "COMMENT" "KEY" "MACHINE_ID")
+	set(_multiValueArgs "OUTPUT")
+	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
+	set (_inputFiles ${_option_UNPARSED_ARGUMENTS})
+	list (LENGTH _inputFiles _inputFileCount)
+	if (${_inputFileCount} EQUAL 0)
+		message (WARNING "No input files to encode given.")
+		return()
+	endif()
+	if (_option_OUTPUT)
+		set (_outputFiles ${_option_OUTPUT})
+	else()
+		# no output option given, write encoded files to CMAKE_CURRENT_BINARY_DIR
+		set (_outputFiles ${CMAKE_CURRENT_BINARY_DIR})
+	endif()
+	list (LENGTH _outputFiles _outputFileCount)
+	if (${_outputFileCount} EQUAL 1 AND ${_inputFileCount} GREATER 1 AND IS_DIRECTORY "${_outputFiles}")
+		# OUTPUT option is a single existing directory, write encoded files to it
+		set (_outputDir "${_outputFiles}")
+		math(EXPR _lastIndex "${_inputFileCount} - 2")
+		foreach(_index RANGE ${_lastIndex})
+			list (APPEND _outputFiles "${_outputDir}")
+		endforeach()
+		set (_outputFileCount ${_inputFileCount})
+	endif()
+	set (_outputFilesAbs "")
+	set (_inputFilesAbs "")
+	if (${_outputFileCount} EQUAL ${_inputFileCount})
+		math(EXPR _lastIndex "${_inputFileCount} - 1")
+		foreach(_index RANGE ${_lastIndex})
+			list (GET _inputFiles ${_index} _inputFile)
+			get_filename_component(_inputFileAbs ${_inputFile} ABSOLUTE)
+			list (APPEND _inputFilesAbs "${_inputFileAbs}")
+			list (GET _outputFiles ${_index} _outputFile)
+			if (IS_DIRECTORY "${_outputFile}")
+				get_filename_component(_inputFileName "${_inputFile}" NAME)
+				list (APPEND _outputFilesAbs "${_outputFile}/${_inputFileName}")
+			elseif (IS_ABSOLUTE "${_outputFile}")
+				list (APPEND _outputFilesAbs "${_outputFile}")
+			else()
+				list (APPEND _outputFilesAbs "${CMAKE_CURRENT_BINARY_DIR}/${_outputFile}")
+			endif()
+		endforeach()
+	else()
+		# OUTPUT option must have exactly one entry for each input file
+		message (FATAL_ERROR
+			"Number of output files (${_outputFileCount}) does not match number of input files (${_inputFileCount}).")
+	endif()
+	Mathematica_TO_NATIVE_PATH("${_inputFilesAbs}" _inputFilesAbsMma)
+	Mathematica_TO_NATIVE_PATH("${_outputFilesAbs}" _outputFilesAbsMma)
+	set (_cmdOptionsMma "")
+	if (_option_KEY)
+		Mathematica_TO_NATIVE_STRING("${_option_KEY}" _keyMma)
+		set (_cmdOptionsMma "${_cmdOptionsMma},${_keyMma}")
+	endif()
+	if (_option_MACHINE_ID)
+		Mathematica_TO_NATIVE_STRING("${_option_MACHINE_ID}" _machineIDMma)
+		set (_cmdOptionsMma "${_cmdOptionsMma},MachineID->${_machineIDMma}")
+	endif()
+	if (_option_CHECK_TIMESTAMPS)
+		set (_encodeFunc "If[FileType[#2]==None||OrderedQ[{FileDate[#2],FileDate[#1]}],Encode[#1,#2${_cmdOptionsMma}]]&")
+	else()
+		set (_encodeFunc "Encode[#1,#2${_cmdOptionsMma}]&")
+	endif()
+	if (${_inputFileCount} EQUAL 1)
+		set (_func "Apply")
+	else()
+		set (_func "MapThread")
+	endif()
+	set (_cmd "${_func}[${_encodeFunc},{${_inputFilesAbsMma},${_outputFilesAbsMma}}]")
+	if (NOT _option_COMMENT)
+		if (${_inputFileCount} EQUAL 1)
+			set (_option_COMMENT "Encoding ${_inputFiles}")
+		else()
+			set (_option_COMMENT "Encoding ${_inputFileCount} Mathematica files")
+		endif()
+	endif()
+	Mathematica_ADD_CUSTOM_COMMAND(
+		CODE ${_cmd}
+		OUTPUT ${_outputFilesAbs}
+		DEPENDS ${_inputFilesAbs}
+		COMMENT "${_option_COMMENT}")
+	set_source_files_properties(${_outputFilesAbs} PROPERTIES GENERATED TRUE LABELS "Mathematica")
+endfunction(Mathematica_ENCODE)
+
+# public function to find Mathematica package
+function (Mathematica_FIND_PACKAGE _var _packageName)
 	set(_options "")
-	set(_oneValueArgs "OUTPUT" "KEY" "MACHINE_ID")
-	set(_multiValueArgs "")
+	set(_oneValueArgs DOC SYSTEM_ID)
+	set(_multiValueArgs KERNEL_OPTIONS)
 	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
 	if(_option_UNPARSED_ARGUMENTS)
 		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
 	endif()
-	if (_option_OUTPUT)
-		if (IS_ABSOLUTE ${_option_OUTPUT})
-			set (_outputFileAbs "${_option_OUTPUT}")
-		else()
-			set (_outputFileAbs "${CMAKE_CURRENT_BINARY_DIR}/${_option_OUTPUT}")
-		endif()
+	# determine MUnit package directory
+	Mathematica_TO_NATIVE_STRING("${_packageName}" _packageNameMma)
+	if (NOT DEFINED Mathematica_VERSION OR
+		"${Mathematica_VERSION}" VERSION_LESS "7.0")
+		# default to using FileNames function
+		set (_findPackage "Print[StandardForm[Check[First[FileNames[ContextToFileName[${_packageNameMma}],$Path]],$Failed]]]")
 	else()
-		set (_outputFileAbs "${CMAKE_CURRENT_BINARY_DIR}/${_inputFileName}")
+		# function FindFile available since Mathematica 7
+		set (_findPackage "Print[StandardForm[FindFile[${_packageNameMma}]]]")
 	endif()
-	get_filename_component(_outputFileName ${_outputFileAbs} NAME)
-	Mathematica_TO_NATIVE_PATH("${_inputFileNameAbs}" _inputFileMma)
-	Mathematica_TO_NATIVE_PATH("${_outputFileAbs}" _outputFileMma)
-	if ("${_inputFileName}" STREQUAL "${_outputFileName}")
-		set (_msg "Encoding ${_inputFileName}")
+	if (NOT _option_DOC)
+		set (_option_DOC "Mathematica package file path.")
+	endif()
+	set (_cmd
+		CODE "${_findPackage}"
+		OUTPUT_VARIABLE ${_var}
+		CACHE DOC "${_option_DOC}"
+		TIMEOUT 10)
+	if (_option_KERNEL_FLAGS)
+		list (APPEND _cmd KERNEL_OPTIONS ${_option_KERNEL_FLAGS})
+	endif()
+	if (_option_SYSTEM_ID)
+		list (APPEND _cmd SYSTEM_ID ${_option_SYSTEM_ID})
+	endif()
+	# if package file variable already defined, verify package file existence
+	if (DEFINED ${_var} AND NOT EXISTS "${${_var}}")
+		unset(${_var} CACHE)
+		unset(${_var})
+	endif()
+	Mathematica_EXECUTE(${_cmd})
+	# verify package file existence
+	if (DEFINED ${_var} AND EXISTS "${${_var}}")
+		_to_cmake_path("${${_var}}" ${_var})
 	else()
-		set (_msg "Encoding ${_inputFileName} to ${_outputFileName}")
+		set (${_var} "${_var}-NOTFOUND")
 	endif()
-	set (_code "Encode[ ${_inputFileMma}, ${_outputFileMma}")
-	if (_option_KEY)
-		Mathematica_TO_NATIVE_STRING("${_option_KEY}" _keyMma)
-		set (_code "${_code}, ${_keyMma}")
+	set (${_var} "${${_var}}" CACHE FILEPATH "${_option_DOC}" FORCE)
+	set (${_var} "${${_var}}" PARENT_SCOPE)
+endfunction()
+
+# public function to get root Mathematica package directory from a package file
+function (Mathematica_GET_PACKAGE_DIR _var _packageFile)
+	_get_supported_systemIDs("${Mathematica_VERSION}" _intermediateDirs)
+	list (APPEND _intermediateDirs
+		"Kernel" "SystemResources" "SystemFiles" "Binaries"
+		"Libraries" "LibraryResources" "Java" "CSource")
+	if (NOT EXISTS "${_packageFile}")
+		set (${_var} "${_var}-NOTFOUND" PARENT_SCOPE)
+		return()
 	endif()
-	if (_option_MACHINE_ID)
-		Mathematica_TO_NATIVE_STRING("${_option_MACHINE_ID}" _machineIDMma)
-		set (_code "${_code}, MachineID->${_machineIDMma}")
-	endif()
-	set (_code "${_code}]")
-	Mathematica_ADD_CUSTOM_COMMAND(
-		OUTPUT "${_outputFileAbs}"
-		CODE "${_code}"
-		DEPENDS "${_inputFileNameAbs}"
-		COMMENT "${_msg}")
-	set_source_files_properties(${_outputFileAbs} PROPERTIES GENERATED TRUE LABELS "Mathematica")
-endfunction(Mathematica_ENCODE)
+	# walk up directory tree until we find package root dir
+	set (_packageFileDir "${_packageFile}")
+	set (_index 0)
+	while (NOT ${_index} EQUAL -1)
+		get_filename_component(_packageFileDir "${_packageFileDir}" PATH)
+		get_filename_component(_name "${_packageFileDir}" NAME)
+		list (FIND _intermediateDirs "${_name}" _index)
+	endwhile()
+	set (${_var} ${_packageFileDir} PARENT_SCOPE)
+endfunction()
 
 endif (Mathematica_KERNEL_EXECUTABLE)
 
 # re-compute system IDs and base directories, now that we can query the kernel
+_setup_mathematica_systemIDs()
 _setup_mathematica_base_directory()
 _setup_mathematica_userbase_directory()
-_setup_mathematica_systemIDs()
+
+# find Mathematica components
+_find_components()
+_setup_mathematica_version_variables()
+_update_cache()
+_setup_found_variables()
+_log_found_variables()
 
 # public function for fixing shared library references to dynamic Mathematica runtime libraries under Mac OS X
 function (Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES)
@@ -2330,18 +2818,18 @@ endfunction()
 if (Mathematica_KERNEL_EXECUTABLE AND Mathematica_MathLink_FOUND)
 
 # internal macro to compute MathLink executable launch command
-macro (_add_mathlink_launch_code _cmdVar _mathlinkExecutable _systemIDVar)
+macro (_add_mathlink_launch_code _cmdVar _mathlinkExecutable _systemIDVar _kernelOptionsVar)
 	_add_launch_prefix(${_cmdVar} ${_systemIDVar})
 	list (APPEND ${_cmdVar}
 		"${_mathlinkExecutable}" "-linkmode" "launch" "-linkname")
 	if (UNIX)
 		# UNIX MathLink requires quoted link name path and -mathlink
 		set (_kernelLaunchArgs "")
-		_add_kernel_launch_code(_kernelLaunchArgs ${_systemIDVar})
+		_add_kernel_launch_code(_kernelLaunchArgs ${_systemIDVar} ${_kernelOptionsVar})
 		_list_to_cmd_str(_kernelLaunchStr ${_kernelLaunchArgs})
 		list (APPEND ${_cmdVar} "${_kernelLaunchStr} -mathlink")
 	else ()
-		_add_kernel_launch_code(${_cmdVar} ${_systemIDVar})
+		_add_kernel_launch_code(${_cmdVar} ${_systemIDVar} ${_kernelOptionsVar})
 	endif()
 endmacro()
 
@@ -2349,7 +2837,7 @@ endmacro()
 function (Mathematica_MathLink_ADD_TEST)
 	set(_options "")
 	set(_oneValueArgs NAME SCRIPT TARGET INPUT INPUT_FILE SYSTEM_ID)
-	set(_multiValueArgs CODE CONFIGURATIONS)
+	set(_multiValueArgs CODE CONFIGURATIONS KERNEL_OPTIONS)
 	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
 	if(_option_UNPARSED_ARGUMENTS)
 		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
@@ -2357,11 +2845,9 @@ function (Mathematica_MathLink_ADD_TEST)
 		message (FATAL_ERROR "Mandatory parameter TARGET is missing.")
 	elseif (NOT _option_NAME)
 		message (FATAL_ERROR "Mandatory parameter NAME is missing.")
-	elseif (_option_CODE AND _option_SCRIPT)
-		message (FATAL_ERROR "Keywords CODE and SCRIPT are mutually exclusive.")
 	endif()
 	set (_cmd NAME "${_option_NAME}" COMMAND)
-	_add_test_driver(_cmd _option_INPUT _option_INPUT_FILE)
+	_add_test_driver(_cmd "${_option_NAME}" _option_INPUT _option_INPUT_FILE)
 	if (_option_CODE OR _option_SCRIPT)
 		# run Mathematica kernel and install MathLink executable
 		if (CYGWIN OR MSYS)
@@ -2379,9 +2865,7 @@ function (Mathematica_MathLink_ADD_TEST)
 			set (_installCmdMma
 				"StringJoin[StringInsert[${_launch_prefixMma},\" \",-1],StringInsert[${_installCmdMma},\"\\\"\",{1,-1}]]" )
 		endif()
-		set (_installCmd
-			"link=Install[${_installCmdMma}]"
-			"Print[First[link]]")
+		set (_installCmd "link=Install[${_installCmdMma}]")
 		if (_option_CODE)
 			list (INSERT _option_CODE 0 ${_installCmd})
 		else()
@@ -2389,10 +2873,10 @@ function (Mathematica_MathLink_ADD_TEST)
 			set (_option_CODE ${_installCmd} "Get[${_scriptMma}]")
 		endif()
 		list (APPEND _option_CODE "Uninstall[link]")
-		_add_script_or_code(_cmd _noScript _option_CODE _option_SYSTEM_ID)
+		_add_script_or_code(_cmd _noScript _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
 	else()
 		# run MathLink executable as front-end to Mathematica kernel
-		_add_mathlink_launch_code(_cmd "$<TARGET_FILE:${_option_TARGET}>" _option_SYSTEM_ID)
+		_add_mathlink_launch_code(_cmd "$<TARGET_FILE:${_option_TARGET}>" _option_SYSTEM_ID _option_KERNEL_OPTIONS)
 	endif()
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
@@ -2414,7 +2898,7 @@ function (Mathematica_GENERATE_C_CODE _packageFile)
 	get_filename_component(_packageFileAbs ${_packageFile} ABSOLUTE)
 	set(_options "")
 	set(_oneValueArgs "OUTPUT")
-	set(_multiValueArgs "")
+	set(_multiValueArgs "DEPENDS")
 	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
 	if(_option_UNPARSED_ARGUMENTS)
 		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
@@ -2449,19 +2933,20 @@ function (Mathematica_GENERATE_C_CODE _packageFile)
 		]")
 	list (INSERT _codeGenerate 0 "Needs[\"CCodeGenerator`\"]")
 	set (_msg "Generating source ${_cSource} and header ${_cHeader} from ${_packageFile}")
+	list (INSERT _option_DEPENDS 0 "${_packageFileAbs}")
 	Mathematica_ADD_CUSTOM_COMMAND(
-		OUTPUT ${_cSource} ${_cHeader}
+		OUTPUT "${_cSource}" "${_cHeader}"
 		CODE ${_codeGenerate}
-		DEPENDS ${_packageFileAbs}
-		COMMENT ${_msg})
-	set_source_files_properties(${_cSource} ${_cHeader} PROPERTIES GENERATED TRUE LABELS "Mathematica")
+		DEPENDS ${_option_DEPENDS}
+		COMMENT "${_msg}")
+	set_source_files_properties("${_cSource}" "${_cHeader}" PROPERTIES GENERATED TRUE LABELS "Mathematica")
 endfunction(Mathematica_GENERATE_C_CODE)
 
 # public function to simplify testing WolframLibrary targets
 function (Mathematica_WolframLibrary_ADD_TEST)
 	set(_options "")
 	set(_oneValueArgs NAME SCRIPT TARGET INPUT INPUT_FILE SYSTEM_ID)
-	set(_multiValueArgs CODE CONFIGURATIONS)
+	set(_multiValueArgs CODE CONFIGURATIONS KERNEL_OPTIONS)
 	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
 	if(_option_UNPARSED_ARGUMENTS)
 		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
@@ -2471,11 +2956,9 @@ function (Mathematica_WolframLibrary_ADD_TEST)
 		message (FATAL_ERROR "Mandatory parameter NAME is missing.")
 	elseif (NOT _option_CODE AND NOT _option_SCRIPT)
 		message (FATAL_ERROR "Either the keyword CODE or SCRIPT must be present.")
-	elseif (_option_CODE AND _option_SCRIPT)
-		message (FATAL_ERROR "Keywords CODE and SCRIPT are mutually exclusive.")
 	endif()
 	set (_cmd NAME "${_option_NAME}" COMMAND)
-	_add_test_driver(_cmd _option_INPUT _option_INPUT_FILE)
+	_add_test_driver(_cmd "${_option_NAME}" _option_INPUT _option_INPUT_FILE)
 	# run Mathematica kernel and install MathLink executable
 	if (CYGWIN OR MSYS)
 		# Cygwin and MSYS do not produce workable Mathematica paths using
@@ -2486,9 +2969,7 @@ function (Mathematica_WolframLibrary_ADD_TEST)
 		set (_targetFileMma "\"$<TARGET_FILE:${_option_TARGET}>\"")
 	endif()
 	set (_installCmd
-		"$LibraryPath=DirectoryName[${_targetFileMma}]"
-		"Print[FindLibrary[\"${_option_TARGET}\"]]"
-		"LibraryLoad[\"${_option_TARGET}\"]"
+		"LibraryLoad[${_targetFileMma}]"
 		"Print[LibraryLink`$LibraryError]" )
 	if (_option_CODE)
 		list (INSERT _option_CODE 0 ${_installCmd})
@@ -2497,7 +2978,7 @@ function (Mathematica_WolframLibrary_ADD_TEST)
 		set (_option_CODE ${_installCmd} "Get[${_scriptMma}]")
 	endif()
 	list (APPEND _option_CODE "LibraryUnload[\"${_option_TARGET}\"]")
-	_add_script_or_code(_cmd _noScript _option_CODE _option_SYSTEM_ID)
+	_add_script_or_code(_cmd _noScript _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
 	endif()
@@ -2620,6 +3101,8 @@ function (Mathematica_MathLink_MPREP_EXPORT_FRAMES)
 	set (_trailerFileName "${_option_OUTPUT_DIRECTORY}/mprep_trailer_${_option_SYSTEM_ID}.txt")
 	if (NOT _option_FORCE AND
 		EXISTS "${_headerFileName}" AND EXISTS "${_trailerFileName}")
+		message (STATUS "Mprep header file mprep_header_${_option_SYSTEM_ID}.txt already exists")
+		message (STATUS "Mprep trailer file mprep_trailer_${_option_SYSTEM_ID}.txt already exists")
 		return()
 	endif()
 	if (WIN32)
@@ -2640,7 +3123,7 @@ function (Mathematica_MathLink_MPREP_EXPORT_FRAMES)
 	set (_trailer "")
 	foreach (_line IN LISTS _mprep_frame)
 		if ("${_line}" MATCHES "MPREP_REVISION ([0-9]+)")
-			string (REGEX REPLACE ".* ([0-9]+)" "\\1" _mprep_revision "${_line}")
+			set (_mprep_revision "${CMAKE_MATCH_1}")
 			set (_appendToVar _header)
 		elseif ("${_line}" MATCHES "/.*end header.*/")
 			unset (_appendToVar)
@@ -2661,3 +3144,240 @@ function (Mathematica_MathLink_MPREP_EXPORT_FRAMES)
 endfunction(Mathematica_MathLink_MPREP_EXPORT_FRAMES)
 
 endif (Mathematica_MathLink_MPREP_EXECUTABLE)
+
+if (Mathematica_MUnit_FOUND)
+
+# public function for resolving a TestSuite declaration in a Mathematica unit test file
+function (Mathematica_MUnit_RESOLVE_SUITE _var)
+	set(_options "")
+	set(_oneValueArgs RELATIVE)
+	set(_multiValueArgs "")
+	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
+	set (${_var} "")
+	foreach (_testSuiteFile IN LISTS _option_UNPARSED_ARGUMENTS)
+		# parse test file names from TestSuite[{ ... }]
+		file (STRINGS "${_testSuiteFile}" _testSuite NEWLINE_CONSUME)
+		if ("${_testSuite}" MATCHES "TestSuite\\[")
+			string (REPLACE "\n" "" _testSuite "${_testSuite}")
+			string (REGEX REPLACE ".*TestSuite\\[.*{(.*)}.*\\].*" "\\1" _testSuite "${_testSuite}")
+			string (REPLACE "," ";" _testSuite "${_testSuite}")
+			get_filename_component(_testSuiteDir "${_testSuiteFile}" PATH)
+			foreach (_testSuiteItem IN LISTS _testSuite)
+				# parse quoted test file name
+				string (REGEX REPLACE "[^\"]*\"(.*)\"[^\"]*" "\\1" _testSuiteItem "${_testSuiteItem}")
+				_to_cmake_path("${_testSuiteDir}/${_testSuiteItem}" _testFile)
+				if (_option_RELATIVE)
+					file (RELATIVE_PATH _testFile "${_option_RELATIVE}" "${_testFile}")
+				endif()
+				list (APPEND ${_var} "${_testFile}")
+			endforeach()
+		else()
+			# not a test suite file, return test suite file path itself
+			get_filename_component(_testSuiteFile "${_testSuiteFile}" ABSOLUTE)
+			if (_option_RELATIVE)
+				file (RELATIVE_PATH _testSuiteFile "${_option_RELATIVE}" "${_testSuiteFile}")
+			endif()
+			list (APPEND ${_var} "${_testSuiteFile}")
+		endif()
+	endforeach()
+	list (REMOVE_DUPLICATES ${_var})
+	set (${_var} "${${_var}}" PARENT_SCOPE)
+endfunction()
+
+# public function for adding a CMake test that runs a Mathematica MUnit test file or notebook
+function (Mathematica_MUnit_ADD_TEST)
+	set(_options "")
+	set(_oneValueArgs NAME LOGGERS SCRIPT INPUT INPUT_FILE TIMEOUT SYSTEM_ID)
+	set(_multiValueArgs CODE CONFIGURATIONS KERNEL_OPTIONS)
+	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
+	if(_option_UNPARSED_ARGUMENTS)
+		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
+	elseif (NOT _option_NAME)
+		message (FATAL_ERROR "Mandatory parameter NAME is missing.")
+	elseif (NOT _option_SCRIPT)
+		message (FATAL_ERROR "Mandatory parameter SCRIPT is missing.")
+	endif()
+	set (_cmd NAME "${_option_NAME}" COMMAND)
+	_add_test_driver(_cmd "${_option_NAME}" _option_INPUT _option_INPUT_FILE)
+	if (NOT _option_LOGGERS)
+		# default to VerbosePrintLogger which prints detailed information for failed tests
+		set (_option_LOGGERS "{VerbosePrintLogger[]}")
+	endif()
+	set (_testCmds "If[Needs[\"MUnit`\"]===$Failed,Exit[]]")
+	if (_option_CODE)
+		list (APPEND _testCmds ${_option_CODE})
+	endif()
+	if (NOT IS_ABSOLUTE "${_option_SCRIPT}")
+		_to_cmake_path("${CMAKE_CURRENT_SOURCE_DIR}/${_option_SCRIPT}" _testScript)
+	else()
+		_to_cmake_path("${_option_SCRIPT}" _testScript)
+	endif()
+	get_filename_component(_testScriptExt "${_testScript}" EXT)
+	get_filename_component(_testScriptDir "${_testScript}" PATH)
+	Mathematica_TO_NATIVE_STRING("${_option_NAME}" _testNameMma)
+	if ("${_testScriptExt}" MATCHES "\\.[nN][bB]$")
+		# notebook test run requires Mathematica front end
+		if (NOT DEFINED Mathematica_VERSION OR
+			"${Mathematica_VERSION}" VERSION_LESS "7.0")
+			# default to using undocumented function Developer`UseFrontEnd
+			# available in Mathematica 5.1 and newer
+			set (_useFrontEndFunc "Developer`UseFrontEnd")
+		else()
+			# documented function UsingFrontEnd available since Mathematica 7
+			set (_useFrontEndFunc "UsingFrontEnd")
+		endif()
+		Mathematica_TO_NATIVE_PATH("${_testScript}" _testScriptMma)
+		string (REGEX REPLACE "\n|\t" "" _testCmd
+			"${_useFrontEndFunc}[
+				CompoundExpression[
+					nb=NotebookOpen[${_testScriptMma},Visible->False],
+					mUnitResult=TestRun[nb,TestRunTitle->${_testNameMma},Loggers:>${_option_LOGGERS}],
+					NotebookClose[nb]]]")
+		list (APPEND _testCmds "${_testCmd}")
+	else()
+		Mathematica_MUnit_RESOLVE_SUITE(_testFiles "${_testScript}")
+		Mathematica_TO_NATIVE_PATH("${_testFiles}" _testFilesMma)
+		list (LENGTH _testFiles _fileCount)
+		if (_fileCount GREATER 1)
+			if (NOT DEFINED Mathematica_VERSION OR
+				"${Mathematica_VERSION}" VERSION_LESS "7.0")
+				# default to using DirectoryName
+				set (_titleExtractFunc "StringDrop[#,StringLength[DirectoryName[#]]]")
+			else()
+				# function FileNameTake available since Mathematica 7
+				set (_titleExtractFunc "FileNameTake[#]")
+			endif()
+			Mathematica_TO_NATIVE_PATH("${_testScriptDir}" _testScriptDirMma)
+			string (REGEX REPLACE "\n|\t" "" _testCmd
+				"mUnitResult=And@@Map[
+					TestRun[#,TestRunTitle->${_titleExtractFunc},Loggers:>${_option_LOGGERS}]&,
+					${_testFilesMma}]")
+		else()
+			string (REGEX REPLACE "\n|\t" "" _testCmd
+				"mUnitResult=TestRun[
+					${_testFilesMma},TestRunTitle->${_testNameMma},Loggers:>${_option_LOGGERS}]")
+		endif()
+		list (APPEND _testCmds "${_testCmd}")
+	endif()
+	# add new-line and then print TestRun result
+	list (APPEND _testCmds
+		"WriteString[$Output,\"\\n\"<>${_testNameMma}<>\" \"<>Part[{\"Failed\",\"Passed\"},Boole[mUnitResult]+1]]")
+	_add_script_or_code(_cmd _noScript _testCmds _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	if (_option_CONFIGURATIONS)
+		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
+	endif()
+	if (Mathematica_DEBUG)
+		message (STATUS "add_test: ${_cmd}")
+	endif()
+	add_test (${_cmd})
+	# test passes if the MUnit TestRun result ends with "Passed"
+	set_tests_properties (${_option_NAME} PROPERTIES
+		PASS_REGULAR_EXPRESSION "${_option_NAME} Passed.?.?$"
+		FAIL_REGULAR_EXPRESSION "${_option_NAME} Failed.?.?$")
+	if (_option_TIMEOUT)
+		set_tests_properties (${_option_NAME} PROPERTIES TIMEOUT ${_option_TIMEOUT})
+	endif()
+endfunction (Mathematica_MUnit_ADD_TEST)
+
+endif (Mathematica_MUnit_FOUND)
+
+if (Mathematica_KERNEL_EXECUTABLE AND Mathematica_JLink_FOUND)
+
+# public function for adding a target which builds Mathematica documentation
+function (Mathematica_ADD_DOCUMENTATION _targetName)
+	# documentation build requires Apache Ant
+	find_program(Mathematica_ANT_EXECUTABLE ant PATHS "$ENV{ANT_HOME}" PATH_SUFFIXES "bin")
+	if (NOT Mathematica_ANT_EXECUTABLE)
+		message(WARNING "Mathematica documentation build required Apache Ant executable \"ant\" cannot be found.")
+	endif()
+	# find DocumentationBuild package
+	Mathematica_FIND_PACKAGE(Mathematica_DocumentationBuild_PACKAGE_FILE "DocumentationBuild`"
+		DOC "Mathematica DocumentationBuild package.")
+	if (NOT Mathematica_DocumentationBuild_PACKAGE_FILE)
+		message(WARNING "Mathematica documentation build required package \"DocumentationBuild`\" cannot be found.")
+	endif()
+	Mathematica_GET_PACKAGE_DIR(Mathematica_DocumentationBuild_PACKAGE_DIR
+		"${Mathematica_DocumentationBuild_PACKAGE_FILE}")
+	# find Transmogrify package required by DocumentationBuild package
+	Mathematica_FIND_PACKAGE(Mathematica_Transmogrify_PACKAGE_FILE "Transmogrify`"
+		DOC "Mathematica Transmogrify package.")
+	if (NOT Mathematica_Transmogrify_PACKAGE_FILE)
+		message(WARNING "Mathematica documentation build required package \"Transmogrify`\" cannot be found.")
+	endif()
+	mark_as_advanced(
+		Mathematica_ANT_EXECUTABLE
+		Mathematica_DocumentationBuild_PACKAGE_FILE
+		Mathematica_Transmogrify_PACKAGE_FILE
+	)
+	# build command from options
+	set(_options "ALL")
+	set(_oneValueArgs DOCUMENTATION_TYPE INPUT_DIRECTORY OUTPUT_DIRECTORY APPLICATION_NAME LANGUAGE COMMENT)
+	set(_multiValueArgs SOURCES)
+	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
+	if(_option_UNPARSED_ARGUMENTS)
+		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
+	endif()
+	set (_cmd "${_targetName}")
+	if (_option_ALL)
+		list (APPEND _cmd ALL)
+	endif()
+	if (NOT _option_DOCUMENTATION_TYPE)
+		set (_option_DOCUMENTATION_TYPE "Notebook")
+	endif()
+	if (NOT _option_APPLICATION_NAME)
+		set (_option_APPLICATION_NAME "${PROJECT_NAME}")
+	endif()
+	if (NOT _option_LANGUAGE)
+		set (_option_LANGUAGE "English")
+	endif()
+	if (NOT _option_INPUT_DIRECTORY)
+		set (_option_INPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+	endif()
+	if (NOT _option_OUTPUT_DIRECTORY)
+		if (_option_DOCUMENTATION_TYPE STREQUAL "Notebook")
+			set (_option_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_option_APPLICATION_NAME}/Documentation")
+		else()
+			set (_option_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_option_APPLICATION_NAME}-${_option_DOCUMENTATION_TYPE}")
+		endif()
+	endif()
+	if (NOT _option_COMMENT)
+		set (_option_COMMENT "Building ${_option_APPLICATION_NAME} ${_option_DOCUMENTATION_TYPE} documentation")
+	endif()
+	# clean previously built documentation files
+	list (APPEND _cmd COMMAND "${CMAKE_COMMAND}" "-E" "remove_directory" "${_option_OUTPUT_DIRECTORY}")
+	list (APPEND _cmd COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${_option_OUTPUT_DIRECTORY}")
+	# generate new documentation files if all requirements are met
+	if (Mathematica_ANT_EXECUTABLE AND Mathematica_DocumentationBuild_PACKAGE_FILE AND Mathematica_Transmogrify_PACKAGE_FILE)
+		get_filename_component(_appPath "${Mathematica_DocumentationBuild_PACKAGE_DIR}" PATH)
+		string (TOLOWER "${_option_DOCUMENTATION_TYPE}.xml" _buildFileName)
+		set (_buildFile "${Mathematica_DocumentationBuild_PACKAGE_DIR}/SystemFiles/ant/Build/${_buildFileName}")
+		list (APPEND _cmd COMMAND "${Mathematica_ANT_EXECUTABLE}")
+		list (APPEND _cmd "-buildfile" "${_buildFile}")
+		list (APPEND _cmd "-DappPath=${_appPath}")
+		list (APPEND _cmd "-Dapp.name=${_option_APPLICATION_NAME}")
+		list (APPEND _cmd "-DmathExe=${Mathematica_KERNEL_EXECUTABLE}")
+		list (APPEND _cmd "-Djlinkpath=${Mathematica_JLink_PACKAGE_DIR}")
+		list (APPEND _cmd "-DinputDir=${_option_INPUT_DIRECTORY}")
+		list (APPEND _cmd "-DoutputDir=${_option_OUTPUT_DIRECTORY}")
+		list (APPEND _cmd "-Dlanguage=${_option_LANGUAGE}")
+		list (APPEND _cmd "-DincludeLinkTrails=False")
+		list (APPEND _cmd "-Dlocal=True")
+		list (APPEND _cmd "-DcompleteHTMLQ=True")
+		if (Mathematica_DEBUG)
+			list (APPEND _cmd "-Ddebug=True")
+		else()
+			list (APPEND _cmd "-Ddebug=False")
+		endif()
+	endif()
+	list (APPEND _cmd WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+	list (APPEND _cmd COMMENT ${_option_COMMENT} VERBATIM)
+	if (_option_SOURCES)
+		list (APPEND _cmd SOURCES ${_option_SOURCES})
+	endif()
+	if (Mathematica_DEBUG)
+		message (STATUS "add_custom_target: ${_cmd}")
+	endif()
+	add_custom_target(${_cmd})
+endfunction (Mathematica_ADD_DOCUMENTATION)
+
+endif (Mathematica_KERNEL_EXECUTABLE AND Mathematica_JLink_FOUND)

@@ -1,16 +1,23 @@
 # FindMathematica pure Mathematica examples
 
-# run Mathematica code while CMake is configuring and capture its output in a variable
+# run Mathematica code while CMake is configuring and capture its output in a CMake variable
 Mathematica_EXECUTE(
 	CODE "Print[StandardForm[$LicenseID]]"
-	OUTPUT_VARIABLE _LicenseID TIMEOUT 10)
+	OUTPUT_VARIABLE Mathematica_LicenseID
+	TIMEOUT 10)
+message(STATUS "Mathematica License ID ${Mathematica_LicenseID}")
 
+# run Mathematica code while CMake is configuring and capture its output in a CMake cache variable
 Mathematica_EXECUTE(
 	CODE "Print[StandardForm[$MachineID]]"
-	OUTPUT_VARIABLE _mathID TIMEOUT 10)
+	OUTPUT_VARIABLE Mathematica_MathID CACHE DOC "Mathematica Math ID"
+	TIMEOUT 10)
+message(STATUS "Mathematica Math ID ${Mathematica_MathID}")
 
-message(STATUS "Mathematica License ID ${_LicenseID}")
-message(STATUS "Mathematica Math ID ${_mathID}")
+# find Mathematica package
+Mathematica_FIND_PACKAGE(Mathematica_NETLink_PACKAGE_FILE "NETLink`" DOC "NETLink package.")
+Mathematica_GET_PACKAGE_DIR(Mathematica_NETLink_PACKAGE_DIR "${Mathematica_NETLink_PACKAGE_FILE}")
+message(STATUS "Mathematica .NET/Link package directory ${Mathematica_NETLink_PACKAGE_DIR}")
 
 # run Mathematica code while CMake is configuring and write output to file
 Mathematica_EXECUTE(
@@ -49,6 +56,16 @@ Mathematica_ADD_CUSTOM_TARGET(DemoScript ALL
 	SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/demo.m"
 	COMMENT "Running demo.m")
 set_target_properties(DemoScript PROPERTIES FOLDER "Mathematica")
+Mathematica_ENCODE(directories.m OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/directories.m" CHECK_TIMESTAMPS)
+
+# add a convenience target which holds Mathematica source files for IDEs
+add_custom_target(MathematicaExamples ALL
+	DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/demo.m"
+	SOURCES
+		"${CMAKE_CURRENT_SOURCE_DIR}/demo.m"
+		"${CMAKE_CURRENT_SOURCE_DIR}/directories.m"
+		"${CMAKE_CURRENT_SOURCE_DIR}/spliceDemo.mc")
+set_target_properties(MathematicaExamples PROPERTIES FOLDER "Mathematica")
 
 # define a helper function to simplify CMake Mathematica tests
 function (do_mathematica_test _name _cmds _expectedOutput)
@@ -68,20 +85,22 @@ function (do_mathematica_test _name _cmds _expectedOutput)
 	endforeach()
 endfunction ()
 
-# tests
+# regular CMake tests
 
-do_mathematica_test(Mathematica_Simple
+do_mathematica_test(Simple
 "Print[1+1]"
 # Expected output
 "2")
 
-do_mathematica_test(Mathematica_FactorInteger
+do_mathematica_test(FactorInteger
 "Print[FactorInteger[2434500]]"
 # Expected output
 "{{2, 2}, {3, 2}, {5, 3}, {541, 1}}")
 
-do_mathematica_test(Mathematica_Prime
+do_mathematica_test(Prime
 "Print[Prime[Input[]]]"
 # Expected output
 "27529"
 INPUT "3007")
+
+add_convenience_test_target(MathematicaTests "Mathematica")

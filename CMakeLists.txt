@@ -9,7 +9,7 @@ set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/Mathematica")
 set (CMAKE_VERBOSE_MAKEFILE OFF)
 set (CMAKE_COLOR_MAKEFILE ON)
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-	set (CMAKE_BUILD_TYPE Release)
+	set (CMAKE_BUILD_TYPE Debug)
 endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS 1)
 
@@ -29,7 +29,24 @@ find_package(Mathematica)
 # finds Mathematica 5.2
 #find_package(Mathematica 5.2)
 
-include(CTest)
+enable_testing()
+
+# helper macro which adds convenience target which lets you run tests from IDE
+macro (add_convenience_test_target _targetName _testRegEx)
+	if (CMAKE_CONFIGURATION_TYPES)
+		add_custom_target("${_targetName}"
+			COMMAND
+				${CMAKE_CTEST_COMMAND} -V --force-new-ctest-process
+					--tests-regex "${_testRegEx}"
+					--build-config "${CMAKE_CFG_INTDIR}")
+	else()
+		add_custom_target("${_targetName}"
+			COMMAND
+				${CMAKE_CTEST_COMMAND} -V --force-new-ctest-process
+					--tests-regex "${_testRegEx}" "$(ARGS)")
+	endif()
+	set_target_properties("${_targetName}" PROPERTIES FOLDER "Tests")
+endmacro()
 
 if (${Mathematica_FOUND})
 	message(STATUS "Mathematica Version ${Mathematica_VERSION}")
@@ -48,6 +65,7 @@ if (${Mathematica_FOUND})
 	# Mathematica_USERBASE_DIR is the directory for user-specific files to be loaded by Mathematica
 	message(STATUS "Mathematica User Base Directory ${Mathematica_USERBASE_DIR}")
 	add_subdirectory(MathematicaExamples)
+	add_subdirectory(DocumentationExamples)
 endif()
 
 if (${Mathematica_WolframLibrary_FOUND})
@@ -75,3 +93,7 @@ if (${Mathematica_MathLink_FOUND})
 		add_subdirectory(MathLinkExamples)
 	endif()
 endif()
+
+if (Mathematica_MUnit_FOUND)
+	add_subdirectory(MUnitExamples)
+endif ()

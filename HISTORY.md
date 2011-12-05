@@ -1,3 +1,24 @@
+## 2.0.0 (2011-12-05)
+
+* add support for finding J/Link
+* add support for finding Wolfram MUnit testing package
+* add MUnit wrapper functions `Mathematica_MUnit_ADD_TEST` and `Mathematica_MUnit_RESOLVE_SUITE`
+* add support for generating *Mathematica* documentation with the DocumentationBuild package
+* add new function `Mathematica_FIND_PACKAGE`
+* add new function `Mathematica_GET_PACKAGE_DIR`
+* FindMathematica module directory is now prepended to the *Mathematica* `$Path`
+* add `CACHE` option to function `Mathematica_EXECUTE`
+* add `KERNEL_OPTIONS` parameter to functions which launch the *Mathematica* kernel
+* function `Mathematica_TO_NATIVE_PATH` now also handles a list of CMake paths
+* function `Mathematica_ENCODE` now can encode multiple files at the same time
+* pass `TEST_NAME` and `TEST_CONFIGURATION` environment variables to *Mathematica* test scripts
+* use `exec` in UNIX test driver shell script upon launching test executable
+* add `INPUT_FILE` option to function `Mathematica_EXECUTE`
+* add `DEPENDS` option to function `Mathematica_ADD_CUSTOM_TARGET`
+* add `MAIN_DEPENDENCY` option to function `Mathematica_ADD_CUSTOM_COMMAND`
+* add `DEPENDS` option to function `Mathematica_GENERATE_C_CODE`
+* install Wolfram Library without modifying `$LibraryPath` in `Mathematica_WolframLibrary_ADD_TEST`
+
 ## 1.2.6 (2011-12-03)
 
 * fix debug output

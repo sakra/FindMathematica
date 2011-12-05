@@ -6,27 +6,34 @@
 #logger $DYLD_FRAMEWORK_PATH
 #logger $DYLD_LIBRARY_PATH
 
-INPUT_OPTION=$1
+export TEST_NAME=$1
+export TEST_CONFIGURATION=$2
+export TEST_INPUT_OPTION=$3
 
-if [ "$INPUT_OPTION" = "noinput" ]
+if [ "$TEST_INPUT_OPTION" = "input" ]
 then
-	TEST_EXECUTABLE=$2
+	export TEST_INPUT=$4
+	export TEST_EXECUTABLE=$5
+elif [ "$TEST_INPUT_OPTION" = "inputfile" ]
+then
+	export TEST_INPUT_FILE=$4
+	export TEST_EXECUTABLE=$5
 else
-	TEST_EXECUTABLE=$3
+	export TEST_EXECUTABLE=$4
 fi
 
 if [ "$OSTYPE" = "cygwin" ]
 then
 	# make sure that executable has the right format under Cygwin
-	TEST_EXECUTABLE="`cygpath --unix \"$TEST_EXECUTABLE\"`"
+	export TEST_EXECUTABLE="`cygpath --unix \"$TEST_EXECUTABLE\"`"
 fi
 
-if [ "$INPUT_OPTION" = "input" ]
+if [ "$TEST_INPUT_OPTION" = "input" ]
 then
-	echo "$2" | "$TEST_EXECUTABLE" "${@:4}"
-elif [ "$INPUT_OPTION" = "inputfile" ]
+	echo "$TEST_INPUT" | exec "$TEST_EXECUTABLE" "${@:6}"
+elif [ "$TEST_INPUT_OPTION" = "inputfile" ]
 then
-	"$TEST_EXECUTABLE" < "$2" "${@:4}"
+	exec < "$TEST_INPUT_FILE" "$TEST_EXECUTABLE" "${@:6}"
 else
-	"$TEST_EXECUTABLE" "${@:3}"
+	exec "$TEST_EXECUTABLE" "${@:5}"
 fi
