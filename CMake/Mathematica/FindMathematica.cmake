@@ -8,6 +8,7 @@
 #  Mathematica_FIND_COMPONENTS - Set of Mathematica components requested upon find_package
 #  Mathematica_FIND_REQUIRED_MathLink- True if REQUIRED option was given for component MathLink
 #  Mathematica_FIND_REQUIRED_WolframLibrary- True if REQUIRED option was given for component WolframLibrary
+#  Mathematica_FIND_REQUIRED_JLink - True if REQUIRED option was given for component JLink
 #  Mathematica_FIND_REQUIRED_MUnit - True if REQUIRED option was given for component MUnit
 #  Mathematica_USE_STATIC_LIBRARIES - if True prefer static libraries to dynamic libraries (defaults to False)
 #  Mathematica_USE_MINIMAL_LIBRARIES - if True prefer minimal libraries to full libraries (defaults to False)
@@ -38,6 +39,7 @@
 #  Mathematica_VERSION_PATCH - Mathematica patch version number
 #  Mathematica_VERSION_STRING - Mathematica version string given as "major.minor.patch"
 #  Mathematica_VERSION_COUNT - Mathematica number of version components (usually 3)
+#  Mathematica_CREATION_ID - Mathematica installation creation ID number
 #
 # The module defines the following variables for component WolframLibrary:
 #  Mathematica_WolframLibrary_FOUND - True if Mathematica installation has WolframLibrary
@@ -507,7 +509,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "2.0.0")
+set (Mathematica_CMAKE_MODULE_VERSION "2.0.1")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -1082,7 +1084,7 @@ macro(_get_host_mathlink_flavor _outMathLinkFlavor)
 		set (${_outMathLinkFlavor} "cygwin")
 	elseif (CMAKE_HOST_WIN32)
 		if ("$ENV{PROCESSOR_ARCHITECTURE}" STREQUAL "AMD64" OR
-				"$ENV{PROCESSOR_ARCHITEW6432}" STREQUAL "AMD64")
+			"$ENV{PROCESSOR_ARCHITEW6432}" STREQUAL "AMD64")
 			# host is native 64-bit Windows
 			set (${_outMathLinkFlavor} "mldev64")
 		else()
@@ -1270,6 +1272,17 @@ macro(_setup_mathematica_systemIDs)
 	_get_compatible_system_IDs(${Mathematica_HOST_SYSTEM_ID} Mathematica_HOST_SYSTEM_IDS)
 endmacro()
 
+# internal macro to set up Mathematica creation ID
+macro(_setup_mathematica_creationID)
+	if (Mathematica_ROOT_DIR AND
+		EXISTS "${Mathematica_ROOT_DIR}/.CreationID")
+		# parse hidden CreationID file
+		file (STRINGS "${Mathematica_ROOT_DIR}/.CreationID" Mathematica_CREATION_ID REGEX "[0-9]+")
+	elseif (DEFINED Mathematica_CREATION_ID_LAST)
+		set (Mathematica_CREATION_ID ${Mathematica_CREATION_ID_LAST})
+	endif()
+endmacro()
+
 # internal macro to set up Mathematica base directory variable
 macro(_setup_mathematica_base_directory)
 	if (COMMAND Mathematica_EXECUTE)
@@ -1369,6 +1382,7 @@ macro(_find_mathematica)
 		message (STATUS "FrontEndExecutables ${_FrontEndExecutables}")
 		message (STATUS "KernelExecutables ${_KernelExecutables}")
 	endif()
+	set (_helpStr "Mathematica host installation root directory.")
 	if (NOT DEFINED Mathematica_HOST_ROOT_DIR OR
 		NOT EXISTS "${Mathematica_HOST_ROOT_DIR}")
 		_get_search_paths(_SearchPaths)
@@ -1381,17 +1395,25 @@ macro(_find_mathematica)
 			NAMES ${_KernelExecutables}
 			PATH_SUFFIXES ${_ProgramNames}
 			PATHS ${_SearchPaths}
-			DOC "Mathematica host installation root directory."
+			DOC "${_helpStr}"
 			NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
 		)
+	else()
+		# preserve pre-defined value, but set correct type and helpstring
+		set_property(CACHE Mathematica_HOST_ROOT_DIR PROPERTY TYPE PATH)
+		set_property(CACHE Mathematica_HOST_ROOT_DIR PROPERTY HELPSTRING "${_helpStr}")
 	endif()
 	# Mathematica_ROOT_DIR is initialized to Mathematica_HOST_ROOT_DIR by default
 	# upon cross-compiling Mathematica_ROOT_DIR needs to be manually set to the correct
 	# Mathematica installation folder for the target platform
+	set (_helpStr "Mathematica target installation root directory.")
 	if (NOT DEFINED Mathematica_ROOT_DIR OR
 		NOT EXISTS "${Mathematica_ROOT_DIR}")
-		set (Mathematica_ROOT_DIR ${Mathematica_HOST_ROOT_DIR}
-			CACHE PATH "Mathematica target installation root directory.")
+		set (Mathematica_ROOT_DIR ${Mathematica_HOST_ROOT_DIR} CACHE PATH "${_helpStr}")
+	else()
+		# preserve pre-defined value, but set correct type and helpstring
+		set_property(CACHE Mathematica_ROOT_DIR PROPERTY TYPE PATH)
+		set_property(CACHE Mathematica_ROOT_DIR PROPERTY HELPSTRING "${_helpStr}")
 	endif()
 	find_program (Mathematica_KERNEL_EXECUTABLE
 		NAMES ${_KernelExecutables}
@@ -1507,23 +1529,17 @@ macro(_find_mathlink)
 	)
 	set (_CompilerAdditions
 		"${Mathematica_MathLink_ROOT_DIR}/CompilerAdditions/${_MathLinkFlavor}" )
-	if (NOT "${_HostSystemIDs}" STREQUAL "${_SystemIDs}")
-		find_path (Mathematica_MathLink_HOST_ROOT_DIR
-			NAMES "CompilerAdditions"
-			HINTS
-				"${Mathematica_HOST_ROOT_DIR}/SystemFiles/Links/MathLink/DeveloperKit"
-				"${Mathematica_HOST_ROOT_DIR}/AddOns/MathLink/DeveloperKit"
-			PATH_SUFFIXES ${_HostSystemIDs}
-			DOC "MathLink host SDK root directory."
-			NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
-		)
-		set (_HostCompilerAdditions
-			"${Mathematica_MathLink_HOST_ROOT_DIR}/CompilerAdditions/${_HostMathLinkFlavor}" )
-	else()
-		set (Mathematica_MathLink_HOST_ROOT_DIR ${Mathematica_MathLink_ROOT_DIR}
-			CACHE PATH "MathLink host SDK root directory.")
-		set (_HostCompilerAdditions ${_CompilerAdditions} )
-	endif()
+	find_path (Mathematica_MathLink_HOST_ROOT_DIR
+		NAMES "CompilerAdditions"
+		HINTS
+			"${Mathematica_HOST_ROOT_DIR}/SystemFiles/Links/MathLink/DeveloperKit"
+			"${Mathematica_HOST_ROOT_DIR}/AddOns/MathLink/DeveloperKit"
+		PATH_SUFFIXES ${_HostSystemIDs}
+		DOC "MathLink host SDK root directory."
+		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
+	)
+	set (_HostCompilerAdditions
+		"${Mathematica_MathLink_HOST_ROOT_DIR}/CompilerAdditions/${_HostMathLinkFlavor}" )
 	if (Mathematica_DEBUG)
 		message (STATUS "CompilerAdditions ${_CompilerAdditions}")
 		message (STATUS "HostCompilerAdditions ${_HostCompilerAdditions}")
@@ -1591,23 +1607,21 @@ endmacro()
 # internal helper macro to setup version related variables from existing _VERSION variable
 macro(_setup_package_version_variables _packageName)
 	if (DEFINED ${_packageName}_VERSION)
-		if (${${_packageName}_VERSION} MATCHES "([0-9]*)\\.?([0-9]*)\\.?([0-9]*)\\.?([0-9]*)")
-			set (${_packageName}_VERSION_MAJOR "${CMAKE_MATCH_1}")
-			set (${_packageName}_VERSION_MINOR "${CMAKE_MATCH_2}")
-			set (${_packageName}_VERSION_PATCH "${CMAKE_MATCH_3}")
-			set (${_packageName}_VERSION_TWEAK "${CMAKE_MATCH_4}")
-			if ("${${_packageName}_VERSION_TWEAK}" MATCHES ".+")
-				set (${_packageName}_VERSION_COUNT 4)
-			elseif ("${${_packageName}_VERSION_PATCH}" MATCHES ".+")
-				set (${_packageName}_VERSION_COUNT 3)
-			elseif ("${${_packageName}_VERSION_MINOR}" MATCHES ".+")
-				set (${_packageName}_VERSION_COUNT 2)
-			elseif ("${${_packageName}_VERSION_MAJOR}" MATCHES ".+")
-				set (${_packageName}_VERSION_COUNT 1)
-			endif()
-		else()
-			set (${_packageName}_VERSION_COUNT 0)
+		string (REGEX MATCHALL "[0-9]+" _versionComponents "${${_packageName}_VERSION}")
+		list (LENGTH _versionComponents _len)
+		if (${_len} GREATER 0)
+			list(GET _versionComponents 0 ${_packageName}_VERSION_MAJOR)
 		endif()
+		if (${_len} GREATER 1)
+			list(GET _versionComponents 1 ${_packageName}_VERSION_MINOR)
+		endif()
+		if (${_len} GREATER 2)
+			list(GET _versionComponents 2 ${_packageName}_VERSION_PATCH)
+		endif()
+		if (${_len} GREATER 3)
+			list(GET _versionComponents 3 ${_packageName}_VERSION_TWEAK)
+		endif()
+		set (${_packageName}_VERSION_COUNT ${_len})
 	else()
 		set (${_packageName}_VERSION_COUNT 0)
 		set (${_packageName}_VERSION "")
@@ -1773,6 +1787,26 @@ macro(_setup_mathlink_library_variables)
 	endif()
 endmacro()
 
+# internal macro to determine actual compiler version
+macro (_determine_compiler_version _versionPrefix)
+	if (NOT DEFINED ${_versionPrefix}_VERSION)
+		if (MSVC)
+			execute_process (COMMAND ${CMAKE_C_COMPILER}
+				OUTPUT_VARIABLE _versionLine TIMEOUT 10)
+			string (REGEX REPLACE ".*Version *([0-9]+(\\.[0-9]+)*).*" "\\1"
+				${_versionPrefix}_VERSION ${_versionLine})
+		elseif (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_MINGW OR
+			"${CMAKE_C_COMPILER_ID}" MATCHES "Clang" OR
+			"${CMAKE_C_COMPILER_ID}" MATCHES "Intel")
+			execute_process (COMMAND ${CMAKE_C_COMPILER} "-dumpversion"
+				OUTPUT_VARIABLE ${_versionPrefix}_VERSION
+				OUTPUT_STRIP_TRAILING_WHITESPACE
+				TIMEOUT 10)
+		endif()
+		_setup_package_version_variables(${_versionPrefix})
+	endif()
+endmacro()
+
 # internal macro to log used variables
 macro(_log_used_variables)
 	if (Mathematica_DEBUG)
@@ -1806,10 +1840,11 @@ macro(_log_found_variables)
 		message (STATUS "Mathematica CMake module dir ${Mathematica_CMAKE_MODULE_DIR}")
 		if (${Mathematica_FOUND})
 			message (STATUS "Mathematica ${Mathematica_VERSION} found")
+			message (STATUS "Mathematica creation ID ${Mathematica_CREATION_ID}")
 			message (STATUS "Mathematica target root dir ${Mathematica_ROOT_DIR}")
 			message (STATUS "Mathematica host root dir ${Mathematica_HOST_ROOT_DIR}")
-			message (STATUS "Mathematica kernel ${Mathematica_KERNEL_EXECUTABLE}")
-			message (STATUS "Mathematica frontend ${Mathematica_FRONTEND_EXECUTABLE}")
+			message (STATUS "Mathematica kernel executable ${Mathematica_KERNEL_EXECUTABLE}")
+			message (STATUS "Mathematica frontend executable ${Mathematica_FRONTEND_EXECUTABLE}")
 			message (STATUS "Mathematica target system ID ${Mathematica_SYSTEM_ID}")
 			message (STATUS "Mathematica target system IDs ${Mathematica_SYSTEM_IDS}")
 			message (STATUS "Mathematica host system ID ${Mathematica_HOST_SYSTEM_ID}")
@@ -1838,7 +1873,7 @@ macro(_log_found_variables)
 			message (STATUS "MathLink include dir ${Mathematica_MathLink_INCLUDE_DIR}")
 			message (STATUS "MathLink library ${Mathematica_MathLink_LIBRARY}")
 			message (STATUS "MathLink libraries ${Mathematica_MathLink_LIBRARIES}")
-			message (STATUS "MathLink mprep ${Mathematica_MathLink_MPREP_EXECUTABLE}")
+			message (STATUS "MathLink mprep executable ${Mathematica_MathLink_MPREP_EXECUTABLE}")
 		else()
 			message (STATUS "MathLink not found")
 		endif()
@@ -1865,6 +1900,13 @@ macro(_log_found_variables)
 			endif()
 		endforeach()
 	endif()
+	if (CYGWIN AND CMAKE_COMPILER_IS_GNUCC AND ${Mathematica_WolframLibrary_FOUND})
+		_determine_compiler_version(_gcc)
+		if (NOT _gcc_VERSION_MAJOR EQUAL 3)
+			message (WARNING
+				"LibraryLink DLL generation requires the -mno-cygwin compiler flag, which is not supported by gcc ${_gcc_VERSION}. Run cmake with options -DCMAKE_CXX_COMPILER=/usr/bin/g++-3.exe -DCMAKE_C_COMPILER=/usr/bin/gcc-3.exe.")
+		endif()
+	endif()
 endmacro(_log_found_variables)
 
 # internal macro returns cache variables that determine search result
@@ -1874,6 +1916,7 @@ macro(_get_cache_variables _CacheVariables)
 		Mathematica_USE_STATIC_LIBRARIES
 		Mathematica_USE_MINIMAL_LIBRARIES
 		Mathematica_SYSTEM_IDS
+		Mathematica_CREATION_ID
 		Mathematica_ROOT_DIR
 		Mathematica_HOST_ROOT_DIR
 		Mathematica_MathLink_ROOT_DIR
@@ -1899,6 +1942,12 @@ macro(_get_dependent_cache_variables _var _outDependentVars)
 			Mathematica_KERNEL_HOST_SYSTEM_ID Mathematica_MathLink_ROOT_DIR
 			Mathematica_KERNEL_BASE_DIR Mathematica_KERNEL_USERBASE_DIR)
 		_get_dependent_cache_variables("Mathematica_MathLink_ROOT_DIR" ${_outDependentVars})
+	elseif ("_${_var}" STREQUAL "_Mathematica_CREATION_ID")
+		# all cached Mathematica version variables are dependent on the cached creation ID
+		list (APPEND ${_outDependentVars}
+			Mathematica_VERSION Mathematica_WolframLibrary_VERSION
+			Mathematica_MathLink_VERSION Mathematica_JLink_VERSION
+			Mathematica_MUnit_VERSION)
 	elseif ("_${_var}" STREQUAL "_Mathematica_HOST_ROOT_DIR" OR
 			"_${_var}" STREQUAL "_Mathematica_HOST_SYSTEM_IDS")
 		list (APPEND ${_outDependentVars}
@@ -1950,7 +1999,8 @@ macro(_cleanup_cache)
 					message (STATUS "variable ${_CacheVariable} changed")
 				endif()
 			elseif ("_${_CacheVariable}" MATCHES "_(FILE|DIR)$" AND
-				"${${_CacheVariable}}" IS_NEWER_THAN "${CMAKE_BINARY_DIR}/CMakeCache.txt")
+				EXISTS "${${_CacheVariable}}" AND
+				"${${_CacheVariable}}" IS_NEWER_THAN "${CMAKE_CACHEFILE_DIR}/CMakeCache.txt")
 				# search var path has changed or no longer exists
 				_get_dependent_cache_variables(${_CacheVariable} _vars_to_clean)
 				if (Mathematica_DEBUG)
@@ -2028,16 +2078,19 @@ macro(_get_required_vars _component _outVars)
 endmacro()
 
 macro(_get_components_to_find _outComponents)
-	if (Mathematica_FIND_VERSION_MAJOR)
-		if (${Mathematica_FIND_VERSION_MAJOR} GREATER 7)
-			list (APPEND ${_outComponents} "MathLink" "WolframLibrary" "JLink" "MUnit")
-		else()
-			list (APPEND ${_outComponents} "MathLink" "JLink" "MUnit")
-		endif()
+	if (Mathematica_FIND_COMPONENTS)
+		list (APPEND ${_outComponents} ${Mathematica_FIND_COMPONENTS})
 	else()
-		list (APPEND ${_outComponents} "MathLink" "WolframLibrary" "JLink" "MUnit")
+		if (Mathematica_FIND_VERSION_MAJOR)
+			if (${Mathematica_FIND_VERSION_MAJOR} GREATER 7)
+				list (APPEND ${_outComponents} "MathLink" "WolframLibrary" "JLink" "MUnit")
+			else()
+				list (APPEND ${_outComponents} "MathLink" "JLink" "MUnit")
+			endif()
+		else()
+			list (APPEND ${_outComponents} "MathLink" "WolframLibrary" "JLink" "MUnit")
+		endif()
 	endif()
-	list (APPEND ${_outComponents} ${Mathematica_FIND_COMPONENTS})
 	list (REMOVE_DUPLICATES ${_outComponents})
 endmacro()
 
@@ -2122,7 +2175,11 @@ endmacro()
 # FindMathematica "main" starts here
 _log_used_variables()
 _setup_mathematica_systemIDs()
-_cleanup_cache()
+_setup_mathematica_creationID()
+if (DEFINED Mathematica_SYSTEM_IDS_LAST)
+	# not the initial find invocation
+	_cleanup_cache()
+endif()
 _setup_mathematica_base_directory()
 _setup_mathematica_userbase_directory()
 _find_mathematica()
@@ -2782,6 +2839,7 @@ endif (Mathematica_KERNEL_EXECUTABLE)
 
 # re-compute system IDs and base directories, now that we can query the kernel
 _setup_mathematica_systemIDs()
+_setup_mathematica_creationID()
 _setup_mathematica_base_directory()
 _setup_mathematica_userbase_directory()
 
@@ -3009,6 +3067,15 @@ function(Mathematica_WolframLibrary_SET_PROPERTIES)
 			set_target_properties (${_libraryName} PROPERTIES SUFFIX ".so")
 		endif()
 		set_target_properties (${_libraryName} PROPERTIES LABELS "Mathematica")
+		if (CYGWIN AND CMAKE_COMPILER_IS_GNUCC)
+			# Mathematica kernel cannot load Cygwin generated libraries linked with Cygwin runtime DLL
+			# a work-around is to use the -mno-cygwin flag, which is only supported by gcc 3.x, not by gcc 4.x
+			_determine_compiler_version(_gcc)
+			if (_gcc_VERSION_MAJOR EQUAL 3)
+				set_target_properties (${_libraryName} PROPERTIES COMPILE_FLAGS "-mno-cygwin")
+				set_target_properties (${_libraryName} PROPERTIES LINK_FLAGS "-mno-cygwin")
+			endif()
+		endif()
 	endforeach()
 	if (${_haveProperties})
 		set_target_properties (${ARGV})

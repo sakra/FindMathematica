@@ -36,25 +36,6 @@ Requirements
 * [gcc][gcc] (including g++) under Linux.
 * [Xcode][xcdt] developer tools package under Mac OS X.
 
-CMake MUnit support requires the installation of the Wolfram MUnit package. MUnit ships with
-[Wolfram*Workbench*][wwkb] 2.0. The JAR file `com.wolfram.eclipse.testing_2.0.126.jar` in the
-`plugins` subfolder of the Workbench installation folder contains different MUnit package versions
-for *Mathematica* versions 5.2 to 8.0.
-
-Extract the MUnit package version appropriate for your installed *Mathematica* version from the
-JAR file to a directory on the *Mathematica* `$Path` (e.g., `$BaseDirectory/Applications` or
-`$UserBaseDirectory/Applications`). Alternatively you can copy the MUnit package to the
-FindMathematica module directory which is automatically prepended to `$Path` when the *Mathematica*
-kernel is launched through the FindMathematica module.
-
-Generating *Mathematica* documentation with FindMathematica requires the installation of two
-documentation build packages, which also ship with [Wolfram*Workbench*][wwkb] 2.0. The JAR file
-`com.wolfram.eclipse.paclet.develop_2.0.138.jar` in the `plugins` subfolder of the Workbench
-installation folder contains the package folders `DocumentationBuild` and `Transmogrify`. These
-must be copied to a directory on the *Mathematica* `$Path`. The DocumentationBuild package also
-requires the installation of [Apache Ant][aant]. In order for Apache Ant to be found by CMake,
-the environment variable `ANT_HOME` needs to point to Apache Ant's installation directory.
-
 Installation
 ------------
 
@@ -62,6 +43,27 @@ Copy the directory `CMake/Mathematica` to the root directory of your CMake proje
 top-level `CMakeList.txt` file add the module directory to the CMake module search path:
 
     set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/Mathematica" ${CMAKE_MODULE_PATH})
+
+Optional CMake MUnit testing support requires the installation of the Wolfram MUnit package. MUnit
+ships with [Wolfram*Workbench*][wwkb] 2.0. The JAR file `com.wolfram.eclipse.testing_2.0.126.jar`
+in the `plugins` subfolder of the Workbench installation folder contains different MUnit package
+versions for *Mathematica* versions 5.2 to 8.0.
+
+Extract the MUnit package version appropriate for your installed *Mathematica* version from the
+JAR file to a directory on the *Mathematica* `$Path` (e.g., `$BaseDirectory/Applications` or
+`$UserBaseDirectory/Applications`). Alternatively you can copy the MUnit package to the
+FindMathematica module directory which is automatically prepended to `$Path` when the *Mathematica*
+kernel is launched through the FindMathematica module.
+
+If you plan on generating *Mathematica* documentation with CMake, the installation of two Wolfram
+documentation build packages, which also ship with [Wolfram*Workbench*][wwkb] 2.0, is required.
+The JAR file `com.wolfram.eclipse.paclet.develop_2.0.138.jar` in the `plugins` subfolder of the
+Workbench installation folder contains the package folders `DocumentationBuild` and `Transmogrify`.
+These must be copied to a directory on the *Mathematica* `$Path`.
+
+The DocumentationBuild package also requires the installation of [Apache Ant][aant]. In order for
+Apache Ant to be found by CMake, the environment variable `ANT_HOME` needs to point to Apache Ant's
+installation directory.
 
 Usage
 -----
@@ -94,6 +96,13 @@ provided by the FindMathematica module:
 * `DocumentationExamples` demonstrate how to build *Mathematica* documentation.
 
 ### Windows Usage Hints
+
+The module has been tested with *Mathematica* versions 5.2 to 8.0 and Visual Studio C++ 2008 under
+Windows XP, with *Mathematica* versions 7.0 to 8.0 and Visual Studio C++ 2010 under Windows 7,
+with *Mathematica* versions 5.2 to 8.0 and MinGW under Windows XP and with *Mathematica*
+versions 5.2 to 8.0 and Cygwin 1.7 under Windows XP.
+
+#### Visual Studio
 
 To build the FindMathematica project with Visual Studio C++ 2010 for 32-bit Windows, open a Visual
 Studio command prompt, change directory to the `FindMathematica` root directory and run the
@@ -132,14 +141,18 @@ If you are using a 32-bit version of Windows, you can run the *Mathematica* kern
 32-bit mode, though. If you are using a 64-bit version of Windows, you can run the *Mathematica*
 kernel both as a 64-bit native executable or as a 32-bit executable under WoW64.
 
+#### MinGW
+
 To build the FindMathematica project with [MinGW][mingw] run the following commands from a command
 prompt:
 
     D:\FindMathematica\build>cmake -G "MinGW Makefiles" ..
     D:\FindMathematica\build>mingw32-make
 
-Under [Cygwin][cgwn] the FindMathematica module requires the Cygwin version of CMake, which
-is different to the regular Windows CMake version.
+#### Cygwin
+
+Under [Cygwin][cgwn] the FindMathematica module requires the Cygwin version of CMake, which is
+different to the regular Windows CMake version.
 To build the FindMathematica project open a Cygwin shell prompt and run the the following
 commands in the `FindMathematica` root directory:
 
@@ -148,10 +161,13 @@ commands in the `FindMathematica` root directory:
     $ cmake ..
     $ make
 
-The module has been tested with *Mathematica* versions 5.2 to 8.0 and Visual Studio C++ 2008 under
-Windows XP, with *Mathematica* versions 7.0 to 8.0 and Visual Studio C++ 2010 under Windows 7,
-with *Mathematica* versions 5.2 to 8.0 and MinGW under Windows XP and with *Mathematica*
-versions 5.2 to 8.0 and Cygwin 1.7 under Windows XP.
+The *Mathematica* 8 kernel cannot load a Cygwin generated LibraryLink DLL that has been linked with
+the Cygwin runtime library. As a work-around, the FindMathematica module suppresses linking with the
+Cygwin runtime library by adding the `-mno-cygwin` flag when a LibraryLink target is added.
+This flag is supported by Cygwin gcc version 3.x, but not by the default Cygwin gcc version 4.x.
+To force the use of gcc version 3.x under Cygwin, run:
+
+    $ cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-3.exe -DCMAKE_C_COMPILER=/usr/bin/gcc-3.exe ..
 
 ### Linux Usage Hints
 
@@ -168,6 +184,10 @@ directory:
 
     $ make test
     $ make install
+
+To build the *Mathematica* documentation in notebook format, run:
+
+    $ make documentation
 
 FindMathematica supports building 32-bit and 64-bit MathLink executables and LibraryLink shared
 libraries using the appropriate link libraries that ship with the Linux version of *Mathematica*.
@@ -230,7 +250,6 @@ Leopard (10.5) on a PowerMac G4.
 Known Issues
 ------------
 
-* On Windows Cygwin generated LibraryLink DLLs cannot be loaded by the *Mathematica* 8 kernel.
 * On Windows linking to the `WolframRTL_Static_Minimal.lib` library under Cygwin or MinGW fails.
 
 [aant]:http://ant.apache.org/

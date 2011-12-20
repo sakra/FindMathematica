@@ -21,10 +21,10 @@ set (Mathematica_DEBUG OFF)
 find_package(Mathematica)
 
 # finds Mathematica 8 installation and required components
-#find_package(Mathematica 8 REQUIRED MathLink WolframLibrary)
+#find_package(Mathematica 8 REQUIRED MathLink JLink WolframLibrary)
 
 # finds Mathematica 7 installation and component MathLink
-#find_package(Mathematica 7 COMPONENTS MathLink)
+#find_package(Mathematica 7 COMPONENTS MathLink JLink)
 
 # finds Mathematica 5.2
 #find_package(Mathematica 5.2)
@@ -65,7 +65,9 @@ if (${Mathematica_FOUND})
 	# Mathematica_USERBASE_DIR is the directory for user-specific files to be loaded by Mathematica
 	message(STATUS "Mathematica User Base Directory ${Mathematica_USERBASE_DIR}")
 	add_subdirectory(MathematicaExamples)
-	add_subdirectory(DocumentationExamples)
+	if (${Mathematica_JLink_FOUND})
+		add_subdirectory(DocumentationExamples)
+	endif()
 endif()
 
 if (${Mathematica_WolframLibrary_FOUND})

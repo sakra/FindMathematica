@@ -4,8 +4,10 @@ include_directories(${Mathematica_INCLUDE_DIRS})
 
 set(_Examples
 	arbitraryTensor.c demo.c
-	demo_eval.c demo_error.c demo_mathlink.c
-	demo_numerical.c demo_shared.c demo_string.c)
+	demo_error.c demo_numerical.c demo_shared.c demo_string.c)
+if (${Mathematica_MathLink_FOUND})
+	list (APPEND _Examples demo_eval.c demo_mathlink.c)
+endif()
 
 # add a CMake shared library target for each LibraryLink example
 set (_Targets "")
@@ -38,8 +40,10 @@ function (do_mathematica_librarylink_test _target _expectedOutputRegEx)
 endfunction ()
 
 # demo_eval and demo_mathlink require MathLink
-target_link_libraries(demo_eval ${Mathematica_MathLink_LIBRARIES})
-target_link_libraries(demo_mathlink ${Mathematica_MathLink_LIBRARIES})
+if (${Mathematica_MathLink_FOUND})
+	target_link_libraries(demo_eval ${Mathematica_MathLink_LIBRARIES})
+	target_link_libraries(demo_mathlink ${Mathematica_MathLink_LIBRARIES})
+endif()
 
 if (DEFINED Mathematica_USERBASE_DIR)
 	foreach (_systemID ${Mathematica_SYSTEM_IDS})
@@ -111,6 +115,8 @@ Print[encodeString[\"Mathematica\", 5]]
 Print[reverseString[\"Mathematica\"]]"
 )
 
+if (${Mathematica_MathLink_FOUND})
+
 do_mathematica_librarylink_test(demo_mathlink
 # Expected output regular expression
 "2
@@ -131,5 +137,7 @@ CODE
 MyFunction::info=\"`1`\"
 Print[fun[1,2]]"
 )
+
+endif()
 
 add_convenience_test_target(LibraryLinkTests "LibraryLink")
