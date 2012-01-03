@@ -1,10 +1,17 @@
+## 2.0.2 (2012-01-03)
+
+* Under Windows search registry determined installation locations first
+* Under Mac OS X search LaunchServices database determined installation locations first
+* Under Mac OS X programmatically find path to `lsregister` executable
+* tested with with CMake 2.8.7
+
 ## 2.0.1 (2011-12-20)
 
 * skip cleanup of CMake cache upon initial invocation
 * cross-compiling fixes
 * add work-around that allows for generating LibraryLink workable DLLs with Cygwin
 * add `Mathematica_CREATION_ID` variable
-* recompute version information if *Mathematica* in upgraded in-place (e.g., from 8.0.1 to 8.0.4)
+* recompute version information if *Mathematica* is upgraded in-place (e.g., from 8.0.1 to 8.0.4)
 
 ## 2.0.0 (2011-12-05)
 

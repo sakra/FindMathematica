@@ -140,8 +140,8 @@
 #    [ KERNEL_OPTIONS <flag> [ <flag> ...] ]
 #    [ COMMENT comment ]
 #    [ SOURCES src1 [ src2... ] ])
-#  This function adds a target that executes Mathematica code at build time. The Mathematica code can
-#  be either specified as a list of in-line Mathematica statements or as path to a Mathematica
+#  This function adds a target that executes Mathematica code at build time. The Mathematica code
+#  can be either specified as a list of in-line Mathematica statements or as path to a Mathematica
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
 #  The working directory of the Mathematica child process is set to the CMAKE_CURRENT_BINARY_DIR.
@@ -160,10 +160,10 @@
 #    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ]
 #    [ DEPENDS [ depends ...] ]
 #    [ COMMENT comment] [APPEND])
-#  This function adds a target that executes Mathematica code to generate output files. The Mathematica
-#  code is responsible for generating the specified output files. The Mathematica code can be either
-#  specified as a list of in-line Mathematica statements or as path to a Mathematica script file.
-#  Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
+#  This function adds a target that executes Mathematica code to generate output files. The
+#  Mathematica code is responsible for generating the specified output files. The Mathematica code
+#  can be either specified as a list of in-line Mathematica statements or as path to a Mathematica
+#  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
 #  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
 #  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
@@ -180,9 +180,10 @@
 #    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ]
 #    [ COMMENT comment ])
 #  This function adds Mathematica code to an existing target which is run before or after building
-#  the target. The Mathematica will only execute when the target itself is built. The Mathematica code
-#  can be either specified as a list of in-line Mathematica statements or as path to a Mathematica
-#  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
+#  the target. The Mathematica will only execute when the target itself is built. The Mathematica
+#  code can be either specified as a list of in-line Mathematica statements or as path to a
+#  Mathematica script file. Multiple in-line statements are wrapped inside a Mathematica
+#  CompoundExpression.
 #  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
 #  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
@@ -202,7 +203,8 @@
 #  This function adds a CMake test to the project which runs Mathematica code. The code can
 #  be either specified as a list of in-line Mathematica statements or as path to a Mathematica
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
-#  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this test.
+#  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this
+#  test.
 #  This is necessary for testing LibraryLink dynamic libraries which require an architecture
 #  compatible kernel executable. E.g., on Windows-x86-64 you can set the SYSTEM_ID option to
 #  "Windows" to run the 32-bit kernel executable.
@@ -210,8 +212,8 @@
 #  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
 #  The string specified by the INPUT option is fed to the Mathematica kernel as standard input.
 #  The INPUT_FILE option specifies a file that is fed to the Mathematica kernel as standard input.
-#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be queried in
-#  the Mathematica code by using the Environment function.
+#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be
+#  queried in the Mathematica code by using the Environment function.
 #  The other options are passed through to the CMake command add_test.
 #  This function is available if the Mathematica kernel executable has been found.
 #
@@ -258,13 +260,13 @@
 #      LibraryUnload[ <WolframLibrary target> ]
 #  The string specified by the INPUT option is fed to the Mathematica kernel as standard input.
 #  The INPUT_FILE option specifies a file that is fed to the Mathematica kernel as standard input.
-#  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this test.
-#  E.g., on Mac OS X you can set the SYSTEM_ID option to "MacOSX-x86" to execute the 32-bit portion
-#  of the Mathematica kernel universal binary.
+#  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this
+#  test. E.g., on Mac OS X you can set the SYSTEM_ID option to "MacOSX-x86" to execute the 32-bit
+#  portion of the Mathematica kernel universal binary.
 #  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
 #  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
-#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be queried in
-#  the Mathematica code by using the Environment function.
+#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be
+#  queried in the Mathematica code by using the Environment function.
 #  The other options are passed through to the CMake command add_test.
 #  This function is available if the Mathematica kernel executable has been found and if the
 #  Mathematica installation supports LibraryLink (this requires Mathematica 8).
@@ -274,18 +276,19 @@
 #    [ DEPENDS [ <depend> ... ] ]
 #    [ OUTPUT <C source file> ])
 #  This function uses the CCodeGenerator package to convert Mathematica code to C code that can be
-#  run independently from Mathematica. Upon running the C code only requires the Wolfram Runtime Library
-#  (see http://bit.ly/blpx7S).
-#  The Mathematica script file needs to set up definitions of compiled functions and return a list of
-#  them along with their desired C function names in the last line. Example:
+#  run independently from Mathematica. Upon running the C code only requires the Wolfram Runtime
+#  Library (see http://bit.ly/blpx7S).
+#  The Mathematica script file needs to set up definitions of compiled functions and return a list
+#  of them along with their desired C function names in the last line. Example:
 #      (* Mathematica code *)
 #      square = Compile[ {{x}}, x^2];
 #      cube = Compile[ {{x}}, x^3];
 #      {{square,cube},{"square","cube"}}
-#  The function then adds a custom target which runs the Mathematica function CCodeGenerate to produce
-#  a C source file and a C header file that contains the compiled Mathematica functions. The output files
-#  are created in the CMAKE_CURRENT_BINARY_DIR. The names of the source file and the header file are
-#  obtained by adding the extensions .c and .h to the Mathematica script file name respectively.
+#  The function then adds a custom target which runs the Mathematica function CCodeGenerate to
+#  produce a C source file and a C header file that contains the compiled Mathematica functions.
+#  The output files are created in the CMAKE_CURRENT_BINARY_DIR. The names of the source file and
+#  the header file are obtained by adding the extensions .c and .h to the Mathematica script file
+#  name respectively.
 #  The DEPENDS option specifies additional files on which the generated C code file depends.
 #  The OUTPUT option can be used to produce output files with different names.
 #  This function is available if the Mathematica kernel executable has been found and if the
@@ -297,9 +300,9 @@
 #  This function adds a custom target which runs the Mathematica function Splice on the input file.
 #  Text enclosed between <* and *> in the input file is evaluated as Mathematica input and replaced
 #  with the resulting Mathematica output (see http://bit.ly/aTOi2U).
-#  The output file is created in the CMAKE_CURRENT_BINARY_DIR. The name of the output file is obtained
-#  by adding the extensions .c to the input file base name. The OUTPUT option can be used to produce an
-#  output file with a different name.
+#  The output file is created in the CMAKE_CURRENT_BINARY_DIR. The name of the output file is
+#  obtained by adding the extensions .c to the input file base name.
+#  The OUTPUT option can be used to produce an output file with a different name.
 #  This function is available if the Mathematica kernel executable has been found.
 #
 #  Mathematica_ENCODE(
@@ -309,8 +312,8 @@
 #    [ KEY <encoding key> ]
 #    [ MACHINE_ID <machine ID> ]
 #    [ CHECK_TIMESTAMPS ] )
-#  This function adds a custom target which runs the Mathematica function Encode on the given input files.
-#  Mathematica encoded files contain only printable ASCII characters (see http://bit.ly/snozeT).
+#  This function adds a custom target which runs the Mathematica function Encode on the given input
+#  files. Mathematica encoded files contain only printable ASCII characters (see http://bit.ly/snozeT).
 #  By default each encoded output files is created with the same name as the corresponding input file
 #  in CMAKE_CURRENT_BINARY_DIR. The OUTPUT option can be used to create the output files in
 #  a different folder or with different names.
@@ -362,17 +365,17 @@
 #    [ CUSTOM_HEADER <header file> ]
 #    [ CUSTOM_TRAILER <trailer file> ]
 #    [ LINE_DIRECTIVES ])
-#  This functions adds a custom target which creates a C source file from a MathLink template (.tm) file
-#  with mprep. The generated C source file contains MathLink glue code that makes C functions callable
-#  from Mathematica via a MathLink connection.
-#  The output file is created in the CMAKE_CURRENT_BINARY_DIR. The name of the output file is obtained
-#  by adding the extensions .c to the input file name. The OUTPUT option can be used to produce an
-#  output file with a different name.
-#  The options CUSTOM_HEADER and CUSTOM_TRAILER can be set to make mprep use a custom header and trailer code
-#  for the generated output file. This is necessary upon cross-compiling, because the default mprep header
-#  and trailer code emitted by mprep only compiles on the host platform.
+#  This functions adds a custom target which creates a C source file from a MathLink template (.tm)
+#  file with mprep. The generated C source file contains MathLink glue code that makes C functions
+#  callable from Mathematica via a MathLink connection.
+#  The output file is created in the CMAKE_CURRENT_BINARY_DIR. The name of the output file is
+#  obtained by adding the extensions .c to the input file name. The OUTPUT option can be used to
+#  produce an output file with a different name.
+#  The options CUSTOM_HEADER and CUSTOM_TRAILER can be set to make mprep use a custom header and
+#  trailer code for the generated output file. This is necessary upon cross-compiling, because the
+#  default mprep header and trailer code emitted by mprep only compiles on the host platform.
 #  If the option LINE_DIRECTIVES is given, the generated C source file will contain preprocessor
-#  line directive which reference the copied code sections in the template file.
+#  line directives which reference the copied code sections in the template file.
 #  This function is available if the MathLink executable mprep has been found.
 #
 #  Mathematica_MathLink_ADD_EXECUTABLE(
@@ -403,12 +406,13 @@
 #  executable as a front-end to the Mathematica kernel.
 #  The text specified by the INPUT option is fed to the launched executable as standard input.
 #  The INPUT_FILE option specifies a file that is fed to the launched executable as standard input.
-#  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this test.
-#  E.g., on Linux-x86-64 set the SYSTEM_ID option to "Linux" to run the 32-bit version of the kernel.
+#  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this
+#  test. E.g., on Linux-x86-64 set the SYSTEM_ID option to "Linux" to run the 32-bit version of the
+#  kernel.
 #  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
 #  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
-#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be queried in
-#  the Mathematica code by using the Environment function.
+#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be
+#  queried in the Mathematica code by using the Environment function.
 #  This function is available if the Mathematica kernel executable has been found and if the
 #  Mathematica installation has a MathLink SDK.
 #
@@ -437,7 +441,8 @@
 #  files. If the RELATIVE option is specified, results will be returned as a relative path to
 #  the given path. If a given test file does not contain a TestSuite expression, its path will
 #  be returned instead.
-#  This function is available if the MUnit package and the Mathematica kernel executable have been found.
+#  This function is available if the MUnit package and the Mathematica kernel executable have been
+#  found.
 #
 #  Mathematica_MUnit_ADD_TEST(
 #    NAME testname
@@ -465,15 +470,16 @@
 #  The string specified by the INPUT option is fed to the Mathematica kernel as standard input.
 #  The INPUT_FILE option specifies a file that is fed to the Mathematica kernel as standard input.
 #  The TIMEOUT option will be used to initialize to TIMEOUT property of the generated CMake test.
-#  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this test.
-#  E.g., on 64-bit Windows you can set the SYSTEM_ID option to "Windows" to execute the 32-bit version
-#  of the Mathematica kernel.
+#  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this
+#  test. E.g., on 64-bit Windows you can set the SYSTEM_ID option to "Windows" to execute the
+#  32-bit version of the Mathematica kernel.
 #  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
 #  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
-#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be queried in
-#  the Mathematica code by using the Environment function.
+#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be
+#  queried in the Mathematica code by using the Environment function.
 #  The other options are passed through to the CMake command add_test.
-#  This function is available if the MUnit package and the Mathematica kernel executable have been found.
+#  This function is available if the MUnit package and the Mathematica kernel executable have been
+#  found.
 #
 #  Mathematica_ADD_DOCUMENTATION(
 #    targetname [ ALL ]
@@ -486,19 +492,20 @@
 #    [ SOURCES src1 [ src2... ] ])
 #  This function adds a CMake target which builds documentation from previously authored Mathematica
 #  documentation notebooks (e.g., guide pages, symbol pages and tutorial pages).
-#  The function requires the Mathematica packages "DocumentationBuild" and "Transmogrify" to be available
-#  on the Mathematica $Path. The documentation is generated by invoking Apache Ant build scripts provided
-#  by the DocumentationBuild package.
-#  The build script looks for documentation notebooks in the given INPUT_DIRECTORY and writes the built
-#  documentation to the given OUTPUT_DIRECTORY. If omitted, INPUT_DIRECTORY defaults to
+#  The function requires the Mathematica packages "DocumentationBuild" and "Transmogrify" to be
+#  available on the Mathematica $Path. The documentation is generated by invoking Apache Ant build
+#  scripts provided by the DocumentationBuild package.
+#  The build script looks for documentation notebooks in the given INPUT_DIRECTORY and writes the
+#  built documentation to the given OUTPUT_DIRECTORY. If omitted, INPUT_DIRECTORY defaults to
 #  CMAKE_CURRENT_SOURCE_DIR and OUTPUT_DIRECTORY defaults to CMAKE_CURRENT_BINARY_DIR.
-#  Previously built documentation files in OUTPUT_DIRECTORY are removed before the Ant script is invoked.
+#  Previously built documentation files in OUTPUT_DIRECTORY are removed before the Ant script is
+#  invoked.
 #  DOCUMENTATION_TYPE specifies the type of the built documentation with "Notebook" being the default.
 #  APPLICATION_NAME gives the base name of the generated documentation links (defaults to PROJECT_NAME).
 #  LANGUAGE sets the documentation language (e.g., "Japanese"). It defaults to "English" if omitted.
 #  The other options are passed through to the CMake command add_custom_target.
-#  If the required Mathematica packages or Apache Ant are not found, the generated CMake target will just
-#  generate an empty documentation folder.
+#  If the required Mathematica packages or Apache Ant are not found, the generated CMake target will
+#  just generate an empty documentation folder.
 #  This function is available if J/Link and the Mathematica kernel executable have been found.
 
 # we need the CMakeParseArguments module
@@ -509,7 +516,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "2.0.1")
+set (Mathematica_CMAKE_MODULE_VERSION "2.0.2")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -628,7 +635,8 @@ macro(_get_program_names _outProgramNames)
 	if (Mathematica_FIND_VERSION)
 		foreach (_product IN LISTS _MathematicaApps)
 			_append_program_names("${_product}"
-				"${Mathematica_FIND_VERSION_MAJOR}.${Mathematica_FIND_VERSION_MINOR}" ${_outProgramNames})
+				"${Mathematica_FIND_VERSION_MAJOR}.${Mathematica_FIND_VERSION_MINOR}"
+				${_outProgramNames})
 		endforeach()
 	endif()
 	# then try unqualified application names
@@ -706,11 +714,25 @@ endfunction()
 # internal function to determine Mathematica installation paths from Mac OS X LaunchServices database
 function (_add_launch_services_search_paths _outSearchPaths)
 	if (CMAKE_HOST_APPLE)
+		# the lsregister executable is needed to search the LaunchServices database
+		# the executable usually resides in the LaunchServices framework Support directory
+		# The LaunchServices framework is a sub-framework of the CoreServices umbrella framework
+		find_path (Mathematica_CoreServices_DIR NAMES "CoreServices/CoreServices.h")
+		find_path (Mathematica_LaunchServices_DIR NAMES "LaunchServices/LaunchServices.h"
+			HINTS "${Mathematica_CoreServices_DIR}/Frameworks")
+		find_program (Mathematica_LSRegister_EXECUTABLE NAMES "lsregister" PATH_SUFFIXES "Support"
+			HINTS "${Mathematica_LaunchServices_DIR}")
+		mark_as_advanced(
+			Mathematica_CoreServices_DIR
+			Mathematica_LaunchServices_DIR
+			Mathematica_LSRegister_EXECUTABLE)
+		if (NOT Mathematica_LSRegister_EXECUTABLE)
+			message (STATUS "Skipping search of the LaunchServices database, because the lsregister executable could not be found.")
+			return()
+		endif()
 		foreach (_bundleID IN ITEMS ${ARGN})
 			execute_process(
-				COMMAND
-					"/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
-					"-dump"
+				COMMAND "${Mathematica_LSRegister_EXECUTABLE}" "-dump"
 				COMMAND "grep" "--before-context=2" " ${_bundleID} "
 				COMMAND "grep" "--only-matching" "/.*\\.app"
 				TIMEOUT 10 OUTPUT_VARIABLE _queryResult ERROR_QUIET)
@@ -774,30 +796,31 @@ endmacro()
 macro(_get_search_paths _outSearchPaths)
 	set (${_outSearchPaths} "")
 	if (CMAKE_HOST_WIN32 OR CYGWIN)
-		set (${_outSearchPaths} "")
-		# Windows: environment variable locations where Mathematica may be installed
+		# add non-standard installation paths from Windows registry
+		_add_registry_search_paths(${_outSearchPaths}
+			"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wolfram Research\\Installations"
+			"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Wolfram Research\\Installations")
+		# environment variable locations where Mathematica may be installed
 		set (_WindowsProgramFilesEnvVars to "ProgramW6432" "ProgramFiles(x86)" "ProgramFiles" )
 		if (CYGWIN)
 			# Cygwin may be configured to convert all environment variables to all-uppercase
 			list (APPEND _WindowsProgramFilesEnvVars "PROGRAMW6432" "PROGRAMFILES(X86)" "PROGRAMFILES")
 		endif()
+		# add standard Mathematica Windows installation paths
 		foreach (_envVar IN LISTS _WindowsProgramFilesEnvVars)
 			if ("$ENV{${_envVar}}" MATCHES ".+")
 				_to_cmake_path("$ENV{${_envVar}}" _unixPath)
 				list (APPEND ${_outSearchPaths} "${_unixPath}/Wolfram Research" )
 			endif()
 		endforeach()
-		# add non-standard installation paths from Windows registry
-		_add_registry_search_paths(${_outSearchPaths}
-			"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wolfram Research\\Installations"
-			"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Wolfram Research\\Installations")
 	elseif (CMAKE_HOST_APPLE)
-		set (${_outSearchPaths}
-			"/Applications" "~/Applications" "/Network/Applications" "/Developer/Applications")
-		# add non-standard installation paths from Mac OS X Launch Services database
+		# add non-standard installation paths from Mac OS X LaunchServices database
 		_add_launch_services_search_paths(${_outSearchPaths} "com.wolfram.Mathematica")
+		# add standard Mathematica Mac OS X installation paths
+		list (APPEND ${_outSearchPaths} ${CMAKE_SYSTEM_APPBUNDLE_PATH})
 	elseif (CMAKE_HOST_UNIX)
-		set (${_outSearchPaths} "/usr/local/Wolfram" "/opt/Wolfram")
+		# add standard Mathematica Unix installation paths
+		list (APPEND ${_outSearchPaths} "/usr/local/Wolfram" "/opt/Wolfram")
 	endif()
 	_add_default_search_path(${_outSearchPaths})
 	if (${_outSearchPaths})
@@ -1330,7 +1353,7 @@ macro(_setup_mathematica_base_directory)
 	endif()
 endmacro()
 
-# internal macro to set up Mathematica userbase directory variable
+# internal macro to set up Mathematica user base directory variable
 macro(_setup_mathematica_userbase_directory)
 	if (COMMAND Mathematica_EXECUTE)
 		# determine true $UserBaseDirectory
@@ -1399,7 +1422,7 @@ macro(_find_mathematica)
 			NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
 		)
 	else()
-		# preserve pre-defined value, but set correct type and helpstring
+		# preserve pre-defined value, but set correct type and help string
 		set_property(CACHE Mathematica_HOST_ROOT_DIR PROPERTY TYPE PATH)
 		set_property(CACHE Mathematica_HOST_ROOT_DIR PROPERTY HELPSTRING "${_helpStr}")
 	endif()
@@ -1411,7 +1434,7 @@ macro(_find_mathematica)
 		NOT EXISTS "${Mathematica_ROOT_DIR}")
 		set (Mathematica_ROOT_DIR ${Mathematica_HOST_ROOT_DIR} CACHE PATH "${_helpStr}")
 	else()
-		# preserve pre-defined value, but set correct type and helpstring
+		# preserve pre-defined value, but set correct type and help string
 		set_property(CACHE Mathematica_ROOT_DIR PROPERTY TYPE PATH)
 		set_property(CACHE Mathematica_ROOT_DIR PROPERTY HELPSTRING "${_helpStr}")
 	endif()
@@ -2934,7 +2957,8 @@ function (Mathematica_MathLink_ADD_TEST)
 		_add_script_or_code(_cmd _noScript _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
 	else()
 		# run MathLink executable as front-end to Mathematica kernel
-		_add_mathlink_launch_code(_cmd "$<TARGET_FILE:${_option_TARGET}>" _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+		_add_mathlink_launch_code(_cmd "$<TARGET_FILE:${_option_TARGET}>"
+			_option_SYSTEM_ID _option_KERNEL_OPTIONS)
 	endif()
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
@@ -2997,7 +3021,8 @@ function (Mathematica_GENERATE_C_CODE _packageFile)
 		CODE ${_codeGenerate}
 		DEPENDS ${_option_DEPENDS}
 		COMMENT "${_msg}")
-	set_source_files_properties("${_cSource}" "${_cHeader}" PROPERTIES GENERATED TRUE LABELS "Mathematica")
+	set_source_files_properties("${_cSource}" "${_cHeader}"
+		PROPERTIES GENERATED TRUE LABELS "Mathematica")
 endfunction(Mathematica_GENERATE_C_CODE)
 
 # public function to simplify testing WolframLibrary targets
@@ -3402,22 +3427,28 @@ function (Mathematica_ADD_DOCUMENTATION _targetName)
 	endif()
 	if (NOT _option_OUTPUT_DIRECTORY)
 		if (_option_DOCUMENTATION_TYPE STREQUAL "Notebook")
-			set (_option_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_option_APPLICATION_NAME}/Documentation")
+			set (_option_OUTPUT_DIRECTORY
+				"${CMAKE_CURRENT_BINARY_DIR}/${_option_APPLICATION_NAME}/Documentation")
 		else()
-			set (_option_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_option_APPLICATION_NAME}-${_option_DOCUMENTATION_TYPE}")
+			set (_option_OUTPUT_DIRECTORY
+				"${CMAKE_CURRENT_BINARY_DIR}/${_option_APPLICATION_NAME}-${_option_DOCUMENTATION_TYPE}")
 		endif()
 	endif()
 	if (NOT _option_COMMENT)
-		set (_option_COMMENT "Building ${_option_APPLICATION_NAME} ${_option_DOCUMENTATION_TYPE} documentation")
+		set (_option_COMMENT
+			"Building ${_option_APPLICATION_NAME} ${_option_DOCUMENTATION_TYPE} documentation")
 	endif()
 	# clean previously built documentation files
 	list (APPEND _cmd COMMAND "${CMAKE_COMMAND}" "-E" "remove_directory" "${_option_OUTPUT_DIRECTORY}")
 	list (APPEND _cmd COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${_option_OUTPUT_DIRECTORY}")
 	# generate new documentation files if all requirements are met
-	if (Mathematica_ANT_EXECUTABLE AND Mathematica_DocumentationBuild_PACKAGE_FILE AND Mathematica_Transmogrify_PACKAGE_FILE)
+	if (Mathematica_ANT_EXECUTABLE AND
+		Mathematica_DocumentationBuild_PACKAGE_FILE AND
+		Mathematica_Transmogrify_PACKAGE_FILE)
 		get_filename_component(_appPath "${Mathematica_DocumentationBuild_PACKAGE_DIR}" PATH)
 		string (TOLOWER "${_option_DOCUMENTATION_TYPE}.xml" _buildFileName)
-		set (_buildFile "${Mathematica_DocumentationBuild_PACKAGE_DIR}/SystemFiles/ant/Build/${_buildFileName}")
+		set (_buildFile
+			"${Mathematica_DocumentationBuild_PACKAGE_DIR}/SystemFiles/ant/Build/${_buildFileName}")
 		list (APPEND _cmd COMMAND "${Mathematica_ANT_EXECUTABLE}")
 		list (APPEND _cmd "-buildfile" "${_buildFile}")
 		list (APPEND _cmd "-DappPath=${_appPath}")
