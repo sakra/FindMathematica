@@ -1,8 +1,12 @@
+## 2.0.3 (2012-01-19)
+
+* fix LaunchServices database search under Mac OS X 10.7
+
 ## 2.0.2 (2012-01-03)
 
-* Under Windows search registry determined installation locations first
-* Under Mac OS X search LaunchServices database determined installation locations first
-* Under Mac OS X programmatically find path to `lsregister` executable
+* under Windows search registry determined installation locations first
+* under Mac OS X search LaunchServices database determined installation locations first
+* under Mac OS X programmatically find path to `lsregister` executable
 * tested with with CMake 2.8.7
 
 ## 2.0.1 (2011-12-20)
