@@ -1,3 +1,10 @@
+## 2.0.4 (2012-02-26)
+
+* fix compiler version detection for Visual Studio C++
+* fix LaunchServices database search bug under Mac OS X
+* add `Mathematica_MathLink_HOST_INCLUDE_DIR`
+* quoting fixes
+
 ## 2.0.3 (2012-01-19)
 
 * fix LaunchServices database search under Mac OS X 10.7
