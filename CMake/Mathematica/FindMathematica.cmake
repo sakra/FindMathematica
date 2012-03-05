@@ -509,6 +509,31 @@
 #  just generate an empty documentation folder.
 #  This function is available if J/Link and the Mathematica kernel executable have been found.
 
+#=============================================================================
+# Copyright 2010-2012 Sascha Kratky
+#
+# Permission is hereby granted, free of charge, to any person)
+# obtaining a copy of this software and associated documentation)
+# files (the "Software"), to deal in the Software without)
+# restriction, including without limitation the rights to use,)
+# copy, modify, merge, publish, distribute, sublicense, and/or sell)
+# copies of the Software, and to permit persons to whom the)
+# Software is furnished to do so, subject to the following)
+# conditions:)
+#
+# The above copyright notice and this permission notice shall be)
+# included in all copies or substantial portions of the Software.)
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,)
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES)
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND)
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT)
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,)
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING)
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR)
+# OTHER DEALINGS IN THE SOFTWARE.)
+#=============================================================================
+
 # we need the CMakeParseArguments module
 cmake_minimum_required(VERSION 2.8.4)
 
@@ -517,7 +542,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "2.0.4")
+set (Mathematica_CMAKE_MODULE_VERSION "2.0.5")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -677,10 +702,13 @@ function (_add_registry_search_path _registryKey _outSearchPaths)
 	if (${_qualified})
 		if (EXISTS "${_productPath}")
 			_to_cmake_path("${_productPath}" _path)
-			if (Mathematica_FIND_VERSION AND
-				"${_productVersion}" MATCHES "${Mathematica_FIND_VERSION}")
-				# prepend if version matches requested one
-				list (INSERT ${_outSearchPaths} 0 "${_path}")
+			if (Mathematica_FIND_VERSION)
+				if ("${_productVersion}" MATCHES "${Mathematica_FIND_VERSION}")
+					# prepend if version matches requested one
+					list (INSERT ${_outSearchPaths} 0 "${_path}")
+				else()
+					list (APPEND ${_outSearchPaths} "${_path}")
+				endif()
 			else()
 				list (APPEND ${_outSearchPaths} "${_path}")
 			endif()
@@ -748,11 +776,14 @@ function (_add_launch_services_search_paths _outSearchPaths)
 				foreach (_appPath IN LISTS _appPaths)
 					if (EXISTS "${_appPath}")
 						_to_cmake_path("${_appPath}" _appPath)
-						if (Mathematica_FIND_VERSION AND
-							"${_appPath}" MATCHES "${Mathematica_FIND_VERSION}")
-							# prepend if version matches requested one
-							list (INSERT _paths ${_insertIndex} "${_appPath}")
-							math(EXPR _insertIndex "${_insertIndex} + 1")
+						if (Mathematica_FIND_VERSION)
+							if ("${_appPath}" MATCHES "${Mathematica_FIND_VERSION}")
+								# prepend if version matches requested one
+								list (INSERT _paths ${_insertIndex} "${_appPath}")
+								math(EXPR _insertIndex "${_insertIndex} + 1")
+							else()
+								list (APPEND _paths "${_appPath}")
+							endif()
 						else()
 							list (APPEND _paths "${_appPath}")
 						endif()
@@ -1023,9 +1054,12 @@ endmacro()
 macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 	set (${_outSystemIDs} "")
 	if (${_systemID} STREQUAL "Windows-x86-64")
-		if (NOT DEFINED Mathematica_VERSION OR
-			NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
-			# Mathematica version 5.2 added support for Windows-x86-64
+		if (DEFINED Mathematica_VERSION)
+			if (NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
+				# Mathematica version 5.2 added support for Windows-x86-64
+				list (APPEND ${_outSystemIDs} "Windows-x86-64")
+			endif()
+		else()
 			list (APPEND ${_outSystemIDs} "Windows-x86-64")
 		endif()
 		# Windows x64 can run x86 through WoW64
@@ -1045,16 +1079,22 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 				list (APPEND ${_outSystemIDs} "MacOSX-x86-64" "MacOSX-x86")
 			endif()
 		elseif (${_systemID} STREQUAL "MacOSX-x86")
-			if (NOT DEFINED Mathematica_VERSION OR
-				NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
-				# Mathematica version 5.2 added support for MacOSX-x86
-				list (APPEND ${_outSystemIDs} "MacOSX-x86")
+			if (DEFINED Mathematica_VERSION)
+				if (NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
+					# Mathematica version 5.2 added support for MacOSX-x86
+					list (APPEND ${_outSystemIDs} "MacOSX-x86")
+				endif()
+			else()
+				list (APPEND ${_outSystemIDs} "MacOSX-x86-64" "MacOSX-x86")
 			endif()
 		elseif (${_systemID} STREQUAL "Darwin-PowerPC64")
-			if (NOT DEFINED Mathematica_VERSION OR
-				(NOT "${Mathematica_VERSION}" VERSION_LESS "5.2" AND
-				"${Mathematica_VERSION}" VERSION_LESS "6.0"))
-				# Only Mathematica version 5.2 supports Darwin-PowerPC64
+			if (DEFINED Mathematica_VERSION)
+				if (NOT "${Mathematica_VERSION}" VERSION_LESS "5.2" AND
+					"${Mathematica_VERSION}" VERSION_LESS "6.0")
+					# Only Mathematica version 5.2 supports Darwin-PowerPC64
+					list (APPEND ${_outSystemIDs} "Darwin-PowerPC64")
+				endif()
+			else()
 				list (APPEND ${_outSystemIDs} "Darwin-PowerPC64")
 			endif()
 		endif()
@@ -1075,9 +1115,12 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 			endif()
 		endif()
 	elseif (${_systemID} MATCHES "Linux-x86-64|Linux-IA64")
-		if (NOT DEFINED Mathematica_VERSION OR
-			NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
-			# Mathematica version 5.2 added support for 64-bit
+		if (DEFINED Mathematica_VERSION)
+			if (NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
+				# Mathematica version 5.2 added support for 64-bit
+				list (APPEND ${_outSystemIDs} ${_systemID})
+			endif()
+		else()
 			list (APPEND ${_outSystemIDs} ${_systemID})
 		endif()
 		# Linux 64-bit can run x86 through ia32-libs package
@@ -1194,15 +1237,17 @@ endmacro()
 # internal macro to compute required MathLink system libraries
 macro(_append_mathlink_needed_system_libraries _outLibraries)
 	if (UNIX)
-		if (DEFINED Mathematica_MathLink_VERSION_MINOR AND
-			"${Mathematica_MathLink_VERSION_MINOR}" GREATER 18)
-			# UNIX MathLink API revision >= 19 has dependency on libstc++
-			list (APPEND ${_outLibraries} stdc++ )
+		if (DEFINED Mathematica_MathLink_VERSION_MINOR)
+			if ("${Mathematica_MathLink_VERSION_MINOR}" GREATER 18)
+				# UNIX MathLink API revision >= 19 has dependency on libstc++
+				list (APPEND ${_outLibraries} stdc++ )
+			endif()
 		endif()
-		if (APPLE AND DEFINED Mathematica_MathLink_VERSION_MINOR AND
-			"${Mathematica_MathLink_VERSION_MINOR}" GREATER 20)
-			# Mac OS X MathLink API revision >= 21 has dependency on Core Foundation framework
-			list (APPEND ${_outLibraries} "-framework CoreFoundation" )
+		if (APPLE AND DEFINED Mathematica_MathLink_VERSION_MINOR)
+			if ("${Mathematica_MathLink_VERSION_MINOR}" GREATER 20)
+				# Mac OS X MathLink API revision >= 21 has dependency on Core Foundation framework
+				list (APPEND ${_outLibraries} "-framework CoreFoundation" )
+			endif()
 		endif()
 		if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 			list (APPEND ${_outLibraries} m pthread rt )
@@ -1260,12 +1305,11 @@ endfunction()
 
 # internal macro to select runtime libraries according to build type
 macro(_select_configuration_run_time_dirs _outRuntimeDirs)
-	if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-		set (${_outRuntimeDirs}
-			${Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG})
-	else()
-		set (${_outRuntimeDirs}
-			${Mathematica_RUNTIME_LIBRARY_DIRS})
+	set (${_outRuntimeDirs} ${Mathematica_RUNTIME_LIBRARY_DIRS})
+	if (DEFINED CMAKE_BUILD_TYPE)
+		if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+			set (${_outRuntimeDirs} ${Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG})
+		endif()
 	endif()
 endmacro()
 
@@ -1299,11 +1343,13 @@ endmacro()
 
 # internal macro to set up Mathematica creation ID
 macro(_setup_mathematica_creationID)
-	if (Mathematica_ROOT_DIR AND
-		EXISTS "${Mathematica_ROOT_DIR}/.CreationID")
-		# parse hidden CreationID file
-		file (STRINGS "${Mathematica_ROOT_DIR}/.CreationID" Mathematica_CREATION_ID REGEX "[0-9]+")
-	elseif (DEFINED Mathematica_CREATION_ID_LAST)
+	if (DEFINED Mathematica_ROOT_DIR)
+		if (EXISTS "${Mathematica_ROOT_DIR}/.CreationID")
+			# parse hidden CreationID file
+			file (STRINGS "${Mathematica_ROOT_DIR}/.CreationID" Mathematica_CREATION_ID REGEX "[0-9]+")
+		endif()
+	endif()
+	if (NOT DEFINED Mathematica_CREATION_ID AND DEFINED Mathematica_CREATION_ID_LAST)
 		set (Mathematica_CREATION_ID ${Mathematica_CREATION_ID_LAST})
 	endif()
 endmacro()
@@ -1408,8 +1454,14 @@ macro(_find_mathematica)
 		message (STATUS "KernelExecutables ${_KernelExecutables}")
 	endif()
 	set (_helpStr "Mathematica host installation root directory.")
-	if (NOT DEFINED Mathematica_HOST_ROOT_DIR OR
-		NOT EXISTS "${Mathematica_HOST_ROOT_DIR}")
+	if (NOT DEFINED Mathematica_HOST_ROOT_DIR)
+		set (_doSearch TRUE)
+	elseif (NOT EXISTS "${Mathematica_HOST_ROOT_DIR}")
+		set (_doSearch TRUE)
+	else()
+		set (_doSearch FALSE)
+	endif()
+	if (_doSearch)
 		_get_search_paths(_SearchPaths)
 		_get_program_names(_ProgramNames)
 		if (Mathematica_DEBUG)
@@ -1432,8 +1484,9 @@ macro(_find_mathematica)
 	# upon cross-compiling Mathematica_ROOT_DIR needs to be manually set to the correct
 	# Mathematica installation folder for the target platform
 	set (_helpStr "Mathematica target installation root directory.")
-	if (NOT DEFINED Mathematica_ROOT_DIR OR
-		NOT EXISTS "${Mathematica_ROOT_DIR}")
+	if (NOT DEFINED Mathematica_ROOT_DIR)
+		set (Mathematica_ROOT_DIR ${Mathematica_HOST_ROOT_DIR} CACHE PATH "${_helpStr}")
+	elseif (NOT EXISTS "${Mathematica_ROOT_DIR}")
 		set (Mathematica_ROOT_DIR ${Mathematica_HOST_ROOT_DIR} CACHE PATH "${_helpStr}")
 	else()
 		# preserve pre-defined value, but set correct type and help string
@@ -1781,14 +1834,16 @@ macro(_setup_wolframlibrary_library_variables)
 				list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS ${_libraryDir})
 				list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG ${_libraryDir})
 			endforeach()
-			foreach (_systemID ${Mathematica_SYSTEM_IDS})
-				set (_kernelBinariesDir "${Mathematica_ROOT_DIR}/SystemFiles/Kernel/Binaries/${_systemID}")
-				if (EXISTS "${_kernelBinariesDir}")
-					# kernel binaries dir contains additional runtime libraries (e.g., Intel MKL)
-					list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS "${_kernelBinariesDir}")
-					list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG "${_kernelBinariesDir}")
-				endif()
-			endforeach()
+			if (NOT APPLE)
+				# kernel binaries dir on Windows and Linux contains additional runtime libraries (e.g., Intel MKL)
+				foreach (_systemID ${Mathematica_SYSTEM_IDS})
+					set (_kernelBinariesDir "${Mathematica_ROOT_DIR}/SystemFiles/Kernel/Binaries/${_systemID}")
+					if (EXISTS "${_kernelBinariesDir}")
+						list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS "${_kernelBinariesDir}")
+						list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG "${_kernelBinariesDir}")
+					endif()
+				endforeach()
+			endif()
 		endif()
 		_append_wolframlibrary_needed_system_libraries(Mathematica_WolframLibrary_LIBRARIES)
 		list (APPEND Mathematica_LIBRARIES ${Mathematica_WolframLibrary_LIBRARIES})
@@ -1828,12 +1883,16 @@ endmacro()
 macro (_determine_compiler_version _language _versionPrefix)
 	if (NOT DEFINED ${_versionPrefix}_VERSION)
 		if (MSVC)
-			# cl.exe messes with the output streams unless the environment variable VS_UNICODE_OUTPUT is cleared
-			unset (ENV{VS_UNICODE_OUTPUT})
-			execute_process (COMMAND ${CMAKE_${_language}_COMPILER}
-				ERROR_VARIABLE _versionLine OUTPUT_QUIET TIMEOUT 10)
-			string (REGEX REPLACE ".*Version *([0-9]+(\\.[0-9]+)*).*" "\\1"
-				${_versionPrefix}_VERSION ${_versionLine})
+			if (DEFINED MSVC_VERSION)
+				set (${_versionPrefix}_VERSION "${MSVC_VERSION}")
+			else()
+				# cl.exe messes with the output streams unless the environment variable VS_UNICODE_OUTPUT is cleared
+				unset (ENV{VS_UNICODE_OUTPUT})
+				execute_process (COMMAND ${CMAKE_${_language}_COMPILER}
+					ERROR_VARIABLE _versionLine OUTPUT_QUIET TIMEOUT 10)
+				string (REGEX REPLACE ".*Version *([0-9]+(\\.[0-9]+)*).*" "\\1"
+					${_versionPrefix}_VERSION ${_versionLine})
+			endif()
 		elseif ("${CMAKE_${_language}_COMPILER_ID}" MATCHES "GNU" OR
 			"${CMAKE_${_language}_COMPILER_ID}" MATCHES "Clang" OR
 			"${CMAKE_${_language}_COMPILER_ID}" MATCHES "Intel")
@@ -1931,14 +1990,16 @@ macro(_log_found_variables)
 			message (STATUS "MUnit not found")
 		endif()
 	endif()
-	if (APPLE AND DEFINED Mathematica_SYSTEM_IDS AND
-		DEFINED Mathematica_FIND_VERSION_MAJOR AND DEFINED Mathematica_FIND_VERSION_MINOR AND
-		"${Mathematica_FIND_VERSION_MAJOR}" EQUAL 5 AND "${Mathematica_FIND_VERSION_MINOR}" EQUAL 2)
-		foreach (_systemID ${Mathematica_SYSTEM_IDS})
-			if (${_systemID} STREQUAL "MacOSX-x86-64")
-				message (WARNING "Mathematica 5.2 for Mac OS X does not support x86_64, run cmake with option -DCMAKE_OSX_ARCHITECTURES=i386.")
-			endif()
-		endforeach()
+	if (DEFINED Mathematica_FIND_VERSION_MAJOR AND
+		DEFINED Mathematica_FIND_VERSION_MINOR AND
+		DEFINED Mathematica_SYSTEM_IDS)
+		if (APPLE AND "${Mathematica_FIND_VERSION_MAJOR}" EQUAL 5 AND "${Mathematica_FIND_VERSION_MINOR}" EQUAL 2)
+			foreach (_systemID ${Mathematica_SYSTEM_IDS})
+				if (${_systemID} STREQUAL "MacOSX-x86-64")
+					message (WARNING "Mathematica 5.2 for Mac OS X does not support x86_64, run cmake with option -DCMAKE_OSX_ARCHITECTURES=i386.")
+				endif()
+			endforeach()
+		endif()
 	endif()
 	if (CYGWIN AND CMAKE_COMPILER_IS_GNUCC AND ${Mathematica_WolframLibrary_FOUND})
 		_determine_compiler_version("C" _gcc)
@@ -2407,12 +2468,13 @@ macro(_add_kernel_launch_code _cmdVar _systemIDVar _kernelOptionsVar)
 		_to_native_path("${Mathematica_KERNEL_EXECUTABLE}" _kernelExecutable)
 		list (APPEND ${_cmdVar} "${_kernelExecutable}")
 		if (DEFINED ${_systemIDVar})
-			if (DEFINED Mathematica_VERSION AND
-				NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
-				# Mathematica 8 kernel wrapper shell script supports option -SystemID
-				list (APPEND ${_cmdVar} "-SystemID" "${${_systemIDVar}}")
-			elseif (NOT "${_systemIDVar}" STREQUAL "${Mathematica_HOST_SYSTEM_ID}")
-				message (STATUS "Kernel system ID selection of ${${_systemIDVar}} is not supported, running default ${Mathematica_HOST_SYSTEM_ID}.")
+			if (DEFINED Mathematica_VERSION)
+				if (NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
+					# Mathematica 8 kernel wrapper shell script supports option -SystemID
+					list (APPEND ${_cmdVar} "-SystemID" "${${_systemIDVar}}")
+				elseif (NOT "${_systemIDVar}" STREQUAL "${Mathematica_HOST_SYSTEM_ID}")
+					message (STATUS "Kernel system ID selection of ${${_systemIDVar}} is not supported, running default ${Mathematica_HOST_SYSTEM_ID}.")
+				endif()
 			endif()
 		endif()
 	else()
@@ -2474,15 +2536,16 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar _kernelOptio
 		if (NOT DEFINED ${_codeVar})
 			list (APPEND ${_cmdVar} "-run" "PrependTo[$Path,${_cmakeModuleDirMma}]" )
 		endif()
-		if (DEFINED Mathematica_VERSION AND
-			NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
-			# script option is supported since Mathematica 8
-			_to_native_path("${${_scriptVar}}" _scriptFile)
-			list (APPEND ${_cmdVar} "-script" "${_scriptFile}" )
-		else()
-			# for versions earlier than 8 use Get to load script
-			Mathematica_TO_NATIVE_PATH("${${_scriptVar}}" _scriptMma)
-			list (APPEND ${_cmdVar} "-run" "Get[${_scriptMma}]" "-run" "Quit[]")
+		if (DEFINED Mathematica_VERSION)
+			if (NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
+				# script option is supported since Mathematica 8
+				_to_native_path("${${_scriptVar}}" _scriptFile)
+				list (APPEND ${_cmdVar} "-script" "${_scriptFile}" )
+			else()
+				# for versions earlier than 8 use Get to load script
+				Mathematica_TO_NATIVE_PATH("${${_scriptVar}}" _scriptMma)
+				list (APPEND ${_cmdVar} "-run" "Get[${_scriptMma}]" "-run" "Quit[]")
+			endif()
 		endif()
 	endif()
 endmacro(_add_script_or_code)
@@ -2819,13 +2882,14 @@ function (Mathematica_FIND_PACKAGE _var _packageName)
 	endif()
 	# determine MUnit package directory
 	Mathematica_TO_NATIVE_STRING("${_packageName}" _packageNameMma)
-	if (NOT DEFINED Mathematica_VERSION OR
-		"${Mathematica_VERSION}" VERSION_LESS "7.0")
-		# default to using FileNames function
-		set (_findPackage "Print[StandardForm[Check[First[FileNames[ContextToFileName[${_packageNameMma}],$Path]],$Failed]]]")
-	else()
-		# function FindFile available since Mathematica 7
-		set (_findPackage "Print[StandardForm[FindFile[${_packageNameMma}]]]")
+	if (DEFINED Mathematica_VERSION)
+		if ("${Mathematica_VERSION}" VERSION_LESS "7.0")
+			# default to using FileNames function
+			set (_findPackage "Print[StandardForm[Check[First[FileNames[ContextToFileName[${_packageNameMma}],$Path]],$Failed]]]")
+		else()
+			# function FindFile available since Mathematica 7
+			set (_findPackage "Print[StandardForm[FindFile[${_packageNameMma}]]]")
+		endif()
 	endif()
 	if (NOT _option_DOC)
 		set (_option_DOC "Mathematica package file path.")
@@ -2842,14 +2906,20 @@ function (Mathematica_FIND_PACKAGE _var _packageName)
 		list (APPEND _cmd SYSTEM_ID ${_option_SYSTEM_ID})
 	endif()
 	# if package file variable already defined, verify package file existence
-	if (DEFINED ${_var} AND NOT EXISTS "${${_var}}")
-		unset(${_var} CACHE)
-		unset(${_var})
+	if (DEFINED ${_var})
+		if (NOT EXISTS "${${_var}}")
+			unset(${_var} CACHE)
+			unset(${_var})
+		endif()
 	endif()
 	Mathematica_EXECUTE(${_cmd})
 	# verify package file existence
-	if (DEFINED ${_var} AND EXISTS "${${_var}}")
-		_to_cmake_path("${${_var}}" ${_var})
+	if (DEFINED ${_var})
+		if (EXISTS "${${_var}}")
+			_to_cmake_path("${${_var}}" ${_var})
+		else()
+			set (${_var} "${_var}-NOTFOUND")
+		endif()
 	else()
 		set (${_var} "${_var}-NOTFOUND")
 	endif()
@@ -3329,14 +3399,15 @@ function (Mathematica_MUnit_ADD_TEST)
 	Mathematica_TO_NATIVE_STRING("${_option_NAME}" _testNameMma)
 	if ("${_testScriptExt}" MATCHES "\\.[nN][bB]$")
 		# notebook test run requires Mathematica front end
-		if (NOT DEFINED Mathematica_VERSION OR
-			"${Mathematica_VERSION}" VERSION_LESS "7.0")
-			# default to using undocumented function Developer`UseFrontEnd
-			# available in Mathematica 5.1 and newer
-			set (_useFrontEndFunc "Developer`UseFrontEnd")
-		else()
-			# documented function UsingFrontEnd available since Mathematica 7
-			set (_useFrontEndFunc "UsingFrontEnd")
+		if (DEFINED Mathematica_VERSION)
+			if ("${Mathematica_VERSION}" VERSION_LESS "7.0")
+				# default to using undocumented function Developer`UseFrontEnd
+				# available in Mathematica 5.1 and newer
+				set (_useFrontEndFunc "Developer`UseFrontEnd")
+			else()
+				# documented function UsingFrontEnd available since Mathematica 7
+				set (_useFrontEndFunc "UsingFrontEnd")
+			endif()
 		endif()
 		Mathematica_TO_NATIVE_PATH("${_testScript}" _testScriptMma)
 		string (REGEX REPLACE "\n|\t" "" _testCmd
@@ -3351,13 +3422,14 @@ function (Mathematica_MUnit_ADD_TEST)
 		Mathematica_TO_NATIVE_PATH("${_testFiles}" _testFilesMma)
 		list (LENGTH _testFiles _fileCount)
 		if (_fileCount GREATER 1)
-			if (NOT DEFINED Mathematica_VERSION OR
-				"${Mathematica_VERSION}" VERSION_LESS "7.0")
-				# default to using DirectoryName
-				set (_titleExtractFunc "StringDrop[#,StringLength[DirectoryName[#]]]")
-			else()
-				# function FileNameTake available since Mathematica 7
-				set (_titleExtractFunc "FileNameTake[#]")
+			if (DEFINED Mathematica_VERSION)
+				if ("${Mathematica_VERSION}" VERSION_LESS "7.0")
+					# default to using DirectoryName
+					set (_titleExtractFunc "StringDrop[#,StringLength[DirectoryName[#]]]")
+				else()
+					# function FileNameTake available since Mathematica 7
+					set (_titleExtractFunc "FileNameTake[#]")
+				endif()
 			endif()
 			Mathematica_TO_NATIVE_PATH("${_testScriptDir}" _testScriptDirMma)
 			string (REGEX REPLACE "\n|\t" "" _testCmd

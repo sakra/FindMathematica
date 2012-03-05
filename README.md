@@ -33,7 +33,7 @@ Requirements
 * A Wolfram [*Mathematica*][wmma] product (*Mathematica* 5.2 to 8.0 or grid*Mathematica* 7.0 to 8.0).
 * [CMake 2.8.4][cmk] or newer. The executable `cmake` should be on the system path.
 * [Visual Studio C++][vslstd], [MinGW][mingw] or [Cygwin][cgwn] under Windows.
-* [gcc][gcc] (including g++) under Linux.
+* [GCC][gcc] (including g++) under Linux.
 * [Xcode][xcdt] developer tools package under Mac OS X.
 
 Installation
@@ -164,8 +164,8 @@ commands in the `FindMathematica` root directory:
 The *Mathematica* 8 kernel cannot load a Cygwin generated LibraryLink DLL that has been linked with
 the Cygwin runtime library. As a work-around, the FindMathematica module suppresses linking with the
 Cygwin runtime library by adding the `-mno-cygwin` flag when a LibraryLink target is added.
-This flag is supported by Cygwin gcc version 3.x, but not by the default Cygwin gcc version 4.x.
-To force the use of gcc version 3.x under Cygwin, run:
+This flag is supported by Cygwin GCC version 3.x, but not by the default Cygwin GCC version 4.x.
+To force the use of GCC version 3.x under Cygwin, run:
 
     $ cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-3.exe -DCMAKE_C_COMPILER=/usr/bin/gcc-3.exe ..
 
@@ -199,7 +199,7 @@ need to be installed. To force a 32-bit build then, run:
 
     $ cmake -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 ..
 
-The module has been tested with *Mathematica* versions 7.0 and 8.0 and gcc 4.4 under 32-bit and
+The module has been tested with *Mathematica* versions 7.0 and 8.0 and GCC 4.4 under 32-bit and
 64-bit versions of Ubuntu 10.
 
 ### Mac OS X Usage Hints

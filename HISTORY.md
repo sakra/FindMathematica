@@ -1,3 +1,8 @@
+## 2.0.5 (2012-03-05)
+
+* fix use of uninitialized variables
+* fixed Wolfram Library runtime directory selection for Mac OS X 10.7
+
 ## 2.0.4 (2012-02-26)
 
 * fix compiler version detection for Visual Studio C++
