@@ -1,3 +1,8 @@
+## 2.0.6 (2012-05-10)
+
+* fix native path conversion issues
+* improve compiler version detection code
+
 ## 2.0.5 (2012-03-05)
 
 * fix use of uninitialized variables
