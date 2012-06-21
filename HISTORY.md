@@ -1,3 +1,7 @@
+## 2.0.7 (2012-06-21)
+
+* fix out of range index operation
+
 ## 2.0.6 (2012-05-10)
 
 * fix native path conversion issues

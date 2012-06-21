@@ -542,7 +542,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "2.0.6")
+set (Mathematica_CMAKE_MODULE_VERSION "2.0.7")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -778,8 +778,13 @@ function (_add_launch_services_search_paths _outSearchPaths)
 						_to_cmake_path("${_appPath}" _appPath)
 						if (Mathematica_FIND_VERSION)
 							if ("${_appPath}" MATCHES "${Mathematica_FIND_VERSION}")
-								# prepend if version matches requested one
-								list (INSERT _paths ${_insertIndex} "${_appPath}")
+								# insert in front of other versions if version matches requested one
+								list (LENGTH _paths _len)
+								if (_len EQUAL _insertIndex)
+									list (APPEND _paths "${_appPath}")
+								else()
+									list (INSERT _paths ${_insertIndex} "${_appPath}")
+								endif()
 								math(EXPR _insertIndex "${_insertIndex} + 1")
 							else()
 								list (APPEND _paths "${_appPath}")
