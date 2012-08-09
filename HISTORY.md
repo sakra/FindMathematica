@@ -1,3 +1,8 @@
+## 2.0.8 (2012-08-09)
+
+* detect Wolfram Finance Platform installation
+* fix undefined variable dereference
+
 ## 2.0.7 (2012-06-21)
 
 * fix out of range index operation

@@ -403,7 +403,7 @@
 #    link=Install[<MathLink executable target>]
 #    <Mathematica stmnts> | Get[<Mathematica script file>]
 #    Uninstall[link]
-#  If neither CODE nor SCRIPT is present, the generated CMake test will launch the MathLink target
+#  If neither CODE nor SCRIPT are present, the generated CMake test will launch the MathLink target
 #  executable as a front-end to the Mathematica kernel.
 #  The text specified by the INPUT option is fed to the launched executable as standard input.
 #  The INPUT_FILE option specifies a file that is fed to the launched executable as standard input.
@@ -542,7 +542,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "2.0.7")
+set (Mathematica_CMAKE_MODULE_VERSION "2.0.8")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -656,7 +656,7 @@ macro(_get_program_names _outProgramNames)
 	# Mathematica products in order of preference
 	set (_MathematicaApps "Mathematica" "gridMathematica Server")
 	# Mathematica product versions in order of preference
-	set (_MathematicaVersions "8.0" "7.0" "6.0" "5.2")
+	set (_MathematicaVersions "9.0" "8.0" "7.0" "6.0" "5.2")
 	# search for explicitly requested application version first
 	if (Mathematica_FIND_VERSION)
 		foreach (_product IN LISTS _MathematicaApps)
@@ -680,7 +680,7 @@ endmacro()
 
 # internal function to get Mathematica Windows installation directory for a registry entry
 function (_add_registry_search_path _registryKey _outSearchPaths)
-	set (_ProductNamePatterns "Wolfram Mathematica [0-9]+")
+	set (_ProductNamePatterns "Wolfram Mathematica [0-9]+" "Wolfram Finance Platform")
 	get_filename_component (
 		_productName "[${_registryKey};ProductName]" NAME)
 	get_filename_component (
@@ -2011,7 +2011,7 @@ macro(_log_found_variables)
 			endforeach()
 		endif()
 	endif()
-	if (CYGWIN AND CMAKE_COMPILER_IS_GNUCC AND ${Mathematica_WolframLibrary_FOUND})
+	if (CYGWIN AND CMAKE_COMPILER_IS_GNUCC AND Mathematica_WolframLibrary_FOUND)
 		_determine_compiler_version("C" _gcc)
 		if (NOT _gcc_VERSION_MAJOR EQUAL 3)
 			message (WARNING
@@ -2433,21 +2433,23 @@ endfunction()
 macro (_add_launch_prefix _cmdVar _systemIDVar)
 	if (DEFINED ${_systemIDVar})
 		if (CMAKE_HOST_APPLE)
-			# under Mac OS X, run appropriate target architecture of executable universal binary
-			# by using the the /usr/bin/arch tool which is available since Leopard
-			# (Mac OS X 10.5.0 is Darwin 9.0.0)
-			if ("${CMAKE_HOST_SYSTEM_VERSION}" VERSION_LESS "9.0.0")
-				message (STATUS "Executable system ID selection of ${${_systemIDVar}} is not supported, running default.")
-			elseif ("${${_systemIDVar}}" STREQUAL "MacOSX-x86")
-				list (APPEND ${_cmdVar} "/usr/bin/arch" "-i386")
-			elseif("${${_systemIDVar}}" STREQUAL "MacOSX-x86-64")
-				list (APPEND ${_cmdVar} "/usr/bin/arch" "-x86_64")
-			elseif("${${_systemIDVar}}" MATCHES "Darwin|MacOSX")
-				list (APPEND ${_cmdVar} "/usr/bin/arch" "-ppc")
-			elseif("${${_systemIDVar}}" STREQUAL "Darwin-PowerPC64")
-				list (APPEND ${_cmdVar} "/usr/bin/arch" "-ppc64")
-			else()
-				message (STATUS "Executable system ID ${${_systemIDVar}} is not supported, running default.")
+			if (NOT "${${_systemIDVar}}" STREQUAL "${Mathematica_HOST_SYSTEM_ID}")
+				# under Mac OS X, run appropriate target architecture of executable universal binary
+				# by using the the /usr/bin/arch tool which is available since Leopard
+				# (Mac OS X 10.5.0 is Darwin 9.0.0)
+				if ("${CMAKE_HOST_SYSTEM_VERSION}" VERSION_LESS "9.0.0")
+					message (STATUS "Executable system ID selection of ${${_systemIDVar}} is not supported, running default.")
+				elseif ("${${_systemIDVar}}" STREQUAL "MacOSX-x86")
+					list (APPEND ${_cmdVar} "/usr/bin/arch" "-i386")
+				elseif("${${_systemIDVar}}" STREQUAL "MacOSX-x86-64")
+					list (APPEND ${_cmdVar} "/usr/bin/arch" "-x86_64")
+				elseif("${${_systemIDVar}}" MATCHES "Darwin|MacOSX")
+					list (APPEND ${_cmdVar} "/usr/bin/arch" "-ppc")
+				elseif("${${_systemIDVar}}" STREQUAL "Darwin-PowerPC64")
+					list (APPEND ${_cmdVar} "/usr/bin/arch" "-ppc64")
+				else()
+					message (STATUS "Executable system ID ${${_systemIDVar}} is not supported, running default.")
+				endif()
 			endif()
 		endif()
 	endif()
