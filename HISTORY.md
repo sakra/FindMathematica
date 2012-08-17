@@ -1,3 +1,8 @@
+## 2.0.9 (2012-08-17)
+
+* prevent modification of the CMake policy stack upon CMake version check
+* fix target type check in `Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES`
+
 ## 2.0.8 (2012-08-09)
 
 * detect Wolfram Finance Platform installation

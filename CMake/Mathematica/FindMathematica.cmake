@@ -535,14 +535,17 @@
 #=============================================================================
 
 # we need the CMakeParseArguments module
+# call cmake_minimum_required, but prevent modification of the CMake policy stack
+cmake_policy(PUSH)
 cmake_minimum_required(VERSION 2.8.4)
+cmake_policy(POP)
 
 include(TestBigEndian)
 include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "2.0.8")
+set (Mathematica_CMAKE_MODULE_VERSION "2.0.9")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -2980,7 +2983,7 @@ function (Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES)
 	if (APPLE)
 		foreach(_target ${ARGV})
 			get_target_property(_targetType ${_target} TYPE)
-			if (NOT ${_targetType} STREQUAL "STATIC_LIBRARY")
+			if (_targetType MATCHES "MODULE_LIBRARY|SHARED_LIBRARY|EXECUTABLE")
 				get_target_property(_targetLocation ${_target} LOCATION)
 				foreach(_library "${Mathematica_WolframLibrary_LIBRARY}" "${Mathematica_MathLink_LIBRARY}")
 					if (_library)
