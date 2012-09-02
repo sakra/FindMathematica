@@ -1,3 +1,14 @@
+## 2.1.0 (2012-09-02)
+
+* add option `CHECK_TIMESTAMPS` to `Mathematica_ADD_DOCUMENTATION` to avoid redundant re-building
+  of the documentation when no notebook has changed
+* fixed bug with detection of `ant.bat` executable script under Windows
+* guard against missing test driver helper scripts
+* fixed bug with setting up the kernel command line when both `CODE` and `SCRIPT` are present
+* add work-around to prevent CMake commands that run the kernel from hanging when `Abort[]` is used
+* add more accurate detection of host processor architecture under Mac OS X
+* minor documentation fixes
+
 ## 2.0.9 (2012-08-17)
 
 * prevent modification of the CMake policy stack upon CMake version check
