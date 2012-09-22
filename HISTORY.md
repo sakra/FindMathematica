@@ -1,3 +1,12 @@
+## 2.2.0 (2012-09-22)
+
+* add `Mathematica_JLink_ADD_TEST` to run J/Link program as a CMake test
+* add J/Link examples
+* allow for both `CODE` and `SCRIPT` parameters to be present in functions that execute
+  *Mathematica* code
+* correctly handle relative file path given as a `SCRIPT` parameter
+* fix Cygwin compatibility problems
+
 ## 2.1.0 (2012-09-02)
 
 * add option `CHECK_TIMESTAMPS` to `Mathematica_ADD_DOCUMENTATION` to avoid redundant re-building

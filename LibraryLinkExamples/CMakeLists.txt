@@ -71,49 +71,14 @@ do_mathematica_librarylink_test(demo
 False
 1. - 2.*I
 Null"
-CODE
-"demoII=LibraryFunctionLoad[\"demo\", \"demo_I_I\", {Integer}, Integer]
-demoRR=LibraryFunctionLoad[\"demo\", \"demo_R_R\", {Real}, Real]
-demoIRR=LibraryFunctionLoad[\"demo\", \"demo_IR_R\", {Integer, Real}, Real]
-demoTIR=LibraryFunctionLoad[\"demo\", \"demo_TI_R\", {{Real, 1}, Integer}, Real]
-demo1TIR=LibraryFunctionLoad[\"demo\", \"demo1_TI_R\", {{Real, 1, \"Manual\"}, Integer}, Real]
-demo2TIR=LibraryFunctionLoad[\"demo\", \"demo2_TI_R\", {{Real, 1, \"Shared\"}, Integer}, Real]
-demoIT=LibraryFunctionLoad[\"demo\", \"demo_I_T\", {Integer}, {Integer, 1}]
-demoTTT=LibraryFunctionLoad[\"demo\", \"demo_TT_T\", {{Real, 1}, {Integer, 1}}, {Real, _}]
-demoTTTT=LibraryFunctionLoad[\"demo\", \"demo_TTT_T\", {{Real, 1}, {Integer, _}, {Real, _}}, {Integer, _}]
-demoTT=LibraryFunctionLoad[\"demo\", \"demo_T_T\", {{_, _}}, {_, _}]
-demoBoolean1=LibraryFunctionLoad[\"demo\", \"demoBoolean1\", {\"Boolean\"}, \"Boolean\"]
-demoComplex1=LibraryFunctionLoad[\"demo\", \"demoComplex1\", {Complex}, Complex]
-demoVoid=LibraryFunctionLoad[\"demo\", \"demoVoid\", {}, \"Void\"]
-array = Range[1., 10]
-Print[demoII[10]]
-Print[demoRR[10.]]
-Print[demoIRR[3,13.]]
-Print[demoTIR[array,1]]
-Print[demo1TIR[array,2]]
-Print[demo2TIR[array,3]]
-Print[demoIT[5]]
-Print[demoTTT[array,{1}]]
-Print[demoTTTT[array,1,10.0]]
-Print[demoTT[{{1,2},{3,4}}]]
-Print[demoBoolean1[True]]
-Print[demoComplex1[1. + 2. I]]
-Print[demoVoid[]]"
-)
+SCRIPT "demo_test.m")
 
 do_mathematica_librarylink_test(demo_string
 # Expected output regular expression
 "3
 \"Rfymjrfynhf\"
 \"acitamehtaM\""
-CODE
-"countSubstring=LibraryFunctionLoad[\"demo_string\", \"countSubstring\", {\"UTF8String\", \"UTF8String\"}, Integer]
-encodeString=LibraryFunctionLoad[\"demo_string\", \"encodeString\", {\"UTF8String\", Integer}, \"UTF8String\"]
-reverseString=LibraryFunctionLoad[\"demo_string\", \"reverseString\", {\"UTF8String\"}, \"UTF8String\" ]
-Print[countSubstring[\"Mathematica\",\"a\"]]
-Print[encodeString[\"Mathematica\", 5]]
-Print[reverseString[\"Mathematica\"]]"
-)
+SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/demo_string_test.m")
 
 if (${Mathematica_MathLink_FOUND})
 
@@ -122,8 +87,8 @@ do_mathematica_librarylink_test(demo_mathlink
 "2
 \"acitamehtaM\""
 CODE
-"addtwo=LibraryFunctionLoad[\"demo_mathlink\", \"addtwo\", LinkObject, LinkObject]
-reverseString=LibraryFunctionLoad[\"demo_mathlink\", \"reverseString\", LinkObject, LinkObject]
+"addtwo=LibraryFunctionLoad[libPath, \"addtwo\", LinkObject, LinkObject]
+reverseString=LibraryFunctionLoad[libPath, \"reverseString\", LinkObject, LinkObject]
 Print[addtwo[1,1]]
 Print[reverseString[\"Mathematica\"]]"
 )
@@ -133,7 +98,7 @@ do_mathematica_librarylink_test(demo_eval
 "\nMyFunction::info: Message called from within Library function.
 3"
 CODE
-"fun=LibraryFunctionLoad[\"demo_eval\", \"function1\", {Integer, Integer}, Integer]
+"fun=LibraryFunctionLoad[libPath, \"function1\", {Integer, Integer}, Integer]
 MyFunction::info=\"`1`\"
 Print[fun[1,2]]"
 )

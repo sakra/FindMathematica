@@ -126,11 +126,7 @@ do_mathlink_test(bitops
 bitComplements\\[{x1,x2,...}\\] generates  a list of the bitwise complements of the integers xi\\.
 579
 {-1, -2, -3}"
-CODE
-"?bitAnd
-?bitComplements
-Print[bitAnd[2^^1011010111,2^^1101101011]]
-Print[bitComplements[{0,1,2}]]"
+SCRIPT "bitopsTest.m"
 )
 
 do_mathlink_test(counter

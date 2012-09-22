@@ -115,7 +115,7 @@
 #    [ OUTPUT_FILE <file> ]
 #    [ ERROR_FILE <file> ])
 #  This function executes Mathematica code at CMake configuration time. The Mathematica code can
-#  be either specified as a list of in-line Mathematica statements or as path to a Mathematica
+#  be specified as a list of in-line Mathematica statements and/or as path to a Mathematica
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
 #  If the optional CACHE argument is specified, the captured result of the executed Mathematica
 #  code is added to a cache variable named <output variable>. The execution will not be repeated
@@ -142,7 +142,7 @@
 #    [ COMMENT comment ]
 #    [ SOURCES src1 [ src2... ] ])
 #  This function adds a target that executes Mathematica code at build time. The Mathematica code
-#  can be either specified as a list of in-line Mathematica statements or as path to a Mathematica
+#  can be specified as a list of in-line Mathematica statements and/or as path to a Mathematica
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
 #  The working directory of the Mathematica child process is set to the CMAKE_CURRENT_BINARY_DIR.
@@ -163,7 +163,7 @@
 #    [ COMMENT comment] [APPEND])
 #  This function adds a target that executes Mathematica code to generate output files. The
 #  Mathematica code is responsible for generating the specified output files. The Mathematica code
-#  can be either specified as a list of in-line Mathematica statements or as path to a Mathematica
+#  can be specified as a list of in-line Mathematica statements and/or as path to a Mathematica
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable architecture used.
 #  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
@@ -182,7 +182,7 @@
 #    [ COMMENT comment ])
 #  This function adds Mathematica code to an existing target which is run before or after building
 #  the target. The Mathematica will only execute when the target itself is built. The Mathematica
-#  code can be either specified as a list of in-line Mathematica statements or as path to a
+#  code can be specified as a list of in-line Mathematica statements and/or as path to a
 #  Mathematica script file. Multiple in-line statements are wrapped inside a Mathematica
 #  CompoundExpression.
 #  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
@@ -202,7 +202,7 @@
 #    [ INPUT text | INPUT_FILE file ]
 #    [ CONFIGURATIONS [ Debug | Release | ... ] ])
 #  This function adds a CMake test to the project which runs Mathematica code. The code can
-#  be either specified as a list of in-line Mathematica statements or as path to a Mathematica
+#  be specified as a list of in-line Mathematica statements and/or as path to a Mathematica
 #  script file. Multiple in-line statements are wrapped inside a Mathematica CompoundExpression.
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this
 #  test.
@@ -255,10 +255,12 @@
 #  This function adds a CMake test which loads the WolframLibrary target library and then runs
 #  Mathematica test code. The Mathematica code specified in a CODE or SCRIPT option is wrapped
 #  into code that loads the WolframLibrary target shared library in the following way:
-#      LibraryLoad[ <WolframLibrary target> ]
+#      libPath = full path to <WolframLibrary target>
+#      LibraryLoad[ libPath ]
 #      Print[LibraryLink`$LibraryError]
-#      <Mathematica stmnts> | Get[<Mathematica script file>]
-#      LibraryUnload[ <WolframLibrary target> ]
+#      <Mathematica stmnts>
+#      run <Mathematica script file>
+#      LibraryUnload[ libPath ]
 #  The string specified by the INPUT option is fed to the Mathematica kernel as standard input.
 #  The INPUT_FILE option specifies a file that is fed to the Mathematica kernel as standard input.
 #  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this
@@ -401,7 +403,8 @@
 #  kernel and connect the MathLink executable target using the Install function. The given
 #  Mathematica test code is wrapped in the following way:
 #    link=Install[<MathLink executable target>]
-#    <Mathematica stmnts> | Get[<Mathematica script file>]
+#    <Mathematica stmnts>
+#    run <Mathematica script file>
 #    Uninstall[link]
 #  If neither CODE nor SCRIPT are present, the generated CMake test will launch the MathLink target
 #  executable as a front-end to the Mathematica kernel.
@@ -432,6 +435,42 @@
 #  E.g., exporting the Mathematica 8 mprep frames under 32-bit Windows will produce the files
 #  mprep_header_Windows.txt and mprep_trailer_Windows.txt.
 #  This function is available if the MathLink executable mprep has been found.
+#
+#  Mathematica_JLink_ADD_TEST(
+#    NAME testname
+#    TARGET <Java JAR custom target>
+#    [ CODE <Mathematica stmnt> [ stmnt ...] ]
+#    [ SCRIPT <Mathematica script file> ]
+#    [ MAIN_CLASS <Java class name> ]
+#    [ CLASSPATH <class path entry>  [ <class path enty> ...] ]
+#    [ SYSTEM_ID systemID ]
+#    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ]
+#    [ INPUT text | INPUT_FILE file ]
+#    [ CONFIGURATIONS [ Debug | Release | ... ] ])
+#  This function adds a CMake test which runs the given Java JAR target in one of two ways:
+#  If the CODE or SCRIPT option is present, the generated CMake test will launch the Mathematica
+#  kernel and add the JAR target file path to the J/Link class search path. The given
+#  Mathematica test code is wrapped in the following way:
+#    Needs["JLink`"]
+#    AddToClassPath[<Java JAR file target>]
+#    <Mathematica stmnts>
+#    run <Mathematica script file>
+#  If neither CODE nor SCRIPT are present, the generated CMake test will launch the Java JAR target
+#  as a front-end to the Mathematica kernel.
+#  The option CLASSPATH specifies a list of directories, JAR archives, and ZIP archives to search for
+#  class files. The J/Link JAR file is always added to the classpath.
+#  The optional MAIN_CLASS parameter specifies the Java class whose main method should be invoked.
+#  The text specified by the INPUT option is fed to the launched JAR as standard input.
+#  The INPUT_FILE option specifies a file that is fed to the launched JAR as standard input.
+#  The SYSTEM_ID option lets you override the Mathematica kernel executable used for running this
+#  test. E.g., on Linux-x86-64 set the SYSTEM_ID option to "Linux" to run the 32-bit version of the
+#  kernel.
+#  The KERNEL_OPTIONS parameter lets you add launch arguments (e.g., "-pwfile mathpass") used upon
+#  starting the Mathematica kernel. If the option is missing, it defaults to "-noinit -noprompt".
+#  The test driver sets up environment variables TEST_NAME and TEST_CONFIGURATION which can be
+#  queried in the Mathematica code by using the Environment function.
+#  This function is available if the Mathematica kernel executable has been found and if the
+#  Mathematica installation has a J/Link SDK.
 #
 #  Mathematica_MUnit_RESOLVE_SUITE(
 #    result [RELATIVE path]
@@ -550,7 +589,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "2.1.0")
+set (Mathematica_CMAKE_MODULE_VERSION "2.2.0")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -1310,16 +1349,31 @@ endmacro()
 function(_to_native_path_list _outPathList)
 	set (_nativePathList "")
 	foreach (_path ${ARGN})
-		set (_nativePath "${_path}")
-		if (_nativePathList STREQUAL "")
-			set (_nativePathList "${_path}")
-		elseif (CMAKE_HOST_UNIX)
-			set (_nativePathList "${_nativePathList}:${_path}")
-		else()
-			set (_nativePathList "${_nativePathList};${_path}")
-		endif()
+		_to_native_path("${_path}" _nativePath)
+		list (APPEND _nativePathList "${_nativePath}")
 	endforeach()
-	set (${_outPathList} ${_nativePathList} PARENT_SCOPE)
+	if (CMAKE_HOST_UNIX)
+		string (REPLACE ";" ":" _nativePathList "${_nativePathList}")
+	elseif (CMAKE_HOST_WIN32)
+		# prevent CMake from interpreting ; as a list separator
+		string (REPLACE ";" "\\;" _nativePathList "${_nativePathList}")
+	endif()
+	set (${_outPathList} "${_nativePathList}" PARENT_SCOPE)
+endfunction()
+
+function(_to_cmake_path_list _outPathList)
+	set (_cmakePathList "")
+	foreach (_path ${ARGN})
+		_to_cmake_path("${_path}" _cmakePath)
+		list (APPEND _cmakePathList "${_cmakePath}")
+	endforeach()
+	if (CMAKE_HOST_UNIX)
+		string (REPLACE ";" ":" _cmakePathList "${_cmakePathList}")
+	elseif (CMAKE_HOST_WIN32)
+		# prevent CMake from interpreting ; as a list separator
+		string (REPLACE ";" "\\;" _cmakePathList "${_cmakePathList}")
+	endif()
+	set (${_outPathList} "${_cmakePathList}" PARENT_SCOPE)
 endfunction()
 
 # internal macro to select runtime libraries according to build type
@@ -1350,7 +1404,11 @@ macro(_setup_mathematica_systemIDs)
 		endif()
 	endif()
 	if (Mathematica_KERNEL_HOST_SYSTEM_ID)
-		set (Mathematica_HOST_SYSTEM_ID ${Mathematica_KERNEL_HOST_SYSTEM_ID})
+		if (Mathematica_KERNEL_HOST_SYSTEM_ID MATCHES "[a-zA-Z0-9_-]+")
+			set (Mathematica_HOST_SYSTEM_ID "${Mathematica_KERNEL_HOST_SYSTEM_ID}")
+		else()
+			unset (Mathematica_KERNEL_HOST_SYSTEM_ID CACHE)
+		endif()
 	else()
 		# guess host system ID from the environment
 		_get_host_system_IDs(_HostSystemIDs)
@@ -1387,7 +1445,11 @@ macro(_setup_mathematica_base_directory)
 		endif()
 	endif()
 	if (Mathematica_KERNEL_BASE_DIR)
-		set (Mathematica_BASE_DIR ${Mathematica_KERNEL_BASE_DIR})
+		if (IS_ABSOLUTE "${Mathematica_KERNEL_BASE_DIR}")
+			set (Mathematica_BASE_DIR "${Mathematica_KERNEL_BASE_DIR}")
+		else()
+			unset (Mathematica_KERNEL_BASE_DIR CACHE)
+		endif()
 	else ()
 		# guess Mathematica_BASE_DIR from environment
 		# environment variable MATHEMATICA_BASE may override default
@@ -1434,7 +1496,11 @@ macro(_setup_mathematica_userbase_directory)
 		endif()
 	endif()
 	if (Mathematica_KERNEL_USERBASE_DIR)
-		set (Mathematica_USERBASE_DIR ${Mathematica_KERNEL_USERBASE_DIR})
+		if (IS_ABSOLUTE "${Mathematica_KERNEL_USERBASE_DIR}")
+			set (Mathematica_USERBASE_DIR "${Mathematica_KERNEL_USERBASE_DIR}")
+		else()
+			unset (Mathematica_KERNEL_USERBASE_DIR CACHE)
+		endif()
 	else ()
 		# guess Mathematica_USERBASE_DIR from environment
 		# environment variable MATHEMATICA_USERBASE may override default
@@ -2394,9 +2460,12 @@ function (Mathematica_SET_TESTS_PROPERTIES)
 		set (_runtimeDirs ${_configRuntimeDirs} ${_envRuntimeDirs})
 		if (_runtimeDirs)
 			list (REMOVE_DUPLICATES _runtimeDirs)
-			_to_native_path_list(_nativeRuntimeDirs ${_runtimeDirs})
-			# prevent CMake from interpreting ; as a list separator
-			string (REPLACE ";" "\\;" _nativeRuntimeDirs "${_nativeRuntimeDirs}")
+			if (CYGWIN)
+				# CYGWIN path list requires UNIX syntax
+				_to_cmake_path_list(_nativeRuntimeDirs ${_runtimeDirs})
+			else()
+				_to_native_path_list(_nativeRuntimeDirs ${_runtimeDirs})
+			endif()
 			foreach (_testName ${ARGV})
 				if (${_testName} STREQUAL "PROPERTIES")
 					break()
@@ -2550,6 +2619,7 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar _kernelOptio
 			# flush current CompoundExpression when a Get[...], Needs[...] or Install[...]
 			# expression is encountered, so that new context definitions become effective
 			# immediately for subsequent commands
+			# Sequence[] can be used to explicitly flush the current CompoundExpression
 			if (_codeSegment MATCHES "(Get|Needs|Install|Quit|Sequence)\\[[^]]*\\]")
 				if (_currentCodeSegmentCompound OR
 					(CMAKE_HOST_WIN32 AND NOT _currentCodeSegment MATCHES " "))
@@ -2557,7 +2627,8 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar _kernelOptio
 					# necessary to force proper cmd.exe quoting of the resulting parameter under Windows
 					# (a comma in the parameter may be misinterpreted as a separator otherwise)
 					list (APPEND _codeSegments "-run" "CompoundExpression[ ${_currentCodeSegment} ]")
-				else()
+				elseif (NOT "${_currentCodeSegment}" STREQUAL "Sequence[]")
+					# flush single code segment, but only if it is not a NOP
 					list (APPEND _codeSegments "-run" "${_currentCodeSegment}")
 				endif()
 				set (_currentCodeSegment "")
@@ -2571,15 +2642,20 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar _kernelOptio
 		if (NOT DEFINED ${_codeVar})
 			list (APPEND ${_cmdVar} "-run" "${_prologue}" )
 		endif()
+		if (IS_ABSOLUTE "${${_scriptVar}}")
+			_to_cmake_path("${${_scriptVar}}" _scriptFile)
+		else()
+			_to_cmake_path("${CMAKE_CURRENT_SOURCE_DIR}/${${_scriptVar}}" _scriptFile)
+		endif()
 		if (DEFINED Mathematica_VERSION)
 			if (NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
 				# script option is supported since Mathematica 8
-				_to_native_path("${${_scriptVar}}" _scriptFile)
-				list (APPEND ${_cmdVar} "-script" "${_scriptFile}" )
+				_to_native_path("${_scriptFile}" _scriptFileNative)
+				list (APPEND ${_cmdVar} "-script" "${_scriptFileNative}" )
 			else()
 				# for versions earlier than 8 use Get to load script
-				Mathematica_TO_NATIVE_PATH("${${_scriptVar}}" _scriptMma)
-				list (APPEND ${_cmdVar} "-run" "Get[${_scriptMma}]" "-run" "Quit[]")
+				Mathematica_TO_NATIVE_PATH("${_scriptFile}" _scriptFileMma)
+				list (APPEND ${_cmdVar} "-run" "Get[${_scriptFileMma}]" "-run" "Quit[]")
 			endif()
 		endif()
 	else()
@@ -3036,12 +3112,10 @@ endfunction()
 if (Mathematica_KERNEL_EXECUTABLE AND Mathematica_MathLink_FOUND)
 
 # internal macro to compute MathLink executable launch command
-macro (_add_mathlink_launch_code _cmdVar _mathlinkExecutable _systemIDVar _kernelOptionsVar)
-	_add_launch_prefix(${_cmdVar} ${_systemIDVar})
-	list (APPEND ${_cmdVar}
-		"${_mathlinkExecutable}" "-linkmode" "launch" "-linkname")
-	if (UNIX)
-		# UNIX MathLink requires quoted link name path and -mathlink
+macro (_add_mathlink_launch_code _cmdVar _systemIDVar _kernelOptionsVar)
+	list (APPEND ${_cmdVar} "-linkmode" "launch" "-linkname")
+	if (UNIX AND NOT CYGWIN)
+		# UNIX MathLink (except for Cygwin) requires quoted link name path and -mathlink
 		set (_kernelLaunchArgs "")
 		_add_kernel_launch_code(_kernelLaunchArgs ${_systemIDVar} ${_kernelOptionsVar})
 		_list_to_cmd_str(_kernelLaunchStr ${_kernelLaunchArgs})
@@ -3085,17 +3159,17 @@ function (Mathematica_MathLink_ADD_TEST)
 		endif()
 		set (_installCmd "link=Install[${_installCmdMma}]")
 		if (_option_CODE)
-			list (INSERT _option_CODE 0 ${_installCmd})
-		else()
-			Mathematica_TO_NATIVE_PATH("${_option_SCRIPT}" _scriptMma)
-			set (_option_CODE ${_installCmd} "Get[${_scriptMma}]")
+			list (APPEND _installCmd ${_option_CODE})
 		endif()
-		list (APPEND _option_CODE "Uninstall[link]")
-		_add_script_or_code(_cmd _noScript _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+		if (NOT _option_SCRIPT)
+			list (APPEND _installCmd "Uninstall[link]")
+		endif()
+		_add_script_or_code(_cmd _option_SCRIPT _installCmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
 	else()
 		# run MathLink executable as front-end to Mathematica kernel
-		_add_mathlink_launch_code(_cmd "$<TARGET_FILE:${_option_TARGET}>"
-			_option_SYSTEM_ID _option_KERNEL_OPTIONS)
+		_add_launch_prefix(_cmd _option_SYSTEM_ID)
+		list (APPEND _cmd "$<TARGET_FILE:${_option_TARGET}>")
+		_add_mathlink_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
 	endif()
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
@@ -3189,16 +3263,16 @@ function (Mathematica_WolframLibrary_ADD_TEST)
 		set (_targetFileMma "\"$<TARGET_FILE:${_option_TARGET}>\"")
 	endif()
 	set (_installCmd
-		"LibraryLoad[${_targetFileMma}]"
+		"libPath = ${_targetFileMma}"
+		"LibraryLoad[libPath]"
 		"Print[LibraryLink`$LibraryError]" )
 	if (_option_CODE)
-		list (INSERT _option_CODE 0 ${_installCmd})
-	else()
-		Mathematica_TO_NATIVE_PATH("${_option_SCRIPT}" _scriptMma)
-		set (_option_CODE ${_installCmd} "Get[${_scriptMma}]")
+		list (APPEND _installCmd ${_option_CODE})
 	endif()
-	list (APPEND _option_CODE "LibraryUnload[\"${_option_TARGET}\"]")
-	_add_script_or_code(_cmd _noScript _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	if (NOT _option_SCRIPT)
+		list (APPEND _installCmd "LibraryUnload[libPath]")
+	endif()
+	_add_script_or_code(_cmd _option_SCRIPT _installCmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
 	endif()
@@ -3441,10 +3515,10 @@ function (Mathematica_MUnit_ADD_TEST)
 	if (_option_CODE)
 		list (APPEND _testCmds ${_option_CODE})
 	endif()
-	if (NOT IS_ABSOLUTE "${_option_SCRIPT}")
-		_to_cmake_path("${CMAKE_CURRENT_SOURCE_DIR}/${_option_SCRIPT}" _testScript)
-	else()
+	if (IS_ABSOLUTE "${_option_SCRIPT}")
 		_to_cmake_path("${_option_SCRIPT}" _testScript)
+	else()
+		_to_cmake_path("${CMAKE_CURRENT_SOURCE_DIR}/${_option_SCRIPT}" _testScript)
 	endif()
 	get_filename_component(_testScriptExt "${_testScript}" EXT)
 	get_filename_component(_testScriptDir "${_testScript}" PATH)
@@ -3510,6 +3584,7 @@ function (Mathematica_MUnit_ADD_TEST)
 	set_tests_properties (${_option_NAME} PROPERTIES
 		PASS_REGULAR_EXPRESSION "${_option_NAME} Passed.?.?$"
 		FAIL_REGULAR_EXPRESSION "${_option_NAME} Failed.?.?$")
+	set_property (TEST ${_option_NAME} PROPERTY LABELS "Mathematica")
 	if (_option_TIMEOUT)
 		set_tests_properties (${_option_NAME} PROPERTIES TIMEOUT ${_option_TIMEOUT})
 	endif()
@@ -3599,6 +3674,7 @@ function (Mathematica_ADD_DOCUMENTATION _targetName)
 		endif()
 		configure_file("${_templateBuildScript}" "${_buildScriptName}" @ONLY)
 		list (APPEND _cmd COMMAND "${CMAKE_COMMAND}" "-P" "${CMAKE_CURRENT_BINARY_DIR}/${_buildScriptName}")
+		list (APPEND _cmd DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${_buildScriptName}")
 	else()
 		list (APPEND _cmd COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${_option_OUTPUT_DIRECTORY}")
 	endif()
@@ -3614,3 +3690,57 @@ function (Mathematica_ADD_DOCUMENTATION _targetName)
 endfunction (Mathematica_ADD_DOCUMENTATION)
 
 endif (Mathematica_KERNEL_EXECUTABLE AND Mathematica_JLink_FOUND)
+
+if (Mathematica_KERNEL_EXECUTABLE AND Mathematica_JLink_FOUND AND JAVA_FOUND)
+
+# public function to simplify testing MathLink programs
+function (Mathematica_JLink_ADD_TEST)
+	set(_options "")
+	set(_oneValueArgs NAME MAIN_CLASS SCRIPT TARGET INPUT INPUT_FILE SYSTEM_ID)
+	set(_multiValueArgs CODE CONFIGURATIONS KERNEL_OPTIONS CLASSPATH)
+	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
+	if(_option_UNPARSED_ARGUMENTS)
+		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
+	elseif (NOT _option_TARGET)
+		message (FATAL_ERROR "Mandatory parameter TARGET is missing.")
+	elseif (NOT _option_NAME)
+		message (FATAL_ERROR "Mandatory parameter NAME is missing.")
+	endif()
+	set (_cmd NAME "${_option_NAME}" COMMAND)
+	_add_test_driver(_cmd "${_option_NAME}" _option_INPUT _option_INPUT_FILE)
+	if (TARGET ${_option_TARGET})
+		get_target_property (_targetJarFile ${_option_TARGET} JAR_FILE)
+	else()
+		_to_cmake_path("${_option_TARGET}" _targetJarFile)
+	endif()
+	if (_option_CODE OR _option_SCRIPT)
+		# run Mathematica kernel and load JAR file
+		Mathematica_TO_NATIVE_PATH("${_targetJarFile}" _targetJarFileMma)
+		set (_installCmd "Needs[\"JLink`\"]" "AddToClassPath[${_targetJarFileMma}]")
+		if (_option_CODE)
+			list (INSERT _option_CODE 0 ${_installCmd})
+		else()
+			set (_option_CODE ${_installCmd})
+		endif()
+		_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	else()
+		# run JAR file as front-end to Mathematica kernel
+		if (NOT _option_MAIN_CLASS)
+			get_filename_component(_option_MAIN_CLASS ${_targetJarFile} NAME_WE)
+		endif()
+		_to_native_path ("${Mathematica_JLink_JAR_FILE}" _jlinkJarNative)
+		_to_native_path ("${_targetJarFile}" _targetJarFileNative)
+		_to_native_path_list(_classPath "${_jlinkJarNative}" "${_targetJarFileNative}" ${_option_CLASSPATH})
+		list (APPEND _cmd "${Java_JAVA_EXECUTABLE}" "-cp" "${_classPath}" "${_option_MAIN_CLASS}")
+		_add_mathlink_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	endif()
+	if (_option_CONFIGURATIONS)
+		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
+	endif()
+	if (Mathematica_DEBUG)
+		message (STATUS "add_test: ${_cmd}")
+	endif()
+	add_test (${_cmd})
+endfunction(Mathematica_JLink_ADD_TEST)
+
+endif(Mathematica_KERNEL_EXECUTABLE AND Mathematica_JLink_FOUND AND JAVA_FOUND)

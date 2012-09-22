@@ -18,6 +18,9 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS 1)
 
+# find Java
+find_package(Java 1.6 COMPONENTS Development)
+
 set (Mathematica_USE_STATIC_LIBRARIES OFF)
 set (Mathematica_USE_MINIMAL_LIBRARIES ON)
 set (Mathematica_DEBUG OFF)
@@ -48,7 +51,7 @@ macro (add_convenience_test_target _targetName _testRegEx)
 		add_custom_target("${_targetName}"
 			COMMAND
 				${CMAKE_CTEST_COMMAND} -V --force-new-ctest-process
-					--tests-regex "${_testRegEx}" "$(ARGS)")
+					--tests-regex "${_testRegEx}")
 	endif()
 	set_target_properties("${_targetName}" PROPERTIES FOLDER "Tests")
 endmacro()
@@ -104,3 +107,15 @@ endif()
 if (Mathematica_MUnit_FOUND)
 	add_subdirectory(MUnitExamples)
 endif ()
+
+if (JAVA_FOUND AND Mathematica_JLink_FOUND)
+	# copy J/Link example files from Mathematica installation to source directory
+	if (EXISTS "${Mathematica_JLink_PACKAGE_DIR}/Examples")
+		file (GLOB_RECURSE _JLinkLinkExamples
+			"${Mathematica_JLink_PACKAGE_DIR}/Examples/*.java")
+		file (COPY ${_JLinkLinkExamples}
+			DESTINATION "${CMAKE_SOURCE_DIR}/JLinkExamples"
+			NO_SOURCE_PERMISSIONS)
+		add_subdirectory(JLinkExamples)
+	endif()
+endif()
