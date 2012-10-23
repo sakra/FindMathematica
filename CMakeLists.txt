@@ -21,9 +21,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS 1)
 # find Java
 find_package(Java 1.6 COMPONENTS Development)
 
-set (Mathematica_USE_STATIC_LIBRARIES OFF)
-set (Mathematica_USE_MINIMAL_LIBRARIES ON)
-set (Mathematica_DEBUG OFF)
+# default settings for options that affect search
+#set (Mathematica_USE_STATIC_LIBRARIES OFF)
+#set (Mathematica_USE_MINIMAL_LIBRARIES ON)
+#set (Mathematica_DEBUG OFF)
 
 # finds default Mathematica installation and its default components
 find_package(Mathematica)

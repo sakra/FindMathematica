@@ -4,7 +4,7 @@ include(UseJava)
 
 # add J/Link jar to Java compiler include path
 set(CMAKE_JAVA_INCLUDE_PATH "${Mathematica_JLink_JAR_FILE}")
-# force Java 6 compilation of Weka sources, J/Link is not compatible with Java 7
+# force Java 6 compilation of example sources, J/Link is not compatible with Java 7
 # sample source files use Windows character encoding
 set(CMAKE_JAVA_COMPILE_FLAGS "-source" "1.6" "-target" "1.6" "-encoding" "Cp1252")
 

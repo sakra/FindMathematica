@@ -1,3 +1,12 @@
+## 2.2.1 (2012-10-23)
+
+* Windows registry search fix for WoW64
+* add option `INCLUDE_NOTEBOOKS` to `Mathematica_ADD_DOCUMENTATION`
+* more robust cache cleaning of invalid FindMathematica related variables
+* add check to test if *Mathematica* has been registered properly
+* move option variable initialization to function of its own
+* quoting fixes
+
 ## 2.2.0 (2012-09-22)
 
 * add `Mathematica_JLink_ADD_TEST` to run J/Link program as a CMake test
