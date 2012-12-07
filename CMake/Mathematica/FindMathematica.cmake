@@ -442,7 +442,7 @@
 #    [ CODE <Mathematica stmnt> [ stmnt ...] ]
 #    [ SCRIPT <Mathematica script file> ]
 #    [ MAIN_CLASS <Java class name> ]
-#    [ CLASSPATH <class path entry>  [ <class path enty> ...] ]
+#    [ CLASSPATH <class path entry>  [ <class path entry> ...] ]
 #    [ SYSTEM_ID systemID ]
 #    [ KERNEL_OPTIONS <flag>  [ <flag> ...] ]
 #    [ INPUT text | INPUT_FILE file ]
@@ -458,7 +458,7 @@
 #  If neither CODE nor SCRIPT are present, the generated CMake test will launch the Java JAR target
 #  as a front-end to the Mathematica kernel.
 #  The option CLASSPATH specifies a list of directories, JAR archives, and ZIP archives to search for
-#  class files. The J/Link JAR file is always added to the classpath.
+#  class files. The J/Link JAR file is always added to the class path.
 #  The optional MAIN_CLASS parameter specifies the Java class whose main method should be invoked.
 #  The text specified by the INPUT option is fed to the launched JAR as standard input.
 #  The INPUT_FILE option specifies a file that is fed to the launched JAR as standard input.
@@ -592,7 +592,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "2.2.1")
+set (Mathematica_CMAKE_MODULE_VERSION "2.2.2")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -1082,7 +1082,12 @@ macro(_get_host_system_IDs _outSystemIDs)
 endmacro()
 
 macro(_get_supported_systemIDs _version _outSystemIDs)
-	if (NOT "${_version}" VERSION_LESS "8.0")
+	if (NOT "${_version}" VERSION_LESS "9.0")
+		set (${_outSystemIDs}
+			"Windows" "Windows-x86-64"
+			"Linux" "Linux-x86-64"
+			"MacOSX-x86-64")
+	elseif (NOT "${_version}" VERSION_LESS "8.0")
 		set (${_outSystemIDs}
 			"Windows" "Windows-x86-64"
 			"Linux" "Linux-x86-64"
@@ -1123,7 +1128,7 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 	if ("${_systemID}" STREQUAL "Windows-x86-64")
 		if (DEFINED Mathematica_VERSION)
 			if (NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
-				# Mathematica version 5.2 added support for Windows-x86-64
+				# Mathematica 5.2 added support for Windows-x86-64
 				list (APPEND ${_outSystemIDs} "Windows-x86-64")
 			endif()
 		else()
@@ -1132,23 +1137,16 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 		# Windows x64 can run x86 through WoW64
 		list (APPEND ${_outSystemIDs} "Windows")
 	elseif ("${_systemID}" MATCHES "MacOSX|Darwin")
-		if ("${_systemID}" STREQUAL "MacOSX-x86-64")
+		if ("${_systemID}" MATCHES "MacOSX-x86")
 			if (DEFINED Mathematica_VERSION)
-				# Mathematica version 6 added support for MacOSX-x86-64
+				# Mathematica 6 added support for MacOSX-x86-64
 				if (NOT "${Mathematica_VERSION}" VERSION_LESS "6.0")
 					list (APPEND ${_outSystemIDs} "MacOSX-x86-64")
 				endif()
-				# Mathematica version 5.2 added support for MacOSX-x86
-				if (NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
-					list (APPEND ${_outSystemIDs} "MacOSX-x86")
-				endif()
-			else()
-				list (APPEND ${_outSystemIDs} "MacOSX-x86-64" "MacOSX-x86")
-			endif()
-		elseif ("${_systemID}" STREQUAL "MacOSX-x86")
-			if (DEFINED Mathematica_VERSION)
-				if (NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
-					# Mathematica version 5.2 added support for MacOSX-x86
+				# Mathematica 5.2 added support for MacOSX-x86
+				# Mathematica 9.0 dropped support for MacOSX-x86
+				if (NOT "${Mathematica_VERSION}" VERSION_LESS "5.2" AND
+					"${Mathematica_VERSION}" VERSION_LESS "9.0")
 					list (APPEND ${_outSystemIDs} "MacOSX-x86")
 				endif()
 			else()
@@ -1158,7 +1156,7 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 			if (DEFINED Mathematica_VERSION)
 				if (NOT "${Mathematica_VERSION}" VERSION_LESS "5.2" AND
 					"${Mathematica_VERSION}" VERSION_LESS "6.0")
-					# Only Mathematica version 5.2 supports Darwin-PowerPC64
+					# Only Mathematica 5.2 supports Darwin-PowerPC64
 					list (APPEND ${_outSystemIDs} "Darwin-PowerPC64")
 				endif()
 			else()
@@ -1174,7 +1172,7 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 					# Mathematica versions before 6 used "Darwin" as system ID for ppc32
 					list (APPEND ${_outSystemIDs} "Darwin")
 				elseif ("${Mathematica_VERSION}" VERSION_LESS "8.0")
-					# Mathematica version 8 dropped support for ppc32
+					# Mathematica 8 dropped support for ppc32
 					list (APPEND ${_outSystemIDs} "MacOSX")
 				endif()
 			else()
@@ -1184,7 +1182,7 @@ macro(_get_compatible_system_IDs _systemID _outSystemIDs)
 	elseif ("${_systemID}" MATCHES "Linux-x86-64|Linux-IA64")
 		if (DEFINED Mathematica_VERSION)
 			if (NOT "${Mathematica_VERSION}" VERSION_LESS "5.2")
-				# Mathematica version 5.2 added support for 64-bit
+				# Mathematica 5.2 added support for 64-bit
 				list (APPEND ${_outSystemIDs} ${_systemID})
 			endif()
 		else()
@@ -2691,28 +2689,26 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar _kernelOptio
 		else()
 			_to_cmake_path("${CMAKE_CURRENT_SOURCE_DIR}/${${_scriptVar}}" _scriptFile)
 		endif()
-		if (DEFINED Mathematica_VERSION)
-			if (NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
-				# script option is supported since Mathematica 8
-				_to_native_path("${_scriptFile}" _scriptFileNative)
-				list (APPEND ${_cmdVar} "-script" "${_scriptFileNative}" )
-			else()
-				# for versions earlier than 8 use Get to load script
-				Mathematica_TO_NATIVE_PATH("${_scriptFile}" _scriptFileMma)
-				list (APPEND ${_cmdVar} "-run" "Get[${_scriptFileMma}]" "-run" "Quit[]")
-			endif()
-		endif()
-	else()
-		# if a "-run" code segment contains an Abort[] expression, the Mathematica kernel
-		# will return to the interactive prompt and never invoke the closing Quit[] command. E.g.:
-		# $ math -run 'Abort[]' -run 'Quit[]'
-		# Under Mathematica 8 we can work around that problem by appending an empty -script option
-		# to force termination of the kernel.
-		if (DEFINED Mathematica_VERSION)
-			if (NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
-				# script option is supported since Mathematica 8
-				list (APPEND ${_cmdVar} "-script")
-			endif()
+		# Although the -script option is supported since Mathematica 8, under Mathematica 9
+		# using the -script option does not work as expected, if it is preceded by multiple inline
+		# Mathematica commands using the -run option.
+		# Thus we use the Get function instead, which should work with all versions.
+		# According to http://bit.ly/XyMrbz running the kernel with the -script option
+		# is equivalent to reading the file using the Get command, with a single difference:
+		# after the last command in the file is evaluated, the kernel terminates.
+		Mathematica_TO_NATIVE_PATH("${_scriptFile}" _scriptFileMma)
+		list (APPEND ${_cmdVar} "-run" "Get[${_scriptFileMma}]" "-run" "Quit[]")
+	endif()
+	# If a "-run" code segment contains an Abort[] expression, the Mathematica kernel
+	# will return to the interactive prompt and never invoke the closing Quit[] command. E.g.:
+	# $ math -run 'Abort[]' -run 'Quit[]'
+	# Under Mathematica 8 we can work around that problem by appending an empty -script option
+	# to force termination of the kernel.
+	# The Mathematica 9 kernel does not need the work-around. It terminates if an Abort[] is encountered.
+	if (DEFINED Mathematica_VERSION)
+		if (NOT "${Mathematica_VERSION}" VERSION_LESS "8.0" AND "${Mathematica_VERSION}" VERSION_LESS "9.0")
+			# script option is supported since Mathematica 8
+			list (APPEND ${_cmdVar} "-script")
 		endif()
 	endif()
 endmacro(_add_script_or_code)

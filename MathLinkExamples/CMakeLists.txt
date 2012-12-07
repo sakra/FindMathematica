@@ -111,7 +111,7 @@ do_mathlink_test(addtwo
 # Expected output regular expression
 "AddTwo\\[x, y\\] gives the sum of two machine integers x and y\\.
 5
--2147483648
+(-2147483648|0)
 \\$Failed"
 CODE
 "?AddTwo

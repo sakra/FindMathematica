@@ -8,9 +8,9 @@ Features
 --------
 
 * Works with Windows, Linux and Mac OS X versions of *Mathematica*.
-* Finds *Mathematica* versions from 5.2 to 8.0.
+* Finds *Mathematica* versions from 5.2 to 9.0.
 * Finds include directories and libraries for [MathLink][mtlnk].
-* Finds include directories and libraries for [LibraryLink][wll] (*Mathematica* 8 only).
+* Finds include directories and libraries for [LibraryLink][wll] (*Mathematica* 8 or 9).
 * Finds installation directory and JAR file of [J/Link][jlnk].
 * Finds installation directory of Wolfram MUnit testing package.
 * Provides exact version information for *Mathematica*, MathLink, LibraryLink, J/Link and MUnit.
@@ -19,9 +19,9 @@ Features
 * Allows for running *Mathematica* code in CMake test targets.
 * Allows for running *Mathematica* MUnit test files and suites as CMake test targets.
 * Supports generating C code from MathLink template files using [mprep][mprp].
-* Supports building dynamic libraries loadable with [LibraryLink][wll] (*Mathematica* 8 only).
+* Supports building dynamic libraries loadable with [LibraryLink][wll] (*Mathematica* 8 or 9).
 * Supports generating stand-alone C code from *Mathematica* code with [CCodeGenerator][ccg]
-  (*Mathematica* 8 only).
+  (*Mathematica* 8 or 9).
 * Provides CMake interface to *Mathematica*'s [Splice][splc] function.
 * Provides CMake interface to *Mathematica*'s [Encode][encd] function.
 * Supports generating *Mathematica* documentation with the DocumentationBuild package.
@@ -30,7 +30,7 @@ Features
 Requirements
 ------------
 
-* A Wolfram [*Mathematica*][wmma] product (*Mathematica* 5.2 to 8.0, grid*Mathematica* 7.0 to 8.0
+* A Wolfram [*Mathematica*][wmma] product (*Mathematica* 5.2 to 9.0, grid*Mathematica* 7.0 to 8.0
   or Wolfram Finance Platform 1.0).
 * [CMake 2.8.4][cmk] or newer. The executable `cmake` should be on the system path.
 * [Visual Studio C++][vslstd], [MinGW][mingw] or [Cygwin][cgwn] under Windows.
@@ -48,7 +48,7 @@ top-level `CMakeList.txt` file add the module directory to the CMake module sear
 Optional CMake MUnit testing support requires the installation of the Wolfram MUnit package. MUnit
 ships with [Wolfram*Workbench*][wwkb] 2.0. The JAR file `com.wolfram.eclipse.testing_2.0.126.jar`
 in the `plugins` subfolder of the Workbench installation folder contains different MUnit package
-versions for *Mathematica* versions 5.2 to 8.0.
+versions for *Mathematica* versions 5.2 to 9.0.
 
 Extract the MUnit package version appropriate for your installed *Mathematica* version from the
 JAR file to a directory on the *Mathematica* `$Path` (e.g., `$BaseDirectory/Applications` or
@@ -162,7 +162,7 @@ commands in the `FindMathematica` root directory:
     $ cmake ..
     $ make
 
-The *Mathematica* 8 kernel cannot load a Cygwin generated LibraryLink DLL that has been linked with
+The *Mathematica* kernel cannot load a Cygwin generated LibraryLink DLL that has been linked with
 the Cygwin runtime library. As a work-around, the FindMathematica module suppresses linking with the
 Cygwin runtime library by adding the `-mno-cygwin` flag when a LibraryLink target is added.
 This flag is supported by Cygwin GCC version 3.x, but not by the default Cygwin GCC version 4.x.

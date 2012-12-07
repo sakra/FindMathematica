@@ -1,3 +1,7 @@
+## 2.2.2 (2012-12-07)
+
+* *Mathematica* 9 compatibility fixes
+
 ## 2.2.1 (2012-10-23)
 
 * Windows registry search fix for WoW64
