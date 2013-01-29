@@ -1,3 +1,7 @@
+## 2.2.3 (2013-01-29)
+
+* handle `Mathematica_FIND_VERSION_EXACT` parameter correctly
+
 ## 2.2.2 (2012-12-07)
 
 * *Mathematica* 9 compatibility fixes

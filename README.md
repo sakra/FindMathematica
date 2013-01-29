@@ -95,6 +95,7 @@ provided by the FindMathematica module:
 * `CodeGenerationExamples` builds binaries from *Mathematica* compiled functions exported to C.
 * `MUnitExamples` demonstrate how to run *Mathematica* MUnit test files as CMake tests.
 * `DocumentationExamples` demonstrate how to build *Mathematica* documentation.
+* `JLinkExamples` builds JAR archives from J/Link example source files.
 
 ### Windows Usage Hints
 

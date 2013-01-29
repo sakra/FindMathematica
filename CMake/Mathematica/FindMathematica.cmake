@@ -557,7 +557,7 @@
 #  This function is available if J/Link and the Mathematica kernel executable have been found.
 
 #=============================================================================
-# Copyright 2010-2012 Sascha Kratky
+# Copyright 2010-2013 Sascha Kratky
 #
 # Permission is hereby granted, free of charge, to any person)
 # obtaining a copy of this software and associated documentation)
@@ -592,7 +592,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "2.2.2")
+set (Mathematica_CMAKE_MODULE_VERSION "2.2.3")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -708,7 +708,7 @@ macro(_get_program_names _outProgramNames)
 	# Mathematica product versions in order of preference
 	set (_MathematicaVersions "9.0" "8.0" "7.0" "6.0" "5.2")
 	# search for explicitly requested application version first
-	if (Mathematica_FIND_VERSION)
+	if (Mathematica_FIND_VERSION AND Mathematica_FIND_VERSION_EXACT)
 		foreach (_product IN LISTS _MathematicaApps)
 			_append_program_names("${_product}"
 				"${Mathematica_FIND_VERSION_MAJOR}.${Mathematica_FIND_VERSION_MINOR}"
@@ -752,7 +752,7 @@ function (_add_registry_search_path _registryKey _outSearchPaths)
 	if (${_qualified})
 		if (EXISTS "${_productPath}")
 			_to_cmake_path("${_productPath}" _path)
-			if (Mathematica_FIND_VERSION)
+			if (Mathematica_FIND_VERSION AND Mathematica_FIND_VERSION_EXACT)
 				if ("${_productVersion}" MATCHES "${Mathematica_FIND_VERSION}")
 					# prepend if version matches requested one
 					list (INSERT ${_outSearchPaths} 0 "${_path}")
@@ -832,7 +832,7 @@ function (_add_launch_services_search_paths _outSearchPaths)
 				foreach (_appPath IN LISTS _appPaths)
 					if (EXISTS "${_appPath}")
 						_to_cmake_path("${_appPath}" _appPath)
-						if (Mathematica_FIND_VERSION)
+						if (Mathematica_FIND_VERSION AND Mathematica_FIND_VERSION_EXACT)
 							if ("${_appPath}" MATCHES "${Mathematica_FIND_VERSION}")
 								# insert in front of other versions if version matches requested one
 								list (LENGTH _paths _len)
@@ -874,7 +874,7 @@ macro (_add_default_search_path _outSearchPaths)
 				string (REPLACE "${_kernelName}" "" _executableDir "${_executable}")
 				if (NOT "${_executable}" STREQUAL "${_executableDir}" AND
 					IS_DIRECTORY ${_executableDir})
-					if (Mathematica_FIND_VERSION)
+					if (Mathematica_FIND_VERSION AND Mathematica_FIND_VERSION_EXACT)
 						list (APPEND ${_outSearchPaths} "${_executableDir}")
 					else()
 						# prefer default installation if not searching for version explicitly
@@ -2051,6 +2051,7 @@ macro(_log_used_variables)
 		message (STATUS "Current file: ${CMAKE_CURRENT_LIST_FILE}:${CMAKE_CURRENT_LIST_LINE}")
 		message (STATUS "Parent file: ${CMAKE_PARENT_LIST_FILE}")
 		message (STATUS "Find version: ${Mathematica_FIND_VERSION}")
+		message (STATUS "Find exact: ${Mathematica_FIND_VERSION_EXACT}")
 		message (STATUS "Find quietly: ${Mathematica_FIND_QUIETLY}")
 		message (STATUS "Find required: ${Mathematica_FIND_REQUIRED}")
 		message (STATUS "Find components: ${Mathematica_FIND_COMPONENTS}")
@@ -2146,6 +2147,7 @@ endmacro(_log_found_variables)
 macro(_get_cache_variables _CacheVariables)
 	set (${_CacheVariables}
 		Mathematica_FIND_VERSION
+		Mathematica_FIND_VERSION_EXACT
 		Mathematica_USE_STATIC_LIBRARIES
 		Mathematica_USE_MINIMAL_LIBRARIES
 		Mathematica_SYSTEM_IDS
@@ -2162,7 +2164,8 @@ endmacro()
 macro(_get_dependent_cache_variables _var _outDependentVars)
 	# do comparisons with an underscore prefix to prevent CMake from automatically
 	# resolving the left and right hand arguments to STREQUAL
-	if ("_${_var}" STREQUAL "_Mathematica_FIND_VERSION")
+	if ("_${_var}" STREQUAL "_Mathematica_FIND_VERSION" OR
+		"_${_var}" STREQUAL "_Mathematica_FIND_VERSION_EXACT")
 		list (APPEND ${_outDependentVars}
 			Mathematica_ROOT_DIR Mathematica_HOST_ROOT_DIR Mathematica_VERSION)
 		_get_dependent_cache_variables("Mathematica_ROOT_DIR" ${_outDependentVars})
