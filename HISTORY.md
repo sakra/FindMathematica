@@ -1,3 +1,7 @@
+## 2.2.4 (2013-02-10)
+
+* honor `MATHEMATICA_HOME` environment variable introduced with Mathematica 8.0.4
+
 ## 2.2.3 (2013-01-29)
 
 * handle `Mathematica_FIND_VERSION_EXACT` parameter correctly
