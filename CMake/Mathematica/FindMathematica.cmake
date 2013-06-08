@@ -592,7 +592,7 @@ include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 
 get_filename_component(Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set (Mathematica_CMAKE_MODULE_VERSION "2.2.4")
+set (Mathematica_CMAKE_MODULE_VERSION "2.2.5")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -715,15 +715,15 @@ macro(_get_program_names _outProgramNames)
 				${_outProgramNames})
 		endforeach()
 	endif()
-	# then try unqualified application names
-	foreach (_product IN LISTS _MathematicaApps)
-		_append_program_names("${_product}" "" ${_outProgramNames})
-	endforeach()
 	# then try all qualified application names
 	foreach (_product IN LISTS _MathematicaApps)
 		foreach (_version IN LISTS _MathematicaVersions)
 			_append_program_names("${_product}" "${_version}" ${_outProgramNames})
 		endforeach()
+	endforeach()
+	# then try unqualified application names
+	foreach (_product IN LISTS _MathematicaApps)
+		_append_program_names("${_product}" "" ${_outProgramNames})
 	endforeach()
 	list (REMOVE_DUPLICATES ${_outProgramNames})
 endmacro()
@@ -823,6 +823,11 @@ function (_add_launch_services_search_paths _outSearchPaths)
 				TIMEOUT 10 OUTPUT_VARIABLE _queryResult ERROR_QUIET)
 			string (REPLACE ";" "\\;" _queryResult "${_queryResult}")
 			string (REPLACE "\n" ";" _appPaths "${_queryResult}")
+			if (_appPaths)
+				# put paths into canonical order
+				list (SORT _appPaths)
+				list (REVERSE _appPaths)
+			endif()
 			if (Mathematica_DEBUG)
 				message (STATUS "Mac OS X LaunchServices database registered apps=${_appPaths}")
 			endif()
@@ -830,10 +835,11 @@ function (_add_launch_services_search_paths _outSearchPaths)
 				set (_paths "")
 				set (_insertIndex 0)
 				foreach (_appPath IN LISTS _appPaths)
+					# ignore paths that no longer exist
 					if (EXISTS "${_appPath}")
 						_to_cmake_path("${_appPath}" _appPath)
 						if (Mathematica_FIND_VERSION AND Mathematica_FIND_VERSION_EXACT)
-							if ("${_appPath}" MATCHES "${Mathematica_FIND_VERSION}")
+							if ("${_appPath}" MATCHES "${Mathematica_FIND_VERSION_MAJOR}.${Mathematica_FIND_VERSION_MINOR}")
 								# insert in front of other versions if version matches requested one
 								list (LENGTH _paths _len)
 								if (_len EQUAL _insertIndex)
@@ -874,7 +880,7 @@ macro (_add_default_search_path _outSearchPaths)
 				string (REPLACE "${_kernelName}" "" _executableDir "${_executable}")
 				if (NOT "${_executable}" STREQUAL "${_executableDir}" AND
 					IS_DIRECTORY ${_executableDir})
-					if (Mathematica_FIND_VERSION AND Mathematica_FIND_VERSION_EXACT)
+					if (Mathematica_FIND_VERSION)
 						list (APPEND ${_outSearchPaths} "${_executableDir}")
 					else()
 						# prefer default installation if not searching for version explicitly
