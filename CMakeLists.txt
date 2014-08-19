@@ -1,6 +1,6 @@
 # FindMathematica example project
 
-cmake_minimum_required(VERSION 2.8.4)
+cmake_minimum_required(VERSION 2.8.9)
 
 project (Mathematica-project)
 
@@ -24,19 +24,18 @@ find_package(Java 1.6 COMPONENTS Development)
 # default settings for options that affect search
 #set (Mathematica_USE_STATIC_LIBRARIES OFF)
 #set (Mathematica_USE_MINIMAL_LIBRARIES ON)
+#set (Mathematica_USE_LIBCXX_LIBRARIES OFF)
+
 #set (Mathematica_DEBUG OFF)
 
-# finds default Mathematica installation and its default components
+# finds newest Mathematica installation and its default components
 find_package(Mathematica)
 
-# finds Mathematica 8 installation and required components
-#find_package(Mathematica 8 REQUIRED MathLink JLink WolframLibrary)
+# finds Mathematica 9.0.1 installation and required components
+#find_package(Mathematica 9.0.1 EXACT REQUIRED MathLink JLink WolframLibrary)
 
-# finds Mathematica 7 installation and component MathLink
-#find_package(Mathematica 7 COMPONENTS MathLink JLink)
-
-# finds Mathematica 5.2
-#find_package(Mathematica 5.2)
+# finds Mathematica >= 8 installation and optional components
+#find_package(Mathematica 8 COMPONENTS MathLink JLink)
 
 enable_testing()
 
@@ -102,6 +101,19 @@ if (${Mathematica_MathLink_FOUND})
 			DESTINATION "${CMAKE_SOURCE_DIR}/MathLinkExamples"
 			NO_SOURCE_PERMISSIONS)
 		add_subdirectory(MathLinkExamples)
+	endif()
+endif()
+
+if (${Mathematica_WSTP_FOUND})
+	# copy WSTP example files from Mathematica installation to source directory
+	if (EXISTS "${Mathematica_WSTP_HOST_ROOT_DIR}/WSTPExamples")
+		file (GLOB_RECURSE _WSTPExamples
+			"${Mathematica_WSTP_HOST_ROOT_DIR}/WSTPExamples/*.tm"
+			"${Mathematica_WSTP_HOST_ROOT_DIR}/WSTPExamples/*.c")
+		file (COPY ${_WSTPExamples}
+			DESTINATION "${CMAKE_SOURCE_DIR}/WSTPExamples"
+			NO_SOURCE_PERMISSIONS)
+		add_subdirectory(WSTPExamples)
 	endif()
 endif()
 

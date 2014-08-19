@@ -3,19 +3,38 @@
 include_directories(${Mathematica_INCLUDE_DIRS})
 
 set(_Examples
-	arbitraryTensor.c demo.c
-	demo_error.c demo_numerical.c demo_shared.c demo_string.c)
-if (${Mathematica_MathLink_FOUND})
-	list (APPEND _Examples demo_eval.c demo_mathlink.c)
-endif()
+	arbitraryTensor.c demo.c demo_callback.c demo_eval.c demo_mathlink.c demo_LinkObject.c
+	demo_error.c demo_numerical.c demo_shared.c demo_string.c demo_sparse.c)
 
 # add a CMake shared library target for each LibraryLink example
 set (_Targets "")
 foreach (_Example ${_Examples})
-	get_filename_component(_TargetName ${_Example} NAME_WE)
-	Mathematica_ADD_LIBRARY (${_TargetName} ${_Example})
-	list (APPEND _Targets ${_TargetName})
-	set_target_properties(${_TargetName} PROPERTIES FOLDER "LibraryLink")
+	if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}")
+		file (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}" _includesMathLink REGEX ".*#include.*mathlink.h.*")
+		file (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}" _includesWSTP REGEX ".*#include.*wstp.h.*")
+		set (_honorExample TRUE)
+		if (_includesMathLink AND NOT Mathematica_MathLink_FOUND)
+			set (_honorExample FALSE)
+		endif()
+		if (_includesWSTP AND NOT Mathematica_WSTP_FOUND)
+			set (_honorExample FALSE)
+		endif()
+		if (_honorExample)
+			get_filename_component(_TargetName ${_Example} NAME_WE)
+			Mathematica_ADD_LIBRARY (${_TargetName} ${_Example})
+			if (_includesMathLink)
+				target_link_libraries(${_TargetName} ${Mathematica_MathLink_LIBRARIES})
+			endif()
+			if (_includesWSTP)
+				target_link_libraries(${_TargetName} ${Mathematica_WSTP_LIBRARIES})
+			endif()
+			if (_includesMathLink OR _includesWSTP)
+				Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES(${_TargetName})
+			endif()
+			set_target_properties(${_TargetName} PROPERTIES FOLDER "LibraryLink")
+			list (APPEND _Targets ${_TargetName})
+		endif()
+	endif()
 endforeach()
 
 # define a helper function to simplify adding LibraryLink tests
@@ -38,12 +57,6 @@ function (do_mathematica_librarylink_test _target _expectedOutputRegEx)
 		endif()
 	endforeach()
 endfunction ()
-
-# demo_eval and demo_mathlink require MathLink
-if (${Mathematica_MathLink_FOUND})
-	target_link_libraries(demo_eval ${Mathematica_MathLink_LIBRARIES})
-	target_link_libraries(demo_mathlink ${Mathematica_MathLink_LIBRARIES})
-endif()
 
 if (DEFINED Mathematica_USERBASE_DIR)
 	foreach (_systemID ${Mathematica_SYSTEM_IDS})
@@ -80,9 +93,18 @@ do_mathematica_librarylink_test(demo_string
 \"acitamehtaM\""
 SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/demo_string_test.m")
 
-if (${Mathematica_MathLink_FOUND})
-
 do_mathematica_librarylink_test(demo_mathlink
+# Expected output regular expression
+"2
+\"acitamehtaM\""
+CODE
+"addtwo=LibraryFunctionLoad[libPath, \"addtwo\", LinkObject, LinkObject]
+reverseString=LibraryFunctionLoad[libPath, \"reverseString\", LinkObject, LinkObject]
+Print[addtwo[1,1]]
+Print[reverseString[\"Mathematica\"]]"
+)
+
+do_mathematica_librarylink_test(demo_LinkObject
 # Expected output regular expression
 "2
 \"acitamehtaM\""
@@ -102,7 +124,5 @@ CODE
 MyFunction::info=\"`1`\"
 Print[fun[1,2]]"
 )
-
-endif()
 
 add_convenience_test_target(LibraryLinkTests "LibraryLink")

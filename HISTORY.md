@@ -1,10 +1,26 @@
+## 3.0.0 (2014-08-19)
+
+* add support for *Mathematica* 10
+* CMake 3.0.0 compatibility fixes
+* add support for WSTP (Wolfram Symbolic Transfer Protocol)
+* move documentation from file `FindMathematica.cmake` to manual file of its own
+* preserve directory structure when using `Mathematica_ENCODE` with an output folder
+* add variable `Mathematica_MathLink_FIND_VERSION_MAJOR` (requested MathLink major version)
+* add variable `Mathematica_JLink_LIBRARY` (path to J/Link's `JLinkNativeLibrary`)
+* add variable `Mathematica_JLink_JAVA_EXECUTABLE` (path to the host Java runtime)
+* add option `LINK_PROTOCOL` to `Mathematica_MathLink_ADD_TEST` and `Mathematica_JLink_ADD_TEST`
+* change in `Mathematica_MathLink_MPREP_TARGET` and `Mathematica_MathLink_ADD_EXECUTABLE`:
+  if MathLink template file extension is .tmpp, generate C++ source file from it
+* add variable `Mathematica_USE_LIBCXX_LIBRARIES` to prefer libc++ linked libraries to
+  libstdc++ linked libraries (OS X only)
+
 ## 2.2.5 (2013-06-08)
 
 * handle `Mathematica_FIND_VERSION_EXACT` parameter correctly
 
 ## 2.2.4 (2013-02-10)
 
-* honor `MATHEMATICA_HOME` environment variable introduced with Mathematica 8.0.4
+* honor `MATHEMATICA_HOME` environment variable introduced with *Mathematica* 8.0.4
 
 ## 2.2.3 (2013-01-29)
 
@@ -40,7 +56,7 @@
 * guard against missing test driver helper scripts
 * fixed bug with setting up the kernel command line when both `CODE` and `SCRIPT` are present
 * add work-around to prevent CMake commands that run the kernel from hanging when `Abort[]` is used
-* add more accurate detection of host processor architecture under Mac OS X
+* add more accurate detection of host processor architecture under OS X
 * minor documentation fixes
 
 ## 2.0.9 (2012-08-17)
@@ -65,24 +81,24 @@
 ## 2.0.5 (2012-03-05)
 
 * fix use of uninitialized variables
-* fixed Wolfram Library runtime directory selection for Mac OS X 10.7
+* fixed Wolfram Library runtime directory selection for OS X 10.7
 
 ## 2.0.4 (2012-02-26)
 
 * fix compiler version detection for Visual Studio C++
-* fix LaunchServices database search bug under Mac OS X
+* fix LaunchServices database search bug under OS X
 * add `Mathematica_MathLink_HOST_INCLUDE_DIR`
 * quoting fixes
 
 ## 2.0.3 (2012-01-19)
 
-* fix LaunchServices database search under Mac OS X 10.7
+* fix LaunchServices database search under OS X 10.7
 
 ## 2.0.2 (2012-01-03)
 
 * under Windows search registry determined installation locations first
-* under Mac OS X search LaunchServices database determined installation locations first
-* under Mac OS X programmatically find path to `lsregister` executable
+* under OS X search LaunchServices database determined installation locations first
+* under OS X programmatically find path to `lsregister` executable
 * tested with with CMake 2.8.7
 
 ## 2.0.1 (2011-12-20)
@@ -120,7 +136,7 @@
 
 ## 1.2.5 (2011-12-02)
 
-* fix bug in launch services database search code under Mac OS X
+* fix bug in launch services database search code under OS X
 
 ## 1.2.4 (2011-11-17)
 

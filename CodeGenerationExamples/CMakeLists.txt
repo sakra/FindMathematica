@@ -17,13 +17,6 @@ set_target_properties(functions PROPERTIES FOLDER "CodeGeneration")
 target_link_libraries (functions ${Mathematica_WolframLibrary_LIBRARIES})
 set_target_properties(functions PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}")
 
-# add CMake static library target for Mathematica control system expression
-Mathematica_GENERATE_C_CODE(control.m OUTPUT control.c)
-add_library (control STATIC control.c)
-set_target_properties(control PROPERTIES FOLDER "CodeGeneration")
-target_link_libraries (control ${Mathematica_WolframLibrary_LIBRARIES})
-set_target_properties(control PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}")
-
 # fix MathLink shared library references under Mac OS X
 Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES(compute functions)
 

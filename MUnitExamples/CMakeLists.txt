@@ -5,11 +5,6 @@ Mathematica_MUnit_add_test(NAME MUnit_testfile
 	SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test.mt"
 	TIMEOUT 20)
 
-# run MUnit test notebook as CMake test
-Mathematica_MUnit_add_test(NAME MUnit_testnotebook
-	SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test.nb"
-	TIMEOUT 20)
-
 # run MUnit test with initialization code and alternative logger
 Mathematica_MUnit_add_test(NAME MUnit_UnitsTests
 	CODE "Needs[\"Units`\"]"

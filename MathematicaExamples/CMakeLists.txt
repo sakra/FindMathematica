@@ -37,10 +37,8 @@ set_target_properties(spliceDemo PROPERTIES FOLDER "Mathematica")
 
 if ("${Mathematica_VERSION_MAJOR}" GREATER 5)
 	# add a post-build action which computes the MD5 checksum of the library
-	get_target_property(_spliceDemoLoc spliceDemo LOCATION)
-	Mathematica_TO_NATIVE_PATH(${_spliceDemoLoc} _spliceDemoLocMma)
 	Mathematica_ADD_CUSTOM_COMMAND(TARGET spliceDemo POST_BUILD
-		CODE "Print[OutputForm[BaseForm[FileHash[${_spliceDemoLocMma},\"MD5\"],16]]]"
+		CODE "Print[OutputForm[BaseForm[FileHash[\"$<TARGET_FILE:spliceDemo>\",\"MD5\"],16]]]"
 		COMMENT "Computing spliceDemo MD5 checksum.")
 endif()
 

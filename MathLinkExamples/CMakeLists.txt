@@ -18,8 +18,10 @@ if (NOT CMAKE_CROSSCOMPILING)
 			add_executable (${_TargetName} WIN32 ${_Example}.c)
 			target_link_libraries (${_TargetName} ${Mathematica_MathLink_LIBRARIES})
 		endif()
-		set_target_properties(${_TargetName} PROPERTIES FOLDER "MathLink")
-		list (APPEND _Targets ${_TargetName})
+		if (TARGET ${_TargetName})
+			set_target_properties(${_TargetName} PROPERTIES FOLDER "MathLink")
+			list (APPEND _Targets ${_TargetName})
+		endif()
 	endforeach()
 
 	# export mprep header and trailer code for the current target platform

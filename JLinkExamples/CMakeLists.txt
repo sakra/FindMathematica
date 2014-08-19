@@ -12,11 +12,11 @@ if (NOT CYGWIN)
 	# UseJava module cannot handle Cygwin path syntax
 	add_jar(AddTwo AddTwo.java)
 	add_jar(FormatArray FormatArray.java)
-
 	add_jar(GraphicsApp GraphicsApp.java)
 	add_jar(GraphicsDlg GraphicsDlg.java)
 	add_jar(SampleProgram SampleProgram.java)
 	add_jar(SimpleFrontEnd SimpleFrontEnd.java)
+	set_target_properties(AddTwo FormatArray GraphicsApp GraphicsDlg SampleProgram SimpleFrontEnd PROPERTIES FOLDER "JLink")
 endif()
 
 # define a helper function to simplify adding J/Link executable tests
