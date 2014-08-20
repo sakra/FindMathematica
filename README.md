@@ -32,7 +32,7 @@ Features
 Requirements
 ------------
 
-* A Wolfram [*Mathematica*][wmma] product (*Mathematica* 5.2 to 10.0, grid*Mathematica* 7.0 to 10.0
+* A Wolfram [*Mathematica*][wmma] product (*Mathematica* 5.2 to 10.0, gridMathematica 7.0 to 10.0
   or Wolfram Finance Platform).
 * [CMake 2.8.9][cmk] or newer. The executable `cmake` should be on the system path.
 * [Visual Studio C++][vslstd], [MinGW][mingw] or [Cygwin][cgwn] under Windows.

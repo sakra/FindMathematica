@@ -14,7 +14,7 @@ top-level `CMakeList.txt` file add the module directory to the CMake module sear
 
 Optional CMake MUnit testing support requires the installation of the Wolfram MUnit package. MUnit
 is built into *Mathematica* 10. For earlier versions of *Mathematica*, a compatible MUnit package
-ships with Wolfram*Workbench* 2.0. The JAR file `com.wolfram.eclipse.testing_2.0.126.jar` in the
+ships with Wolfram Workbench 2.0. The JAR file `com.wolfram.eclipse.testing_2.0.126.jar` in the
 `plugins` subfolder of the Workbench installation folder contains different MUnit package versions
 for *Mathematica* versions 5.2 to 9.0.
 
@@ -25,7 +25,7 @@ copy the MUnit package to the FindMathematica module directory which is automati
 to `$Path` when the *Mathematica* kernel is launched through the FindMathematica module.
 
 If you plan on generating *Mathematica* documentation with CMake, the installation of two Wolfram
-documentation build packages, which also ship with Wolfram*Workbench* 2.0, is required.
+documentation build packages, which also ship with Wolfram Workbench 2.0, is required.
 The JAR file `com.wolfram.eclipse.paclet.develop_2.0.138.jar` in the `plugins` subfolder of the
 Workbench installation folder contains the package folders `DocumentationBuild` and `Transmogrify`.
 These must be copied to a directory on the *Mathematica* `$Path`.
@@ -751,7 +751,7 @@ The given *Mathematica* test code is wrapped in the following way:
 If neither `CODE` nor `SCRIPT` are present, the generated CMake test will launch the MathLink target
 executable as a front-end to the *Mathematica* kernel.
 
-The `LINK_PROTOCOL` specifies the MathLink link protocol (e.g., `"TCPIP`) to use.
+The `LINK_PROTOCOL` specifies the MathLink link protocol (e.g., `"TCPIP"`) to use.
 
 The text specified by the `INPUT` option is fed to the launched executable as standard input.
 The `INPUT_FILE` option specifies a file that is fed to the launched executable as standard input.
@@ -852,7 +852,7 @@ The given *Mathematica* test code is wrapped in the following way:
 If neither `CODE` nor `SCRIPT` are present, the generated CMake test will launch the Java JAR target
 as a front-end to the *Mathematica* kernel.
 
-The `LINK_PROTOCOL` specifies the MathLink link protocol (e.g., `"TCPIP`) to use.
+The `LINK_PROTOCOL` specifies the MathLink link protocol (e.g., `"TCPIP"`) to use.
 
 The option `CLASSPATH` specifies a list of directories, JAR archives, and ZIP archives to search for
 class files. The J/Link JAR file is always added to the class path. The optional `MAIN_CLASS`
