@@ -22,6 +22,9 @@ if (NOT CMAKE_CROSSCOMPILING)
 			set_target_properties(${_TargetName} PROPERTIES FOLDER "MathLink")
 			list (APPEND _Targets ${_TargetName})
 		endif()
+		if (Mathematica_MathLink_LINKER_FLAGS)
+			set_target_properties(${_TargetName} PROPERTIES LINK_FLAGS "${Mathematica_MathLink_LINKER_FLAGS}")
+		endif()
 	endforeach()
 
 	# export mprep header and trailer code for the current target platform

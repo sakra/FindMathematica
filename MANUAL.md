@@ -302,6 +302,8 @@ The module defines the following variables for component `MathLink`:
 * `Mathematica_MathLink_LIBRARIES` - MathLink library for all target platforms and required system libraries
 * `Mathematica_MathLink_MPREP_EXECUTABLE` - path to host `mprep` executable (MathLink template file preprocessor)
 * `Mathematica_MathLink_HOST_INCLUDE_DIR` - header file mathlink.h include directory for host platform
+* `Mathematica_MathLink_DEFINITIONS` - MathLink compile definitions
+* `Mathematica_MathLink_LINKER_FLAGS` - MathLink linker flags
 * `Mathematica_MathLink_VERSION` - MathLink version number given as "interface.revision"
 * `Mathematica_MathLink_VERSION_MAJOR` - MathLink interface number
 * `Mathematica_MathLink_VERSION_MINOR` - MathLink revision number
@@ -318,6 +320,8 @@ The module defines the following variables for component `WSTP`:
 * `Mathematica_WSTP_LIBRARIES` - WSTP library for all target platforms and required system libraries
 * `Mathematica_WSTP_WSPREP_EXECUTABLE` - path to host `wsprep` executable (WSTP template file preprocessor)
 * `Mathematica_WSTP_HOST_INCLUDE_DIR` - header file wstp.h include directory for host platform
+* `Mathematica_WSTP_DEFINITIONS` - WSTP compile definitions
+* `Mathematica_WSTP_LINKER_FLAGS` - WSTP linker flags
 * `Mathematica_WSTP_VERSION` - WSTP version number given as "interface.revision"
 * `Mathematica_WSTP_VERSION_MAJOR` - WSTP interface number
 * `Mathematica_WSTP_VERSION_MINOR` - WSTP revision number

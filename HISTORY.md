@@ -1,3 +1,13 @@
+## 3.0.1 (2014-12-11)
+
+* add compatibility with *Mathematica* 10.0.2
+* add variables `Mathematica_MathLink_DEFINITIONS` and `Mathematica_MathLink_LINKER_FLAGS`
+* add variables `Mathematica_WSTP_DEFINITIONS` and `Mathematica_WSTP_LINKER_FLAGS`
+* use `-wstp` flag for launching WSTP executables
+* prevent conflicts with MSVC runtime library upon linking static MathLink or WSTP library
+* add MathLink or WSTP framework directory to `Mathematica_RUNTIME_LIBRARY_DIRS` under OS X
+* manual updates
+
 ## 3.0.0 (2014-08-19)
 
 * add support for *Mathematica* 10

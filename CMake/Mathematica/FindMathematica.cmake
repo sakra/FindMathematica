@@ -39,7 +39,7 @@ include(FindPackageHandleStandardArgs)
 include(CMakeFindFrameworks)
 
 set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set (Mathematica_CMAKE_MODULE_VERSION "3.0.0")
+set (Mathematica_CMAKE_MODULE_VERSION "3.0.1")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -503,9 +503,7 @@ macro (_get_system_IDs _outSystemIDs)
 		else()
 			_systemNameToSystemID("${CMAKE_SYSTEM_NAME}" "${CMAKE_SYSTEM_PROCESSOR}" ${_outSystemIDs})
 		endif()
-	endif()
-	if (NOT DEFINED ${_outSystemIDs} OR "${_outSystemIDs}" STREQUAL "")
-		message (WARNING "Unknown target system ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+	else()
 		set (${_outSystemIDs} "Generic")
 	endif()
 endmacro(_get_system_IDs)
@@ -1310,7 +1308,9 @@ macro (_find_mathematica)
 	)
 	find_path (Mathematica_INCLUDE_DIR
 		NAMES "mdefs.h"
-		HINTS "${Mathematica_ROOT_DIR}/SystemFiles/IncludeFiles"
+		HINTS
+			"${Mathematica_ROOT_DIR}/SystemFiles/IncludeFiles"
+			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/IncludeFiles"
 		PATH_SUFFIXES "C"
 		DOC "Mathematica C language definitions include directory."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1374,14 +1374,18 @@ macro (_find_wolframlibrary)
 	endif()
 	find_library (Mathematica_WolframLibrary_LIBRARY
 		NAMES ${_WolframRuntimeLibraryNames}
-		HINTS "${Mathematica_ROOT_DIR}/SystemFiles/Libraries"
+		HINTS
+			"${Mathematica_ROOT_DIR}/SystemFiles/Libraries"
+			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/Libraries"
 		PATH_SUFFIXES ${_SystemIDs}
 		DOC "Mathematica Wolfram Runtime Library."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
 	)
 	find_path (Mathematica_WolframLibrary_INCLUDE_DIR
 		NAMES "WolframLibrary.h" "WolframRTL.h"
-		HINTS "${Mathematica_ROOT_DIR}/SystemFiles/IncludeFiles"
+		HINTS
+			"${Mathematica_ROOT_DIR}/SystemFiles/IncludeFiles"
+			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/IncludeFiles"
 		PATH_SUFFIXES "C"
 		DOC "Mathematica WolframLibrary include directory."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1413,6 +1417,7 @@ macro (_find_mathlink)
 		NAMES "CompilerAdditions"
 		HINTS
 			"${Mathematica_ROOT_DIR}/SystemFiles/Links/MathLink/DeveloperKit"
+			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/Links/MathLink/DeveloperKit"
 			"${Mathematica_ROOT_DIR}/AddOns/MathLink/DeveloperKit"
 		PATH_SUFFIXES ${_SystemIDs}
 		DOC "MathLink target SDK root directory."
@@ -1429,6 +1434,7 @@ macro (_find_mathlink)
 		NAMES "CompilerAdditions"
 		HINTS
 			"${Mathematica_HOST_ROOT_DIR}/SystemFiles/Links/MathLink/DeveloperKit"
+			"${Mathematica_HOST_ROOT_DIR}/Contents/SystemFiles/Links/MathLink/DeveloperKit"
 			"${Mathematica_HOST_ROOT_DIR}/AddOns/MathLink/DeveloperKit"
 		PATH_SUFFIXES ${_HostSystemIDs}
 		DOC "MathLink host SDK root directory."
@@ -1498,6 +1504,11 @@ macro (_find_mathlink)
 	if (Mathematica_MathLink_INCLUDE_DIR)
 		list (APPEND Mathematica_INCLUDE_DIRS ${Mathematica_MathLink_INCLUDE_DIR})
 	endif()
+	if (DEFINED Mathematica_MathLink_FIND_VERSION_MAJOR)
+		set (Mathematica_MathLink_DEFINITIONS "-DMLINTERFACE=${Mathematica_MathLink_FIND_VERSION_MAJOR}")
+	else()
+		set (Mathematica_MathLink_DEFINITIONS "")
+	endif()
 endmacro(_find_mathlink)
 
 # internal macro to find WSTP SDK inside Mathematica installation
@@ -1520,6 +1531,7 @@ macro (_find_WSTP)
 		NAMES "CompilerAdditions"
 		HINTS
 			"${Mathematica_ROOT_DIR}/SystemFiles/Links/WSTP/DeveloperKit"
+			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/Links/WSTP/DeveloperKit"
 		PATH_SUFFIXES ${_SystemIDs}
 		DOC "WSTP target SDK root directory."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1535,6 +1547,7 @@ macro (_find_WSTP)
 		NAMES "CompilerAdditions"
 		HINTS
 			"${Mathematica_HOST_ROOT_DIR}/SystemFiles/Links/WSTP/DeveloperKit"
+			"${Mathematica_HOST_ROOT_DIR}/Contents/SystemFiles/Links/WSTP/DeveloperKit"
 		PATH_SUFFIXES ${_HostSystemIDs}
 		DOC "WSTP host SDK root directory."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1603,6 +1616,11 @@ macro (_find_WSTP)
 	if (Mathematica_WSTP_INCLUDE_DIR)
 		list (APPEND Mathematica_INCLUDE_DIRS ${Mathematica_WSTP_INCLUDE_DIR})
 	endif()
+	if (DEFINED Mathematica_WSTP_FIND_VERSION_MAJOR)
+		set (Mathematica_WSTP_DEFINITIONS "-DWSINTERFACE=${Mathematica_WSTP_FIND_VERSION_MAJOR}")
+	else()
+		set (Mathematica_WSTP_DEFINITIONS "")
+	endif()
 endmacro(_find_WSTP)
 
 # internal macro to find J/Link SDK inside Mathematica installation
@@ -1622,6 +1640,7 @@ macro (_find_jlink)
 		NAMES "JLink.jar"
 		HINTS
 			"${Mathematica_ROOT_DIR}/SystemFiles/Links/JLink"
+			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/Links/JLink"
 			"${Mathematica_ROOT_DIR}/AddOns/JLink"
 		DOC "J/Link SDK root directory."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1652,7 +1671,9 @@ macro (_find_jlink)
 	set (CMAKE_FIND_LIBRARY_SUFFIXES ${_findLibrarySuffixesSave})
 	find_program (Mathematica_JLink_JAVA_EXECUTABLE
 		NAMES "bin/${_JLinkJavaNames}"
-		HINTS "${Mathematica_HOST_ROOT_DIR}/SystemFiles/Java"
+		HINTS
+			"${Mathematica_HOST_ROOT_DIR}/SystemFiles/Java"
+			"${Mathematica_HOST_ROOT_DIR}/Contents/SystemFiles/Java"
 		PATH_SUFFIXES ${_HostSystemIDs}
 		DOC "J/Link Java launcher."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1871,7 +1892,25 @@ endmacro()
 macro (_setup_mathlink_library_variables)
 	if (Mathematica_MathLink_LIBRARY)
 		_setup_libraries_var(Mathematica_MathLink_LIBRARY Mathematica_MathLink_LIBRARIES)
-		if (UNIX)
+		if (APPLE)
+			set (Mathematica_MathLink_LINKER_FLAGS "")
+			foreach (_library ${Mathematica_MathLink_LIBRARIES})
+				get_filename_component (_libraryDir ${_library} PATH)
+				list (APPEND Mathematica_LIBRARY_DIRS ${_libraryDir})
+			endforeach()
+			# for OS X we have to add the MathLink CompilerAdditions directory which contains the MathLink framework
+			_get_target_flavor(_MathLinkFlavor)
+			if (_MathLinkFlavor)
+				set (_CompilerAdditions "${Mathematica_MathLink_ROOT_DIR}/CompilerAdditions/${_MathLinkFlavor}")
+			else()
+				set (_CompilerAdditions "${Mathematica_MathLink_ROOT_DIR}/CompilerAdditions")
+			endif()
+			if (IS_DIRECTORY "${_CompilerAdditions}")
+				list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS "${_CompilerAdditions}")
+				list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG "${_CompilerAdditions}")
+			endif()
+		elseif (UNIX)
+			set (Mathematica_MathLink_LINKER_FLAGS "")
 			foreach (_library ${Mathematica_MathLink_LIBRARIES})
 				get_filename_component (_libraryDir ${_library} PATH)
 				list (APPEND Mathematica_LIBRARY_DIRS ${_libraryDir})
@@ -1881,18 +1920,24 @@ macro (_setup_mathlink_library_variables)
 				endif()
 			endforeach()
 		elseif (WIN32)
+			if (MSVC AND Mathematica_USE_STATIC_LIBRARIES AND Mathematica_MathLink_LIBRARY)
+				# prevent linking conflicts with MSVC runtime library
+				set (Mathematica_MathLink_LINKER_FLAGS "/NODEFAULTLIB:\"${Mathematica_MathLink_LIBRARY}\"")
+			else()
+				set (Mathematica_MathLink_LINKER_FLAGS "")
+			endif()
 			foreach (_library ${Mathematica_MathLink_LIBRARIES})
 				get_filename_component (_libraryDir ${_library} PATH)
 				list (APPEND Mathematica_LIBRARY_DIRS ${_libraryDir})
 			endforeach()
 			# Windows MathLink SDK has runtime DLLs in a separate directory
 			set (_runtimeDir "${Mathematica_MathLink_ROOT_DIR}/SystemAdditions")
-			if (EXISTS "${_runtimeDir}")
+			if (IS_DIRECTORY "${_runtimeDir}")
 				list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS "${_runtimeDir}")
 			endif()
 			# Windows MathLink SDK also ships with debug DLLs in AlternativeComponents
 			set (_runtimeDir "${Mathematica_MathLink_ROOT_DIR}/AlternativeComponents/DebugLibraries")
-			if (EXISTS "${_runtimeDir}")
+			if (IS_DIRECTORY "${_runtimeDir}")
 				list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG "${_runtimeDir}")
 			endif()
 		endif()
@@ -1905,7 +1950,25 @@ endmacro()
 macro (_setup_WSTP_library_variables)
 	if (Mathematica_WSTP_LIBRARY)
 		_setup_libraries_var(Mathematica_WSTP_LIBRARY Mathematica_WSTP_LIBRARIES)
-		if (UNIX)
+		if (APPLE)
+			set (Mathematica_WSTP_LINKER_FLAGS "")
+			foreach (_library ${Mathematica_WSTP_LIBRARIES})
+				get_filename_component (_libraryDir ${_library} PATH)
+				list (APPEND Mathematica_LIBRARY_DIRS ${_libraryDir})
+			endforeach()
+			# for OS X we have to add the WSTP CompilerAdditions directory which contains the WSTP framework
+			_get_target_flavor(_WSTPFlavor)
+			if (_WSTPFlavor)
+				set (_CompilerAdditions "${Mathematica_WSTP_ROOT_DIR}/CompilerAdditions/${_WSTPFlavor}")
+			else()
+				set (_CompilerAdditions "${Mathematica_WSTP_ROOT_DIR}/CompilerAdditions")
+			endif()
+			if (IS_DIRECTORY "${_CompilerAdditions}")
+				list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS "${_CompilerAdditions}")
+				list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG "${_CompilerAdditions}")
+			endif()
+		elseif (UNIX)
+			set (Mathematica_WSTP_LINKER_FLAGS "")
 			foreach (_library ${Mathematica_WSTP_LIBRARIES})
 				get_filename_component (_libraryDir ${_library} PATH)
 				list (APPEND Mathematica_LIBRARY_DIRS ${_libraryDir})
@@ -1915,18 +1978,24 @@ macro (_setup_WSTP_library_variables)
 				endif()
 			endforeach()
 		elseif (WIN32)
+			if (MSVC AND Mathematica_USE_STATIC_LIBRARIES AND Mathematica_WSTP_LIBRARY)
+				# prevent linking conflicts with MSVC runtime library
+				set (Mathematica_WSTP_LINKER_FLAGS "/NODEFAULTLIB:\"${Mathematica_WSTP_LIBRARY}\"")
+			else()
+				set (Mathematica_WSTP_LINKER_FLAGS "")
+			endif()
 			foreach (_library ${Mathematica_WSTP_LIBRARIES})
 				get_filename_component (_libraryDir ${_library} PATH)
 				list (APPEND Mathematica_LIBRARY_DIRS ${_libraryDir})
 			endforeach()
 			# Windows WSTP SDK has runtime DLLs in a separate directory
 			set (_runtimeDir "${Mathematica_WSTP_ROOT_DIR}/SystemAdditions")
-			if (EXISTS "${_runtimeDir}")
+			if (IS_DIRECTORY "${_runtimeDir}")
 				list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS "${_runtimeDir}")
 			endif()
 			# Windows WSTP SDK also ships with debug DLLs in AlternativeComponents
 			set (_runtimeDir "${Mathematica_WSTP_ROOT_DIR}/AlternativeComponents/DebugLibraries")
-			if (EXISTS "${_runtimeDir}")
+			if (IS_DIRECTORY "${_runtimeDir}")
 				list (APPEND Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG "${_runtimeDir}")
 			endif()
 		endif()
@@ -2041,6 +2110,8 @@ macro (_log_found_variables)
 			message (STATUS "MathLink library ${Mathematica_MathLink_LIBRARY}")
 			message (STATUS "MathLink libraries ${Mathematica_MathLink_LIBRARIES}")
 			message (STATUS "MathLink mprep executable ${Mathematica_MathLink_MPREP_EXECUTABLE}")
+			message (STATUS "MathLink definitions ${Mathematica_MathLink_DEFINITIONS}")
+			message (STATUS "MathLink linker flags ${Mathematica_MathLink_LINKER_FLAGS}")
 		else()
 			message (STATUS "MathLink not found")
 		endif()
@@ -2052,6 +2123,8 @@ macro (_log_found_variables)
 			message (STATUS "WSTP library ${Mathematica_WSTP_LIBRARY}")
 			message (STATUS "WSTP libraries ${Mathematica_WSTP_LIBRARIES}")
 			message (STATUS "WSTP wsprep executable ${Mathematica_WSTP_WSPREP_EXECUTABLE}")
+			message (STATUS "WSTP definitions ${Mathematica_WSTP_DEFINITIONS}")
+			message (STATUS "WSTP linker flags ${Mathematica_WSTP_LINKER_FLAGS}")
 		else()
 			message (STATUS "WSTP not found")
 		endif()
@@ -2747,18 +2820,18 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar _kernelOptio
 endmacro(_add_script_or_code)
 
 # internal macro to set up linkmode launch command
-macro (_add_linkmode_launch_code _cmdVar _systemIDVar _kernelOptionsVar _linkProtocolVar)
+macro (_add_linkmode_launch_code _cmdVar _systemIDVar _kernelOptionsVar _linkProtocolVar _protocolKind)
 	list (APPEND ${_cmdVar} "-linkmode" "launch")
 	if (DEFINED ${_linkProtocolVar})
 		list (APPEND ${_cmdVar} "-linkprotocol" "${${_linkProtocolVar}}")
 	endif()
 	list (APPEND ${_cmdVar} "-linkname")
 	if (UNIX AND NOT CYGWIN)
-		# UNIX (except for Cygwin) requires quoted link name path and -mathlink
+		# UNIX (except for Cygwin) requires quoted link name path and -mathlink or -wstp
 		set (_kernelLaunchArgs "")
 		_add_kernel_launch_code(_kernelLaunchArgs ${_systemIDVar} ${_kernelOptionsVar})
 		_list_to_cmd_str(_kernelLaunchStr ${_kernelLaunchArgs})
-		list (APPEND ${_cmdVar} "${_kernelLaunchStr} -mathlink")
+		list (APPEND ${_cmdVar} "${_kernelLaunchStr} ${_protocolKind}")
 	else ()
 		_add_kernel_launch_code(${_cmdVar} ${_systemIDVar} ${_kernelOptionsVar})
 	endif()
@@ -3273,7 +3346,7 @@ function (Mathematica_MathLink_ADD_TEST)
 		# run MathLink executable as front-end to Mathematica kernel
 		_add_launch_prefix(_cmd _option_SYSTEM_ID)
 		list (APPEND _cmd "$<TARGET_FILE:${_option_TARGET}>")
-		_add_linkmode_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS _option_LINK_PROTOCOL)
+		_add_linkmode_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS _option_LINK_PROTOCOL "-mathlink")
 	endif()
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
@@ -3336,7 +3409,7 @@ function (Mathematica_WSTP_ADD_TEST)
 		# run WSTP executable as front-end to Mathematica kernel
 		_add_launch_prefix(_cmd _option_SYSTEM_ID)
 		list (APPEND _cmd "$<TARGET_FILE:${_option_TARGET}>")
-		_add_linkmode_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS _option_LINK_PROTOCOL)
+		_add_linkmode_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS _option_LINK_PROTOCOL "-wstp")
 	endif()
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
@@ -3557,6 +3630,9 @@ function (Mathematica_MathLink_ADD_EXECUTABLE _executableName _templateFile)
 	Mathematica_MathLink_MPREP_TARGET(${_templateFile} OUTPUT ${_outfile})
 	add_executable (${_executableName} WIN32 ${_outfile} ${ARGN})
 	target_link_libraries(${_executableName} ${Mathematica_MathLink_LIBRARIES})
+	if (Mathematica_MathLink_LINKER_FLAGS)
+		set_target_properties(${_executableName} PROPERTIES LINK_FLAGS "${Mathematica_MathLink_LINKER_FLAGS}")
+	endif()
 	set_target_properties (${_executableName} PROPERTIES LABELS "Mathematica")
 endfunction()
 
@@ -3684,6 +3760,9 @@ function (Mathematica_WSTP_ADD_EXECUTABLE _executableName _templateFile)
 	Mathematica_WSTP_WSPREP_TARGET(${_templateFile} OUTPUT ${_outfile})
 	add_executable (${_executableName} WIN32 ${_outfile} ${ARGN})
 	target_link_libraries(${_executableName} ${Mathematica_WSTP_LIBRARIES})
+	if (Mathematica_WSTP_LINKER_FLAGS)
+		set_target_properties(${_executableName} PROPERTIES LINK_FLAGS "${Mathematica_WSTP_LINKER_FLAGS}")
+	endif()
 	set_target_properties (${_executableName} PROPERTIES LABELS "Mathematica")
 endfunction()
 
@@ -4049,7 +4128,7 @@ function (Mathematica_JLink_ADD_TEST)
 			list (APPEND _cmd "-Dcom.wolfram.jlink.libdir=${_jlinkLibraryDirNative}")
 		endif()
 		list (APPEND _cmd "-cp" "${_classPath}" "${_option_MAIN_CLASS}")
-		_add_linkmode_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS _option_LINK_PROTOCOL)
+		_add_linkmode_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS _option_LINK_PROTOCOL "-mathlink")
 	endif()
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})

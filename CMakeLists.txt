@@ -24,18 +24,27 @@ find_package(Java 1.6 COMPONENTS Development)
 # default settings for options that affect search
 #set (Mathematica_USE_STATIC_LIBRARIES OFF)
 #set (Mathematica_USE_MINIMAL_LIBRARIES ON)
-#set (Mathematica_USE_LIBCXX_LIBRARIES OFF)
-
+#set (Mathematica_USE_LIBCXX_LIBRARIES ON)
+#set (Mathematica_MathLink_FIND_VERSION_MAJOR 3)
+#set (Mathematica_WSTP_FIND_VERSION_MAJOR 3)
 #set (Mathematica_DEBUG OFF)
 
 # finds newest Mathematica installation and its default components
 find_package(Mathematica)
 
-# finds Mathematica 9.0.1 installation and required components
-#find_package(Mathematica 9.0.1 EXACT REQUIRED MathLink JLink WolframLibrary)
+# finds Mathematica 10.0.2 installation and required components
+#find_package(Mathematica 10.0.2 EXACT REQUIRED MathLink WSTP JLink WolframLibrary)
 
-# finds Mathematica >= 8 installation and optional components
-#find_package(Mathematica 8 COMPONENTS MathLink JLink)
+# finds Mathematica >= 9 installation and optional components
+#find_package(Mathematica 9 COMPONENTS MathLink JLink)
+
+if (Mathematica_MathLink_DEFINITIONS)
+	add_definitions(${Mathematica_MathLink_DEFINITIONS})
+endif()
+
+if (Mathematica_WSTP_DEFINITIONS)
+	add_definitions(${Mathematica_WSTP_DEFINITIONS})
+endif()
 
 enable_testing()
 
