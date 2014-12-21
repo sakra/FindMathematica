@@ -33,13 +33,18 @@ cmake_policy(PUSH)
 cmake_minimum_required(VERSION 2.8.9)
 cmake_policy(POP)
 
+if (NOT CMAKE_VERSION VERSION_LESS "3.1.0")
+	# only interpret if() arguments as variables or keywords when unquoted
+	cmake_policy(SET CMP0054 NEW)
+endif()
+
 include(TestBigEndian)
 include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 include(CMakeFindFrameworks)
 
 set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set (Mathematica_CMAKE_MODULE_VERSION "3.0.1")
+set (Mathematica_CMAKE_MODULE_VERSION "3.0.2")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -506,6 +511,7 @@ macro (_get_system_IDs _outSystemIDs)
 	else()
 		set (${_outSystemIDs} "Generic")
 	endif()
+	list (REMOVE_DUPLICATES ${_outSystemIDs})
 endmacro(_get_system_IDs)
 
 # internal macro to compute host Mathematica SystemIDs
@@ -653,6 +659,45 @@ macro (_get_compatible_system_IDs _systemID _outSystemIDs)
 		list (APPEND ${_outSystemIDs} "Linux")
 	else()
 		list (APPEND ${_outSystemIDs} ${_systemID})
+	endif()
+	list (REMOVE_DUPLICATES ${_outSystemIDs})
+endmacro()
+
+# internal macro to compute target MathLink / WSTP DeveloperKit system ID
+macro(_get_developer_kit_system_IDs _outSystemIDs)
+	if (APPLE)
+		if (Mathematica_VERSION)
+			if ("${Mathematica_VERSION}" VERSION_LESS "9.0")
+				# Mathematica versions before 9 did not have a system ID subdirectory
+				set (${_outSystemIDs} "")
+			else()
+				# Mathematica versions after 9 have a system ID subdirectory
+				set (${_outSystemIDs} "MacOSX-x86-64")
+			endif()
+		else()
+			_get_system_IDs(${_outSystemIDs})
+		endif()
+	else()
+		_get_system_IDs(${_outSystemIDs})
+	endif()
+endmacro()
+
+# internal macro to compute host MathLink / WSTP DeveloperKit system ID
+macro(_get_host_developer_kit_system_IDs _outSystemIDs)
+	if (CMAKE_HOST_APPLE)
+		if (Mathematica_VERSION)
+			# Mathematica versions before 9 did not have a system ID subdirectory
+			if ("${Mathematica_VERSION}" VERSION_LESS "9.0")
+				set (${_outSystemIDs} "")
+			else()
+				# The MacOSX-x86-64 DeveloperKit is a universal binary with architectures i386 and x86_64
+				set (${_outSystemIDs} "MacOSX-x86-64")
+			endif()
+		else()
+			_get_host_system_IDs(${_outSystemIDs})
+		endif()
+	else()
+		_get_host_system_IDs(${_outSystemIDs})
 	endif()
 endmacro()
 
@@ -1091,6 +1136,17 @@ macro (_setup_mathematica_creationID)
 		if (EXISTS "${Mathematica_ROOT_DIR}/.CreationID")
 			# parse hidden CreationID file
 			file (STRINGS "${Mathematica_ROOT_DIR}/.CreationID" Mathematica_CREATION_ID REGEX "[0-9]+")
+		elseif (CMAKE_HOST_APPLE AND EXISTS "${Mathematica_ROOT_DIR}/Contents/Info.plist")
+			execute_process(
+				COMMAND "grep" "--after-context=1" "CFBundleShortVersionString"
+					"${Mathematica_ROOT_DIR}/Contents/Info.plist"
+				TIMEOUT 10 OUTPUT_VARIABLE _versionStr ERROR_QUIET)
+			if (_versionStr MATCHES "\\.([0-9]+)</string>")
+				# OS X Info.plist CFBundleShortVersionString has Creation ID as last version component
+				set (Mathematica_CREATION_ID "${CMAKE_MATCH_1}")
+			else()
+				set (_versionLine "")
+			endif()
 		endif()
 	endif()
 	if (NOT DEFINED Mathematica_CREATION_ID AND DEFINED Mathematica_CREATION_ID_LAST)
@@ -1365,8 +1421,8 @@ macro (_find_wolframlibrary)
 		message (STATUS "WolframLibrary SystemID ${_SystemIDs}")
 		message (STATUS "WolframRuntimeLibraryNames ${_WolframRuntimeLibraryNames}")
 	endif()
-	set (_findLibraryPrefixesSave ${CMAKE_FIND_LIBRARY_PREFIXES})
-	set (_findLibrarySuffixesSave ${CMAKE_FIND_LIBRARY_SUFFIXES})
+	set (_findLibraryPrefixesSave "${CMAKE_FIND_LIBRARY_PREFIXES}")
+	set (_findLibrarySuffixesSave "${CMAKE_FIND_LIBRARY_SUFFIXES}")
 	if (CYGWIN)
 		# Wolfram RTL library names do not follow UNIX conventions under Cygwin
 		set (CMAKE_FIND_LIBRARY_PREFIXES "")
@@ -1393,14 +1449,14 @@ macro (_find_wolframlibrary)
 	if (Mathematica_WolframLibrary_INCLUDE_DIR)
 		list (APPEND Mathematica_INCLUDE_DIRS ${Mathematica_WolframLibrary_INCLUDE_DIR})
 	endif()
-	set (CMAKE_FIND_LIBRARY_PREFIXES ${_findLibraryPrefixesSave})
-	set (CMAKE_FIND_LIBRARY_SUFFIXES ${_findLibrarySuffixesSave})
+	set (CMAKE_FIND_LIBRARY_PREFIXES "${_findLibraryPrefixesSave}")
+	set (CMAKE_FIND_LIBRARY_SUFFIXES "${_findLibrarySuffixesSave}")
 endmacro()
 
 # internal macro to find MathLink SDK inside Mathematica installation
 macro (_find_mathlink)
-	_get_system_IDs(_SystemIDs)
-	_get_host_system_IDs(_HostSystemIDs)
+	_get_developer_kit_system_IDs(_SystemIDs)
+	_get_host_developer_kit_system_IDs(_HostSystemIDs)
 	_get_target_flavor(_MathLinkFlavor)
 	_get_host_flavor(_HostMathLinkFlavor)
 	_get_mathlink_library_names(_MathLinkLibraryNames)
@@ -1409,8 +1465,8 @@ macro (_find_mathlink)
 		_find_mathematica()
 	endif()
 	if (Mathematica_DEBUG)
-		message (STATUS "MathLink Target SystemID ${_SystemIDs} ${_MathLinkFlavor}")
-		message (STATUS "MathLink Host SystemID ${_HostSystemIDs} ${_HostMathLinkFlavor}")
+		message (STATUS "MathLink Target DeveloperKit SystemID ${_SystemIDs} ${_MathLinkFlavor}")
+		message (STATUS "MathLink Host DeveloperKit SystemID ${_HostSystemIDs} ${_HostMathLinkFlavor}")
 		message (STATUS "MathLink Library Names ${_MathLinkLibraryNames}")
 	endif()
 	find_path (Mathematica_MathLink_ROOT_DIR
@@ -1513,8 +1569,8 @@ endmacro(_find_mathlink)
 
 # internal macro to find WSTP SDK inside Mathematica installation
 macro (_find_WSTP)
-	_get_system_IDs(_SystemIDs)
-	_get_host_system_IDs(_HostSystemIDs)
+	_get_developer_kit_system_IDs(_SystemIDs)
+	_get_host_developer_kit_system_IDs(_HostSystemIDs)
 	_get_target_flavor(_WSTPFlavor)
 	_get_host_flavor(_HostWSTPFlavor)
 	_get_WSTP_library_names(_WSTPLibraryNames)
@@ -1523,8 +1579,8 @@ macro (_find_WSTP)
 		_find_mathematica()
 	endif()
 	if (Mathematica_DEBUG)
-		message (STATUS "WSTP Target SystemID ${_SystemIDs} ${_WSTPFlavor}")
-		message (STATUS "WSTP Host SystemID ${_HostSystemIDs} ${_HostWSTPFlavor}")
+		message (STATUS "WSTP Target DeveloperKit SystemID ${_SystemIDs} ${_WSTPFlavor}")
+		message (STATUS "WSTP Host DeveloperKit SystemID ${_HostSystemIDs} ${_HostWSTPFlavor}")
 		message (STATUS "WSTP Library Names ${_WSTPLibraryNames}")
 	endif()
 	find_path (Mathematica_WSTP_ROOT_DIR
@@ -1650,8 +1706,8 @@ macro (_find_jlink)
 	else()
 		set (Mathematica_JLink_JAR_FILE "Mathematica_JLink_JAR_FILE-NOTFOUND")
 	endif()
-	set (_findLibraryPrefixesSave ${CMAKE_FIND_LIBRARY_PREFIXES})
-	set (_findLibrarySuffixesSave ${CMAKE_FIND_LIBRARY_SUFFIXES})
+	set (_findLibraryPrefixesSave "${CMAKE_FIND_LIBRARY_PREFIXES}")
+	set (_findLibrarySuffixesSave "${CMAKE_FIND_LIBRARY_SUFFIXES}")
 	if (APPLE)
 		set (CMAKE_FIND_LIBRARY_PREFIXES "lib")
 		set (CMAKE_FIND_LIBRARY_SUFFIXES ".jnilib")
@@ -1667,8 +1723,8 @@ macro (_find_jlink)
 		DOC "J/Link native library."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
 	)
-	set (CMAKE_FIND_LIBRARY_PREFIXES ${_findLibraryPrefixesSave})
-	set (CMAKE_FIND_LIBRARY_SUFFIXES ${_findLibrarySuffixesSave})
+	set (CMAKE_FIND_LIBRARY_PREFIXES "${_findLibraryPrefixesSave}")
+	set (CMAKE_FIND_LIBRARY_SUFFIXES "${_findLibrarySuffixesSave}")
 	find_program (Mathematica_JLink_JAVA_EXECUTABLE
 		NAMES "bin/${_JLinkJavaNames}"
 		HINTS
@@ -1726,8 +1782,25 @@ macro (_setup_mathematica_version_variables)
 	if (NOT Mathematica_VERSION)
 		if (Mathematica_ROOT_DIR AND
 			EXISTS "${Mathematica_ROOT_DIR}/.VersionID")
-			# parse version number from hidden versionID file
+			# parse version number from hidden VersionID and PatchLevel files
 			file (STRINGS "${Mathematica_ROOT_DIR}/.VersionID" _versionLine)
+			if (EXISTS "${Mathematica_ROOT_DIR}/.PatchLevel")
+				file (STRINGS "${Mathematica_ROOT_DIR}/.PatchLevel" _patchLevel)
+				if (_versionLine MATCHES ".+" AND _patchLevel MATCHES ".+")
+					set (_versionLine "${_versionLine}.${_patchLevel}")
+				endif()
+			endif()
+		elseif (CMAKE_HOST_APPLE AND Mathematica_ROOT_DIR AND
+			EXISTS "${Mathematica_ROOT_DIR}/Contents/Info.plist")
+			execute_process(
+				COMMAND "grep" "--after-context=1" "CFBundleShortVersionString"
+					"${Mathematica_ROOT_DIR}/Contents/Info.plist"
+				TIMEOUT 10 OUTPUT_VARIABLE _versionStr ERROR_QUIET)
+			if (_versionStr MATCHES "<string>([0-9]+\\.[0-9]+\\.[0-9]+)")
+				set (_versionLine "${CMAKE_MATCH_1}")
+			else()
+				set (_versionLine "")
+			endif()
 		elseif (Mathematica_MathLink_INCLUDE_DIR AND
 			EXISTS "${Mathematica_MathLink_INCLUDE_DIR}/mathlink.h")
 			# parse version number from mathlink.h
@@ -1741,7 +1814,7 @@ macro (_setup_mathematica_version_variables)
 		else()
 			set (_versionLine "")
 		endif()
-		if (_versionLine)
+		if (_versionLine MATCHES ".+")
 			string (REGEX REPLACE "[^0-9]*([0-9]+(\\.[0-9]+)*).*" "\\1" _versionStr "${_versionLine}")
 			if (DEFINED _versionStr)
 				set (Mathematica_VERSION "${_versionStr}"

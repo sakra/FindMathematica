@@ -1,3 +1,10 @@
+## 3.0.2 (2014-12-21)
+
+* fix bug with computing of *Mathematica* 10.0.2 version number
+* fix bug with finding correct MathLink / WSTP DeveloperKit under OS X
+* CMake 3.1.0 compatibility fixes
+* fix quoting issues
+
 ## 3.0.1 (2014-12-11)
 
 * add compatibility with *Mathematica* 10.0.2
