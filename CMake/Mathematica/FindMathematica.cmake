@@ -3,7 +3,7 @@
 # See the FindMathematica manual for usage hints.
 #
 #=============================================================================
-# Copyright 2010-2014 Sascha Kratky
+# Copyright 2010-2015 Sascha Kratky
 #
 # Permission is hereby granted, free of charge, to any person)
 # obtaining a copy of this software and associated documentation)
@@ -33,6 +33,11 @@ cmake_policy(PUSH)
 cmake_minimum_required(VERSION 2.8.9)
 cmake_policy(POP)
 
+if (NOT CMAKE_VERSION VERSION_LESS "3.0.0")
+	# allow reading of the LOCATION target property
+	cmake_policy(SET CMP0026 OLD)
+endif()
+
 if (NOT CMAKE_VERSION VERSION_LESS "3.1.0")
 	# only interpret if() arguments as variables or keywords when unquoted
 	cmake_policy(SET CMP0054 NEW)
@@ -44,7 +49,7 @@ include(FindPackageHandleStandardArgs)
 include(CMakeFindFrameworks)
 
 set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set (Mathematica_CMAKE_MODULE_VERSION "3.0.2")
+set (Mathematica_CMAKE_MODULE_VERSION "3.0.3")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -1176,7 +1181,7 @@ macro (_setup_mathematica_base_directory)
 	else ()
 		# guess Mathematica_BASE_DIR from environment
 		# environment variable MATHEMATICA_BASE may override default
-		# $BaseDirectory (see http://bit.ly/r4T4Wd)
+		# $BaseDirectory, see http://reference.wolfram.com/language/tutorial/ConfigurationFiles.html
 		if ("$ENV{MATHEMATICA_BASE}" MATCHES ".+")
 			set (Mathematica_BASE_DIR "$ENV{MATHEMATICA_BASE}")
 		elseif (CMAKE_HOST_WIN32 OR CYGWIN)
@@ -1227,7 +1232,7 @@ macro (_setup_mathematica_userbase_directory)
 	else ()
 		# guess Mathematica_USERBASE_DIR from environment
 		# environment variable MATHEMATICA_USERBASE may override default
-		# $UserBaseDirectory (see http://bit.ly/r4T4Wd)
+		# $UserBaseDirectory, see http://reference.wolfram.com/language/tutorial/ConfigurationFiles.html
 		if ("$ENV{MATHEMATICA_USERBASE}" MATCHES ".+")
 			set (Mathematica_USERBASE_DIR "$ENV{MATHEMATICA_USERBASE}")
 		elseif (CMAKE_HOST_WIN32 OR CYGWIN)
@@ -2301,14 +2306,14 @@ macro (_get_dependent_cache_variables _var _outDependentVars)
 			Mathematica_KERNEL_EXECUTABLE
 			Mathematica_KERNEL_HOST_SYSTEM_ID
 			Mathematica_MathLink_HOST_ROOT_DIR
-			Mathematica_WSTP_ROOT_DIR
+			Mathematica_WSTP_HOST_ROOT_DIR
 			Mathematica_KERNEL_BASE_DIR
 			Mathematica_KERNEL_USERBASE_DIR
 			Mathematica_JLink_PACKAGE_DIR
 			Mathematica_MUnit_PACKAGE_FILE
 			Mathematica_JLink_JAVA_EXECUTABLE)
 		_get_dependent_cache_variables("Mathematica_MathLink_HOST_ROOT_DIR" ${_outDependentVars})
-		_get_dependent_cache_variables("Mathematica_WSTP_ROOT_DIR" ${_outDependentVars})
+		_get_dependent_cache_variables("Mathematica_WSTP_HOST_ROOT_DIR" ${_outDependentVars})
 		_get_dependent_cache_variables("Mathematica_JLink_PACKAGE_DIR" ${_outDependentVars})
 		_get_dependent_cache_variables("Mathematica_MUnit_PACKAGE_FILE" ${_outDependentVars})
 	elseif ("_${_var}" STREQUAL "_Mathematica_MathLink_ROOT_DIR")
@@ -2806,88 +2811,161 @@ macro (_add_kernel_launch_code _cmdVar _systemIDVar _kernelOptionsVar)
 	endif()
 endmacro(_add_kernel_launch_code)
 
-# internal macro to translate CODE or SCRIPT option to Mathematica launch command
-macro (_add_script_or_code _cmdVar _scriptVar _codeVar _systemIDVar _kernelOptionsVar)
-	_add_kernel_launch_code(${_cmdVar} ${_systemIDVar} ${_kernelOptionsVar})
-	Mathematica_TO_NATIVE_PATH("${Mathematica_CMAKE_MODULE_DIR}" _cmakeModuleDirMma)
-	# always prepend the FindMathematica module directory to the Mathematica $Path
-	set (_prologue "PrependTo[$Path,${_cmakeModuleDirMma}]")
-	if (DEFINED ${_codeVar})
-		# collect all CODE sections into a single CompoundExpression
-		set (_codeSegments "")
-		set (_currentCodeSegment "${_prologue}")
-		set (_currentCodeSegmentCompound False)
-		if (DEFINED ${_scriptVar})
-			set (_epilogue "Sequence[]")
-		else()
-			set (_epilogue "Quit[]")
+macro (_test_use_tempfile_for_code_segments _codeVar _useTempFileVar)
+	set (_codeLength 0)
+	set (_codeSegmentCount 1)
+	set (_usesReservedChars FALSE)
+	foreach (_codeSegment IN LISTS ${_codeVar})
+		string (LENGTH "${_codeSegment}" _codeSegmentLength)
+		math (EXPR _codeLength "${_codeLength} + ${_codeSegmentLength}")
+		if (_codeSegment MATCHES "(Get|Needs|Install|Sequence)\\[[^]]*\\]")
+			# start new code segment
+			math (EXPR _codeSegmentCount "${_codeSegmentCount} + 1")
 		endif()
-		foreach (_codeSegment IN LISTS ${_codeVar} ITEMS ${_epilogue})
-			if ("${_codeSegment}" MATCHES "\n")
-				# remove indentation with tabs
-				string (REGEX REPLACE "\t+" "" _codeSegment "${_codeSegment}")
-				# separate multiple lines via commas
-				string (REPLACE "\n" "," _codeSegment "${_codeSegment}")
+		if (NOT _usesReservedChars)
+			if (_codeSegment MATCHES "[<>|&!%^]")
+				set (_usesReservedChars TRUE)
 			endif()
-			# prevent CMake from interpreting ; as a list separator
-			string (REPLACE ";" "\\;" _codeSegment "${_codeSegment}")
-			if (_currentCodeSegment)
+		endif()
+	endforeach()
+	if (CMAKE_HOST_WIN32 AND (_usesReservedChars OR _codeLength GREATER 1000 OR _codeSegmentCount GREATER 3))
+		# under Windows XP or later cmd.exe has a command line length limit of 8191 characters.
+		# we do not use inline statements if the approximate command line length
+		# might exceed that limit or there are too many individual arguments.
+		# we write the inline statements to a temporary script instead
+		set (${_useTempFileVar} TRUE)
+	elseif (CMAKE_HOST_UNIX AND (_codeLength GREATER 10000 OR _codeSegmentCount GREATER 10))
+		# for UNIX use a temp file if command line becomes confusing
+		set (${_useTempFileVar} TRUE)
+	else()
+		set (${_useTempFileVar} FALSE)
+	endif()
+endmacro()
+
+macro (_code_segments_to_compound_expressions _codeVar _codeSegments)
+	# collect all CODE sections into CompoundExpressions
+	set (${_codeSegments} "")
+	set (_currentCodeSegment "")
+	set (_currentCodeSegmentCompound False)
+	foreach (_codeSegment IN LISTS ${_codeVar} ITEMS "Sequence[]")
+		if (_codeSegment MATCHES "\n")
+			# remove indentation with tabs
+			string (REGEX REPLACE "\t+" "" _codeSegment "${_codeSegment}")
+			# separate multiple lines via commas
+			string (REPLACE "\n" "," _codeSegment "${_codeSegment}")
+		endif()
+		# prevent CMake from interpreting ; as a list separator
+		string (REPLACE ";" "\\;" _codeSegment "${_codeSegment}")
+		if (_currentCodeSegment)
+			if (NOT _codeSegment STREQUAL "Sequence[]")
 				set (_currentCodeSegmentCompound True)
 				set (_currentCodeSegment "${_currentCodeSegment},${_codeSegment}")
-			else()
-				set (_currentCodeSegment "${_codeSegment}")
 			endif()
-			# flush current CompoundExpression when a Get[...], Needs[...] or Install[...]
-			# expression is encountered, so that new context definitions become effective
-			# immediately for subsequent commands
-			# Sequence[] can be used to explicitly flush the current CompoundExpression
-			if (_codeSegment MATCHES "(Get|Needs|Install|Quit|Sequence)\\[[^]]*\\]")
-				if (_currentCodeSegmentCompound OR
-					(CMAKE_HOST_WIN32 AND NOT _currentCodeSegment MATCHES " "))
-					# note that the blanks around the CompoundExpression argument below are
-					# necessary to force proper cmd.exe quoting of the resulting parameter under Windows
-					# (a comma in the parameter may be misinterpreted as a separator otherwise)
-					list (APPEND _codeSegments "-run" "CompoundExpression[ ${_currentCodeSegment} ]")
-				elseif (NOT "${_currentCodeSegment}" STREQUAL "Sequence[]")
-					# flush single code segment, but only if it is not a NOP
-					list (APPEND _codeSegments "-run" "${_currentCodeSegment}")
-				endif()
-				set (_currentCodeSegment "")
-				set (_currentCodeSegmentCompound False)
-			endif()
-		endforeach()
-		list (APPEND ${_cmdVar} ${_codeSegments})
-	endif()
-	if (DEFINED ${_scriptVar})
-		# always prepend the FindMathematica module directory to the Mathematica $Path
-		if (NOT DEFINED ${_codeVar})
-			list (APPEND ${_cmdVar} "-run" "${_prologue}" )
-		endif()
-		if (IS_ABSOLUTE "${${_scriptVar}}")
-			_to_cmake_path("${${_scriptVar}}" _scriptFile)
 		else()
-			_to_cmake_path("${CMAKE_CURRENT_SOURCE_DIR}/${${_scriptVar}}" _scriptFile)
+			set (_currentCodeSegment "${_codeSegment}")
 		endif()
-		# Although the -script option is supported since Mathematica 8, under Mathematica 9
-		# using the -script option does not work as expected, if it is preceded by multiple inline
-		# Mathematica commands using the -run option.
-		# Thus we use the Get function instead, which should work with all versions.
-		# According to http://bit.ly/XyMrbz running the kernel with the -script option
-		# is equivalent to reading the file using the Get command, with a single difference:
-		# after the last command in the file is evaluated, the kernel terminates.
-		Mathematica_TO_NATIVE_PATH("${_scriptFile}" _scriptFileMma)
-		list (APPEND ${_cmdVar} "-run" "Get[${_scriptFileMma}]" "-run" "Quit[]")
+		# flush current CompoundExpression when a Get[...], Needs[...] or Install[...]
+		# expression is encountered, so that new context definitions become effective
+		# immediately for subsequent commands
+		# Sequence[] can be used to explicitly flush the current CompoundExpression
+		if (_codeSegment MATCHES "(Get|Needs|Install|Sequence)\\[[^]]*\\]")
+			if (_currentCodeSegmentCompound OR
+				(CMAKE_HOST_WIN32 AND NOT _currentCodeSegment MATCHES " "))
+				# note that the blanks around the CompoundExpression argument below are necessary
+				# to force CMake to do proper cmd.exe quoting of the resulting parameter under Windows
+				# (a comma in the parameter may be misinterpreted as a separator otherwise)
+				list (APPEND ${_codeSegments} "-run" "CompoundExpression[ ${_currentCodeSegment} ]")
+			elseif (NOT _currentCodeSegment STREQUAL "Sequence[]")
+				# flush single code segment, but only if it is not a NOP
+				list (APPEND ${_codeSegments} "-run" "${_currentCodeSegment}")
+			endif()
+			set (_currentCodeSegment "")
+			set (_currentCodeSegmentCompound False)
+		endif()
+	endforeach()
+endmacro(_code_segments_to_compound_expressions)
+
+macro (_code_segments_to_tempfile _codeVar _tempScriptFile)
+	# check for use of CMake generator expressions in inline code
+	set (_contentsHasGeneratorExpressions FALSE)
+	set (_contents "")
+	foreach (_codeSegment IN LISTS ${_codeVar})
+		string (REPLACE ";" "\\;" _line "${_codeSegment}")
+		list (APPEND _contents "${_line}")
+		if (NOT _contentsHasGeneratorExpressions)
+			if ("${_line}" MATCHES "\\$<.*>")
+				set (_contentsHasGeneratorExpressions TRUE)
+			endif()
+		endif()
+	endforeach()
+	string (REPLACE ";" "\n" _contents "${_contents}")
+	# use script content MD5 as temporary file name
+	string (MD5 _scriptName "${_contents}")
+	set (_tempScript "${CMAKE_CURRENT_BINARY_DIR}/FindMathematica/${_scriptName}.m")
+	file (WRITE "${_tempScript}" "${_contents}")
+	if (_contentsHasGeneratorExpressions)
+		if (NOT CMAKE_VERSION VERSION_LESS "2.8.12")
+			set (_configNameOrNoneGeneratorExpression "$<$<CONFIG:>:None>$<$<NOT:$<CONFIG:>>:$<CONFIGURATION>>")
+			set (_tempConfigScript "${CMAKE_CURRENT_BINARY_DIR}/FindMathematica/${_scriptName}_${_configNameOrNoneGeneratorExpression}.m")
+			file (GENERATE OUTPUT "${_tempConfigScript}" INPUT "${_tempScript}")
+		else()
+			message (WARNING "Generator expression used in script ${_tempScript}. This requires CMake 2.8.12 or later.")
+			set (_tempConfigScript "${_tempScript}")
+		endif()
+	else()
+		set (_tempConfigScript "${_tempScript}")
 	endif()
-	# If a "-run" code segment contains an Abort[] expression, the Mathematica kernel
-	# will return to the interactive prompt and never invoke the closing Quit[] command. E.g.:
-	# $ math -run 'Abort[]' -run 'Quit[]'
-	# Under Mathematica 8 we can work around that problem by appending an empty -script option
-	# to force termination of the kernel.
-	# The Mathematica 9 kernel does not need the work-around. It terminates if an Abort[] is encountered.
-	if (DEFINED Mathematica_VERSION)
-		if (NOT "${Mathematica_VERSION}" VERSION_LESS "8.0" AND "${Mathematica_VERSION}" VERSION_LESS "9.0")
-			# script option is supported since Mathematica 8
-			list (APPEND ${_cmdVar} "-script")
+	set (${_tempScriptFile} "${_tempConfigScript}")
+endmacro(_code_segments_to_tempfile)
+
+# internal macro to translate CODE or SCRIPT option to Mathematica launch command
+macro (_add_script_or_code _cmdVar _scriptVar _codeVar)
+	if (DEFINED ${_codeVar} OR DEFINED ${_scriptVar})
+		# start with code to prepend the FindMathematica module directory to the Mathematica $Path
+		Mathematica_TO_NATIVE_PATH("${Mathematica_CMAKE_MODULE_DIR}" _cmakeModuleDirMma)
+		set (_code "PrependTo[$Path, ${_cmakeModuleDirMma}]")
+		# add given inline code statements
+		if (DEFINED ${_codeVar})
+			list (APPEND _code ${${_codeVar}})
+		endif()
+		# compute absolute path to given script
+		if (DEFINED ${_scriptVar})
+			if (IS_ABSOLUTE "${${_scriptVar}}")
+				_to_cmake_path("${${_scriptVar}}" _scriptFileAbs)
+			else()
+				_to_cmake_path("${CMAKE_CURRENT_SOURCE_DIR}/${${_scriptVar}}" _scriptFileAbs)
+			endif()
+		endif()
+		if (NOT DEFINED ${_scriptVar})
+			# no given script, quit kernel explicitly unless last code statement already does it
+			list (GET _code -1 _lastStatement)
+			if (NOT _lastStatement MATCHES "^(Quit|Exit)\\[")
+				list (APPEND _code "Quit[]")
+			endif()
+		elseif ("${Mathematica_VERSION}" VERSION_LESS "8.0")
+			# -script option requires at least Mathematica 8, thus process the given script with Get function instead
+			# according to http://reference.wolfram.com/language/tutorial/WolframLanguageScripts.html
+			# running the kernel with the -script option is equivalent to reading the file using the Get function
+			# with a single difference: after the last command in the file is evaluated, the kernel terminates
+			Mathematica_TO_NATIVE_PATH("${_scriptFileAbs}" _scriptFileMma)
+			list (APPEND _code "Get[${_scriptFileMma}]" "Quit[]")
+		endif()
+		# convert resulting code to kernel inline code segments or if necessary to a temporary script file
+		_test_use_tempfile_for_code_segments(_code _useTempFile)
+		if (_useTempFile)
+			_code_segments_to_tempfile(_code _tempScriptFile)
+			Mathematica_TO_NATIVE_PATH("${_tempScriptFile}" _tempScriptFileMma)
+			list (APPEND ${_cmdVar} "-run" "Get[${_tempScriptFileMma}]")
+		else()
+			_code_segments_to_compound_expressions(_code _codeSegments)
+			list (APPEND ${_cmdVar} ${_codeSegments})
+		endif()
+		# finally, run given script with -script option if using Mathematica 8 or later
+		if (DEFINED ${_scriptVar})
+			if (NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
+				list (APPEND ${_cmdVar} "-script" "${_scriptFileAbs}")
+				# after the last command in the script file is evaluated, the kernel terminates automatically
+			endif()
 		endif()
 	endif()
 endmacro(_add_script_or_code)
@@ -2938,7 +3016,8 @@ function (Mathematica_EXECUTE)
 		endif()
 	endif()
 	set (_cmd COMMAND)
-	_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	_add_kernel_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	_add_script_or_code(_cmd _option_SCRIPT _option_CODE)
 	if (_option_CODE)
 		list (APPEND _cmd OUTPUT_STRIP_TRAILING_WHITESPACE)
 		list (APPEND _cmd ERROR_STRIP_TRAILING_WHITESPACE)
@@ -2997,7 +3076,8 @@ function (Mathematica_ADD_CUSTOM_TARGET _targetName)
 		list(APPEND _cmd "ALL")
 	endif()
 	list(APPEND _cmd COMMAND)
-	_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	_add_kernel_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	_add_script_or_code(_cmd _option_SCRIPT _option_CODE)
 	if (_option_SCRIPT)
 		list (APPEND _option_DEPENDS ${_option_SCRIPT})
 	endif()
@@ -3048,7 +3128,8 @@ function (Mathematica_ADD_CUSTOM_COMMAND)
 		list(APPEND _cmd POST_BUILD)
 	endif()
 	list(APPEND _cmd COMMAND)
-	_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	_add_kernel_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	_add_script_or_code(_cmd _option_SCRIPT _option_CODE)
 	if (_option_MAIN_DEPENDENCY)
 		list(APPEND _cmd MAIN_DEPENDENCY ${_option_MAIN_DEPENDENCY})
 	endif()
@@ -3090,7 +3171,8 @@ function (Mathematica_ADD_TEST)
 		_add_launch_prefix(_cmd _option_SYSTEM_ID)
 		list (APPEND _cmd ${_option_COMMAND})
 	else()
-		_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+		_add_kernel_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+		_add_script_or_code(_cmd _option_SCRIPT _option_CODE)
 	endif()
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
@@ -3414,7 +3496,8 @@ function (Mathematica_MathLink_ADD_TEST)
 		if (NOT _option_SCRIPT)
 			list (APPEND _installCmd "Uninstall[link]")
 		endif()
-		_add_script_or_code(_cmd _option_SCRIPT _installCmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+		_add_kernel_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+		_add_script_or_code(_cmd _option_SCRIPT _installCmd)
 	else()
 		# run MathLink executable as front-end to Mathematica kernel
 		_add_launch_prefix(_cmd _option_SYSTEM_ID)
@@ -3477,7 +3560,8 @@ function (Mathematica_WSTP_ADD_TEST)
 		if (NOT _option_SCRIPT)
 			list (APPEND _installCmd "Uninstall[link]")
 		endif()
-		_add_script_or_code(_cmd _option_SCRIPT _installCmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+		_add_kernel_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+		_add_script_or_code(_cmd _option_SCRIPT _installCmd)
 	else()
 		# run WSTP executable as front-end to Mathematica kernel
 		_add_launch_prefix(_cmd _option_SYSTEM_ID)
@@ -3585,7 +3669,8 @@ function (Mathematica_WolframLibrary_ADD_TEST)
 	if (NOT _option_SCRIPT)
 		list (APPEND _installCmd "LibraryUnload[libPath]")
 	endif()
-	_add_script_or_code(_cmd _option_SCRIPT _installCmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	_add_kernel_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	_add_script_or_code(_cmd _option_SCRIPT _installCmd)
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
 	endif()
@@ -3660,7 +3745,7 @@ function (Mathematica_MathLink_MPREP_TARGET _templateFile)
 	_to_native_path ("${Mathematica_MathLink_MPREP_EXECUTABLE}" _mprepExeNative)
 	_to_native_path ("${_outfile}" _outfileNative)
 	set (_command "${_mprepExeNative}" "-o" "${_outfileNative}")
-	set (_dependencies "")
+	set (_dependencies "${Mathematica_MathLink_MPREP_EXECUTABLE}")
 	if (_option_CUSTOM_HEADER)
 		_to_native_path ("${_option_CUSTOM_HEADER}" _customHeaderNative)
 		list (APPEND _command "-h" "${_customHeaderNative}")
@@ -3790,7 +3875,7 @@ function (Mathematica_WSTP_WSPREP_TARGET _templateFile)
 	_to_native_path ("${Mathematica_WSTP_WSPREP_EXECUTABLE}" _mprepExeNative)
 	_to_native_path ("${_outfile}" _outfileNative)
 	set (_command "${_mprepExeNative}" "-o" "${_outfileNative}")
-	set (_dependencies "")
+	set (_dependencies "${Mathematica_WSTP_WSPREP_EXECUTABLE}")
 	if (_option_CUSTOM_HEADER)
 		_to_native_path ("${_option_CUSTOM_HEADER}" _customHeaderNative)
 		list (APPEND _command "-h" "${_customHeaderNative}")
@@ -4015,10 +4100,10 @@ function (Mathematica_MUnit_ADD_TEST)
 		endif()
 		list (APPEND _testCmds "${_testCmd}")
 	endif()
-	# add new-line and then print TestRun result
-	list (APPEND _testCmds
-		"WriteString[$Output,\"\\n\"<>${_testNameMma}<>\" \"<>Part[{\"Failed\",\"Passed\"},Boole[mUnitResult]+1]]")
-	_add_script_or_code(_cmd _noScript _testCmds _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	# use MUnit TestRun result as exit code to signal CTest success or failure
+	list (APPEND _testCmds "Exit[Boole[Not[mUnitResult]]]")
+	_add_kernel_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+	_add_script_or_code(_cmd _noScript _testCmds)
 	if (_option_CONFIGURATIONS)
 		list (APPEND _cmd CONFIGURATIONS ${_option_CONFIGURATIONS})
 	endif()
@@ -4026,10 +4111,6 @@ function (Mathematica_MUnit_ADD_TEST)
 		message (STATUS "add_test: ${_cmd}")
 	endif()
 	add_test (${_cmd})
-	# test passes if the MUnit TestRun result ends with "Passed"
-	set_tests_properties (${_option_NAME} PROPERTIES
-		PASS_REGULAR_EXPRESSION "${_option_NAME} Passed.?.?$"
-		FAIL_REGULAR_EXPRESSION "${_option_NAME} Failed.?.?$")
 	set_property (TEST ${_option_NAME} PROPERTY LABELS "Mathematica")
 	if (_option_TIMEOUT)
 		set_tests_properties (${_option_NAME} PROPERTIES TIMEOUT ${_option_TIMEOUT})
@@ -4056,7 +4137,7 @@ function (Mathematica_ADD_DOCUMENTATION _targetName)
 	Mathematica_FIND_PACKAGE(Mathematica_DocumentationBuild_PACKAGE_FILE "DocumentationBuild`"
 		DOC "Mathematica DocumentationBuild package.")
 	if (NOT Mathematica_DocumentationBuild_PACKAGE_FILE)
-		message (WARNING "Mathematica documentation build required package \"DocumentationBuild`\" cannot be found.")
+		message (STATUS "Mathematica documentation build required package \"DocumentationBuild`\" cannot be found.")
 	endif()
 	Mathematica_GET_PACKAGE_DIR(Mathematica_DocumentationBuild_PACKAGE_DIR
 		"${Mathematica_DocumentationBuild_PACKAGE_FILE}")
@@ -4064,7 +4145,7 @@ function (Mathematica_ADD_DOCUMENTATION _targetName)
 	Mathematica_FIND_PACKAGE(Mathematica_Transmogrify_PACKAGE_FILE "Transmogrify`"
 		DOC "Mathematica Transmogrify package.")
 	if (NOT Mathematica_Transmogrify_PACKAGE_FILE)
-		message (WARNING "Mathematica documentation build required package \"Transmogrify`\" cannot be found.")
+		message (STATUS "Mathematica documentation build required package \"Transmogrify`\" cannot be found.")
 	endif()
 	mark_as_advanced(
 		Mathematica_ANT_EXECUTABLE
@@ -4122,7 +4203,9 @@ function (Mathematica_ADD_DOCUMENTATION _targetName)
 		list (APPEND _cmd COMMAND "${CMAKE_COMMAND}" "-P" "${CMAKE_CURRENT_BINARY_DIR}/${_buildScriptName}")
 		list (APPEND _cmd DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${_buildScriptName}")
 	else()
+		# just generate empty documentation directory and print message
 		list (APPEND _cmd COMMAND "${CMAKE_COMMAND}" "-E" "make_directory" "${_option_OUTPUT_DIRECTORY}")
+		list (APPEND _cmd COMMAND "${CMAKE_COMMAND}" "-E" "echo" "Required Mathematica packages for documentation building are not available.")
 	endif()
 	list (APPEND _cmd WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 	list (APPEND _cmd COMMENT ${_option_COMMENT} VERBATIM)
@@ -4178,7 +4261,8 @@ function (Mathematica_JLink_ADD_TEST)
 		else()
 			set (_option_CODE ${_installCmd})
 		endif()
-		_add_script_or_code(_cmd _option_SCRIPT _option_CODE _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+		_add_kernel_launch_code(_cmd _option_SYSTEM_ID _option_KERNEL_OPTIONS)
+		_add_script_or_code(_cmd _option_SCRIPT _option_CODE)
 	else()
 		# run JAR file as front-end to Mathematica kernel
 		if (NOT _option_MAIN_CLASS)

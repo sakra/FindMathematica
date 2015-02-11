@@ -2,9 +2,9 @@
 # FindMathematica test driver script for UNIX systems
 
 #logger -- $# "$@"
-#logger -- $LD_LIBRARY_PATH
-#logger -- $DYLD_FRAMEWORK_PATH
-#logger -- $DYLD_LIBRARY_PATH
+#logger -- LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+#logger -- DYLD_FRAMEWORK_PATH=$DYLD_FRAMEWORK_PATH
+#logger -- DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH
 
 export TEST_NAME=$1
 export TEST_CONFIGURATION=$2

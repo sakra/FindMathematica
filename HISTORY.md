@@ -1,3 +1,11 @@
+## 3.0.3 (2015-02-11)
+
+* work around `cmd.exe` command line length limit when running *Mathematica* code
+* fix `cmd.exe` command line quoting issues
+* fix for running MUnit tests
+* more robust cache cleaning of invalid WSTP related variables
+* print message when `DocumentationBuild` package is not installed
+
 ## 3.0.2 (2014-12-21)
 
 * fix bug with computing of *Mathematica* 10.0.2 version number
