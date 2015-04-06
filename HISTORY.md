@@ -1,3 +1,13 @@
+## 3.1.0 (2015-04-06)
+
+* add compatibility with *Mathematica* 10.1
+* fix CMake 3.2 compatibility issues
+* require at least CMake 2.8.12
+* remove obsolete code required for CMake versions older than 2.8.12
+* prefer modern executable names (i.e., `wolfram.exe`) over classic ones (i.e., `math.exe`)
+* add parameter `LINK_MODE` to some functions (see manual)
+* manual updates
+
 ## 3.0.3 (2015-02-11)
 
 * work around `cmd.exe` command line length limit when running *Mathematica* code

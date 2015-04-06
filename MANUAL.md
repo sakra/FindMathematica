@@ -52,12 +52,12 @@ By default FindMathematica will return the newest *Mathematica* installation it 
 To find a minimum version of *Mathematica*, run the `find_package` command with a version
 argument:
 
-    find_package(Mathematica 9.0)
+    find_package(Mathematica 10.0)
 
 To find a specific version of *Mathematica*, run the `find_package` command with a version
 argument and the parameter `EXACT`:
 
-    find_package(Mathematica 9.0.1 EXACT)
+    find_package(Mathematica 10.0.2 EXACT)
 
 Depending on the version of *Mathematica*, the FindMathematica module will try to find the
 components `MathLink`, `WolframLibrary`, `WSTP`, `JLink` and `MUnit`. To explicitly specify the
@@ -302,7 +302,7 @@ The module defines the following variables for component `MathLink`:
 * `Mathematica_MathLink_LIBRARIES` - MathLink library for all target platforms and required system libraries
 * `Mathematica_MathLink_MPREP_EXECUTABLE` - path to host `mprep` executable (MathLink template file preprocessor)
 * `Mathematica_MathLink_HOST_INCLUDE_DIR` - header file mathlink.h include directory for host platform
-* `Mathematica_MathLink_DEFINITIONS` - MathLink compile definitions
+* `Mathematica_MathLink_DEFINITIONS` - MathLink compile definitions, e.g., "-DMLINTERFACE=3"
 * `Mathematica_MathLink_LINKER_FLAGS` - MathLink linker flags
 * `Mathematica_MathLink_VERSION` - MathLink version number given as "interface.revision"
 * `Mathematica_MathLink_VERSION_MAJOR` - MathLink interface number
@@ -320,7 +320,7 @@ The module defines the following variables for component `WSTP`:
 * `Mathematica_WSTP_LIBRARIES` - WSTP library for all target platforms and required system libraries
 * `Mathematica_WSTP_WSPREP_EXECUTABLE` - path to host `wsprep` executable (WSTP template file preprocessor)
 * `Mathematica_WSTP_HOST_INCLUDE_DIR` - header file wstp.h include directory for host platform
-* `Mathematica_WSTP_DEFINITIONS` - WSTP compile definitions
+* `Mathematica_WSTP_DEFINITIONS` - WSTP compile definitions, e.g., "-DWSINTERFACE=4"
 * `Mathematica_WSTP_LINKER_FLAGS` - WSTP linker flags
 * `Mathematica_WSTP_VERSION` - WSTP version number given as "interface.revision"
 * `Mathematica_WSTP_VERSION_MAJOR` - WSTP interface number
@@ -622,7 +622,8 @@ The output file is created in the `CMAKE_CURRENT_BINARY_DIR`. The name of the ou
 obtained by adding the extensions .c to the input file base name. The `OUTPUT` option can be used to
 produce an output file with a different name.
 
-This function is available if the *Mathematica* kernel executable has been found.
+This function is available if the *Mathematica* kernel executable has been found. Note that the
+function `Splice` has been deprecated as of *Mathematica* 10.
 
     Mathematica_ENCODE(
       <input file> [ <input file> ... ]
@@ -685,9 +686,9 @@ Under OS X this function replaces the default install names used for *Mathematic
 libraries with absolute paths to those shared libraries for the given targets. On other platforms
 the function does not have an effect.
 
-E.g., in *Mathematica* 8 the default install name for the MathLink shared library is:
+E.g., in *Mathematica* 10 the default install name for the MathLink shared library is:
 
-    @executable_path/../Frameworks/mathlink.framework/Versions/3.16/mathlink
+    @executable_path/../Frameworks/mathlink.framework/Versions/4.25/mathlink
 
 This path won't work for stand-alone executables that link to the dynamic MathLink library, unless
 the mathlink framework directory is added to the `DYLD_LIBRARY_PATH` environment variable. This
@@ -738,6 +739,7 @@ This function is available if the MathLink executable `mprep` has been found.
       [ SYSTEM_ID systemID ]
       [ KERNEL_OPTIONS <flag> [ <flag> ...] ]
       [ LINK_PROTOCOL <protocol> ]
+      [ LINK_MODE Launch | ParentConnect ]
       [ INPUT text | INPUT_FILE file ]
       [ CONFIGURATIONS [ Debug | Release | ... ] ])
 
@@ -752,10 +754,13 @@ The given *Mathematica* test code is wrapped in the following way:
     run <script file>
     Uninstall[link]
 
-If neither `CODE` nor `SCRIPT` are present, the generated CMake test will launch the MathLink target
-executable as a front-end to the *Mathematica* kernel.
+This corresponds to setting the `LINK_MODE` parameter to `ParentConnect`.
 
-The `LINK_PROTOCOL` specifies the MathLink link protocol (e.g., `"TCPIP"`) to use.
+If neither `CODE` nor `SCRIPT` are present, the generated CMake test will launch the MathLink target
+executable as a front-end to the *Mathematica* kernel. This corresponds to setting the `LINK_MODE`
+parameter to `Launch`.
+
+The `LINK_PROTOCOL` parameter specifies the MathLink link protocol (e.g., `"TCPIP"`) to use.
 
 The text specified by the `INPUT` option is fed to the launched executable as standard input.
 The `INPUT_FILE` option specifies a file that is fed to the launched executable as standard input.
@@ -816,6 +821,7 @@ This function behaves as `Mathematica_MathLink_ADD_EXECUTABLE` but uses WSTP ins
       [ SYSTEM_ID systemID ]
       [ KERNEL_OPTIONS <flag> [ <flag> ...] ]
       [ LINK_PROTOCOL <protocol> ]
+      [ LINK_MODE Launch | ParentConnect ]
       [ INPUT text | INPUT_FILE file ]
       [ CONFIGURATIONS [ Debug | Release | ... ] ])
 
@@ -839,6 +845,7 @@ MathLink.
       [ SYSTEM_ID systemID ]
       [ KERNEL_OPTIONS <flag> [ <flag> ...] ]
       [ LINK_PROTOCOL <protocol> ]
+      [ LINK_MODE Launch | ParentConnect ]
       [ INPUT text | INPUT_FILE file ]
       [ CONFIGURATIONS [ Debug | Release | ... ] ])
 
@@ -853,8 +860,11 @@ The given *Mathematica* test code is wrapped in the following way:
     <stmnts>
     run <script file>
 
+This corresponds to setting the `LINK_MODE` parameter to `ParentConnect`.
+
 If neither `CODE` nor `SCRIPT` are present, the generated CMake test will launch the Java JAR target
-as a front-end to the *Mathematica* kernel.
+as a front-end to the *Mathematica* kernel. This corresponds to setting the `LINK_MODE` parameter
+to `Launch`.
 
 The `LINK_PROTOCOL` specifies the MathLink link protocol (e.g., `"TCPIP"`) to use.
 
@@ -882,7 +892,7 @@ This function is available if the *Mathematica* kernel executable has been found
       result [RELATIVE path]
       <test file> [ <test file> ... ] )
 
-This function resolves `TestSuite[{ ... }]` expressions in the given MUnit test files (.mt)
+This function resolves `TestSuite[{ ... }]` expressions in the given MUnit test files (.mt or .wlt)
 into the list of underlying MUnit test files. The test file names are interpreted relative to
 the test suite file. By default the function returns the absolute paths of the parsed test
 files. If the `RELATIVE` option is specified, results will be returned as a relative path to
@@ -903,7 +913,7 @@ found.
       [ TIMEOUT seconds ]
       [ CONFIGURATIONS [ Debug | Release | ... ] ])
 
-This function adds a CMake test which runs a Wolfram MUnit test file (.mt) or notebook. If the test
+This function adds a CMake test which runs a Wolfram MUnit test file (.mt or .wlt). If the test
 file contains a `TestSuite[{ ... }]` expression, all the test files that belong to the suite will be
 run.
 
@@ -991,8 +1001,10 @@ just generate an empty documentation directory. This function is available if J/
 Known Issues
 ------------
 
-* On Windows linking to the `WolframRTL_Static_Minimal.lib` library under Cygwin or MinGW fails.
+* Each invocation of a *Mathematica* kernel through the FindMathematica module consumes one
+  Mathematica controller kernel license. You may run out of controller kernel licenses, if you
+  do a parallel build with CMake or run tests in parallel with CTest.
 
 [aant]:http://ant.apache.org/
 [cgwn]:http://www.cygwin.com/
-[cmtut]:http://www.cmake.org/cmake/help/cmake_tutorial.html
+[cmtut]:http://www.cmake.org/cmake-tutorial/
