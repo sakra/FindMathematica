@@ -132,4 +132,19 @@ MyFunction::info=\"`1`\"
 Print[fun[1,2]]"
 )
 
+do_mathematica_librarylink_test(demo_managed
+# Expected output regular expression
+"True.*True"
+SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/demo_managed_test.m")
+
+do_mathematica_librarylink_test(demo_callback
+# Expected output regular expression
+"True.*True"
+SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/demo_callback.m")
+
+do_mathematica_librarylink_test(demo_sparse
+# Expected output regular expression
+"\"ImplicitValue\" *-> *0"
+SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/demo_sparse.m")
+
 add_convenience_test_target(LibraryLinkTests "LibraryLink")
