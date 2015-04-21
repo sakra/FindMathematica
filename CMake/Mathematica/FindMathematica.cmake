@@ -101,7 +101,7 @@ include(FindPackageHandleStandardArgs)
 include(CMakeFindFrameworks)
 
 set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set (Mathematica_CMAKE_MODULE_VERSION "3.1.0")
+set (Mathematica_CMAKE_MODULE_VERSION "3.1.1")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -166,12 +166,32 @@ endmacro()
 
 # internal macro to compute kernel paths (relative to installation directory)
 macro (_get_host_kernel_names _outKernelNames)
-	if (CMAKE_HOST_WIN32 OR CYGWIN)
-		set (${_outKernelNames} "wolfram.exe" "math.exe")
-	elseif (CMAKE_HOST_APPLE)
-		set (${_outKernelNames} "Contents/MacOS/WolframKernel" "Contents/MacOS/MathKernel")
-	elseif (CMAKE_HOST_UNIX)
-		set (${_outKernelNames} "Executables/WolframKernel" "Executables/MathKernel" "Executables/math")
+	if (Mathematica_FIND_VERSION AND Mathematica_FIND_VERSION_EXACT)
+		if (Mathematica_FIND_VERSION VERSION_LESS "10.0.0")
+			if (CMAKE_HOST_WIN32 OR CYGWIN)
+				set (${_outKernelNames} "math.exe")
+			elseif (CMAKE_HOST_APPLE)
+				set (${_outKernelNames} "Contents/MacOS/MathKernel")
+			elseif (CMAKE_HOST_UNIX)
+				set (${_outKernelNames} "Executables/MathKernel" "Executables/math")
+			endif()
+		else()
+			if (CMAKE_HOST_WIN32 OR CYGWIN)
+				set (${_outKernelNames} "wolfram.exe")
+			elseif (CMAKE_HOST_APPLE)
+				set (${_outKernelNames} "Contents/MacOS/WolframKernel")
+			elseif (CMAKE_HOST_UNIX)
+				set (${_outKernelNames} "Executables/WolframKernel")
+			endif()
+		endif()
+	else()
+		if (CMAKE_HOST_WIN32 OR CYGWIN)
+			set (${_outKernelNames} "wolfram.exe" "math.exe")
+		elseif (CMAKE_HOST_APPLE)
+			set (${_outKernelNames} "Contents/MacOS/WolframKernel" "Contents/MacOS/MathKernel")
+		elseif (CMAKE_HOST_UNIX)
+			set (${_outKernelNames} "Executables/WolframKernel" "Executables/MathKernel" "Executables/math")
+		endif()
 	endif()
 endmacro()
 
@@ -280,11 +300,12 @@ endfunction()
 function (_add_registry_search_paths _outSearchPaths)
 	if (CMAKE_HOST_WIN32)
 		foreach (_registryKey IN ITEMS ${ARGN})
-			# use 64-bit reg.exe under WoW64 to make sure we search all keys
-			set (_regExe "$ENV{windir}/sysnative/reg.exe")
-			if (NOT EXISTS "${_regExe}")
-				# use default reg.exe
-				set (_regExe "reg.exe")
+			set (_regExe "reg.exe")
+			if (DEFINED ENV{windir})
+				# use 64-bit reg.exe under WoW64 to make sure we search all keys
+				if (EXISTS "$ENV{windir}/sysnative/reg.exe")
+					set (_regExe "$ENV{windir}/sysnative/reg.exe")
+				endif()
 			endif()
 			execute_process(
 				COMMAND "${_regExe}" query "${_registryKey}" "/s"
@@ -372,7 +393,10 @@ endfunction()
 
 # internal macro to determine default Mathematica installation (the one which is on the system search path)
 macro (_add_default_search_path _outSearchPaths)
-	file (TO_CMAKE_PATH "$ENV{PATH}" _searchPaths)
+	set (_searchPaths "")
+	if (DEFINED ENV{PATH})
+		file (TO_CMAKE_PATH "$ENV{PATH}" _searchPaths)
+	endif()
 	_get_host_kernel_names(_kernelNames)
 	foreach (_searchPath IN LISTS _searchPaths)
 		if (CMAKE_HOST_WIN32 OR CYGWIN)
@@ -415,7 +439,7 @@ macro (_get_search_paths _outSearchPaths)
 		endif()
 		# add standard Mathematica Windows installation paths
 		foreach (_envVar IN LISTS _WindowsProgramFilesEnvVars)
-			if ("$ENV{${_envVar}}" MATCHES ".+")
+			if (DEFINED ENV{${_envVar})
 				_to_cmake_path("$ENV{${_envVar}}" _unixPath)
 				list (APPEND ${_outSearchPaths} "${_unixPath}/Wolfram Research" )
 			endif()
@@ -575,12 +599,17 @@ endmacro(_get_system_IDs)
 # internal macro to compute host Mathematica SystemIDs
 macro (_get_host_system_IDs _outSystemIDs)
 	if (CMAKE_HOST_WIN32)
-		if ("$ENV{PROCESSOR_ARCHITECTURE}" STREQUAL "AMD64" OR
-			"$ENV{PROCESSOR_ARCHITEW6432}" STREQUAL "AMD64")
-			# host is native 64-bit Windows
-			set (${_outSystemIDs} "Windows-x86-64")
-		else()
-			set (${_outSystemIDs} "Windows")
+		set (${_outSystemIDs} "Windows")
+		if (DEFINED ENV{PROCESSOR_ARCHITEW6432})
+			if ("$ENV{PROCESSOR_ARCHITEW6432}" STREQUAL "AMD64")
+				# running of WoW64, host is native 64-bit Windows
+				set (${_outSystemIDs} "Windows-x86-64")
+			endif()
+		elseif (DEFINED ENV{PROCESSOR_ARCHITECTURE})
+			if ("$ENV{PROCESSOR_ARCHITECTURE}" STREQUAL "AMD64")
+				# host is native 64-bit Windows
+				set (${_outSystemIDs} "Windows-x86-64")
+			endif()
 		endif()
 	else()
 		# always determine host system ID from
@@ -787,12 +816,17 @@ macro (_get_host_flavor _outFlavor)
 	if (CYGWIN)
 		set (${_outFlavor} "cygwin")
 	elseif (CMAKE_HOST_WIN32)
-		if ("$ENV{PROCESSOR_ARCHITECTURE}" STREQUAL "AMD64" OR
-			"$ENV{PROCESSOR_ARCHITEW6432}" STREQUAL "AMD64")
-			# host is native 64-bit Windows
-			set (${_outFlavor} "mldev64")
-		else()
-			set (${_outFlavor} "mldev32")
+		set (${_outFlavor} "mldev32")
+		if (DEFINED ENV{PROCESSOR_ARCHITEW6432})
+			if ("$ENV{PROCESSOR_ARCHITEW6432}" STREQUAL "AMD64")
+				# running of WoW64, host is native 64-bit Windows
+				set (${_outFlavor} "mldev64")
+			endif()
+		elseif (DEFINED ENV{PROCESSOR_ARCHITECTURE})
+			if ("$ENV{PROCESSOR_ARCHITECTURE}" STREQUAL "AMD64")
+				# host is native 64-bit Windows
+				set (${_outFlavor} "mldev64")
+			endif()
 		endif()
 	elseif (CMAKE_HOST_APPLE)
 		if (Mathematica_VERSION)
@@ -1235,16 +1269,16 @@ macro (_setup_mathematica_base_directory)
 		# guess Mathematica_BASE_DIR from environment
 		# environment variable MATHEMATICA_BASE may override default
 		# $BaseDirectory, see http://reference.wolfram.com/language/tutorial/ConfigurationFiles.html
-		if ("$ENV{MATHEMATICA_BASE}" MATCHES ".+")
+		if (DEFINED ENV{MATHEMATICA_BASE})
 			set (Mathematica_BASE_DIR "$ENV{MATHEMATICA_BASE}")
 		elseif (CMAKE_HOST_WIN32 OR CYGWIN)
-			if ("$ENV{ALLUSERSAPPDATA}" MATCHES ".+")
-				set (Mathematica_BASE_DIR "$ENV{ALLUSERSAPPDATA}\\Mathematica")
-			elseif ("$ENV{PROGRAMDATA}" MATCHES ".+")
+			if (DEFINED $ENV{PROGRAMDATA})
 				set (Mathematica_BASE_DIR "$ENV{PROGRAMDATA}\\Mathematica")
-			elseif ("$ENV{USERPROFILE}" MATCHES ".+" AND
-					"$ENV{ALLUSERSPROFILE}" MATCHES ".+" AND
-					"$ENV{APPDATA}" MATCHES ".+")
+			elseif (DEFINED ENV{ALLUSERSAPPDATA})
+				set (Mathematica_BASE_DIR "$ENV{ALLUSERSAPPDATA}\\Mathematica")
+			elseif (DEFINED ENV{USERPROFILE} AND
+					DEFINED ENV{ALLUSERSPROFILE} AND
+					DEFINED ENV{APPDATA})
 				string (REPLACE "$ENV{USERPROFILE}" "$ENV{ALLUSERSPROFILE}"
 					Mathematica_BASE_DIR "$ENV{APPDATA}\\Mathematica")
 			endif()
@@ -1286,18 +1320,18 @@ macro (_setup_mathematica_userbase_directory)
 		# guess Mathematica_USERBASE_DIR from environment
 		# environment variable MATHEMATICA_USERBASE may override default
 		# $UserBaseDirectory, see http://reference.wolfram.com/language/tutorial/ConfigurationFiles.html
-		if ("$ENV{MATHEMATICA_USERBASE}" MATCHES ".+")
+		if (DEFINED ENV{MATHEMATICA_USERBASE})
 			set (Mathematica_USERBASE_DIR "$ENV{MATHEMATICA_USERBASE}")
 		elseif (CMAKE_HOST_WIN32 OR CYGWIN)
-			if ("$ENV{APPDATA}" MATCHES ".+")
+			if (DEFINED ENV{APPDATA})
 				set (Mathematica_USERBASE_DIR "$ENV{APPDATA}\\Mathematica")
 			endif()
 		elseif (CMAKE_HOST_APPLE)
-			if ("$ENV{HOME}" MATCHES ".+")
+			if (DEFINED ENV{HOME})
 				set (Mathematica_USERBASE_DIR "$ENV{HOME}/Library/Mathematica")
 			endif()
 		elseif (CMAKE_HOST_UNIX)
-			if ("$ENV{HOME}" MATCHES ".+")
+			if (DEFINED ENV{HOME})
 				set (Mathematica_USERBASE_DIR "$ENV{HOME}/.Mathematica")
 			endif()
 		endif()
@@ -1798,6 +1832,20 @@ macro (_find_munit_package)
 	endif()
 endmacro()
 
+# internal macro to find LibaryLink package
+macro (_find_librarylink_package)
+	if (COMMAND Mathematica_FIND_PACKAGE)
+		Mathematica_FIND_PACKAGE(Mathematica_LibraryLink_PACKAGE_FILE "LibraryLink`LibraryLink`")
+		# determine enclosing LibraryLink package directory
+		if (Mathematica_LibraryLink_PACKAGE_FILE)
+			Mathematica_GET_PACKAGE_DIR(Mathematica_LibraryLink_PACKAGE_DIR "${Mathematica_LibraryLink_PACKAGE_FILE}")
+		endif()
+	endif()
+	if (NOT DEFINED Mathematica_LibraryLink_PACKAGE_DIR)
+		set (Mathematica_LibraryLink_PACKAGE_DIR "Mathematica_LibraryLink_PACKAGE_DIR-NOTFOUND")
+	endif()
+endmacro()
+
 # internal helper macro to setup version related variables from existing _VERSION variable
 macro (_setup_package_version_variables _packageName)
 	if (DEFINED ${_packageName}_VERSION)
@@ -2203,6 +2251,7 @@ macro (_log_found_variables)
 			message (STATUS "WolframLibrary include dir ${Mathematica_WolframLibrary_INCLUDE_DIR}")
 			message (STATUS "WolframLibrary library ${Mathematica_WolframLibrary_LIBRARY}")
 			message (STATUS "WolframLibrary libraries ${Mathematica_WolframLibrary_LIBRARIES}")
+			message (STATUS "LibraryLink package dir ${Mathematica_LibraryLink_PACKAGE_DIR}")
 		else()
 			message (STATUS "WolframLibrary not found")
 		endif()
@@ -2288,6 +2337,7 @@ macro (_get_cache_variables _CacheVariables)
 		Mathematica_WSTP_HOST_ROOT_DIR
 		Mathematica_JLink_PACKAGE_DIR
 		Mathematica_MUnit_PACKAGE_FILE
+		Mathematica_LibraryLink_PACKAGE_FILE
 		Mathematica_CMAKE_MODULE_VERSION)
 endmacro()
 
@@ -2336,6 +2386,7 @@ macro (_get_dependent_cache_variables _var _outDependentVars)
 			Mathematica_KERNEL_USERBASE_DIR
 			Mathematica_JLink_PACKAGE_DIR
 			Mathematica_MUnit_PACKAGE_FILE
+			Mathematica_LibraryLink_PACKAGE_FILE
 			Mathematica_JLink_JAVA_EXECUTABLE)
 		_get_dependent_cache_variables("Mathematica_MathLink_HOST_ROOT_DIR" ${_outDependentVars})
 		_get_dependent_cache_variables("Mathematica_WSTP_HOST_ROOT_DIR" ${_outDependentVars})
@@ -2470,6 +2521,7 @@ macro (_update_cache)
 		Mathematica_KERNEL_BASE_DIR
 		Mathematica_KERNEL_USERBASE_DIR
 		Mathematica_MUnit_PACKAGE_FILE
+		Mathematica_LibraryLink_PACKAGE_FILE
 		Mathematica_JLink_LIBRARY
 		Mathematica_JLink_JAVA_EXECUTABLE
 	)
@@ -2577,6 +2629,7 @@ macro (_find_components)
 			_find_wolframlibrary()
 			_setup_wolframlibrary_version_variables()
 			_setup_wolframlibrary_library_variables()
+			_find_librarylink_package()
 		elseif ("${_component}" STREQUAL "JLink")
 			_find_jlink()
 			_setup_jlink_version_variables()
@@ -2705,9 +2758,13 @@ function (Mathematica_SET_TESTS_PROPERTIES)
 	_select_configuration_run_time_dirs(_configRuntimeDirs)
 	_get_host_library_search_path_envvars(_envVars)
 	foreach (_envVar IN LISTS _envVars)
-		file(TO_CMAKE_PATH "$ENV{${_envVar}}" _envRuntimeDirs)
-		# prepend Mathematica runtime directories to system ones
-		set (_runtimeDirs ${_configRuntimeDirs} ${_envRuntimeDirs})
+		if (DEFINED ENV{${_envVar}})
+			file (TO_CMAKE_PATH "$ENV{${_envVar}}" _envRuntimeDirs)
+			# prepend Mathematica runtime directories to system ones
+			set (_runtimeDirs ${_configRuntimeDirs} ${_envRuntimeDirs})
+		else()
+			set (_runtimeDirs ${_configRuntimeDirs})
+		endif()
 		if (_runtimeDirs)
 			list (REMOVE_DUPLICATES _runtimeDirs)
 			if (CYGWIN)
@@ -2962,9 +3019,12 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar)
 			if (NOT _lastStatement MATCHES "^(Quit|Exit)\\[")
 				list (APPEND _code "Quit[]")
 			endif()
-		elseif ("${Mathematica_VERSION}" VERSION_LESS "8.0")
-			# -script option requires at least Mathematica 8, thus process the given script with Get function instead
-			# according to http://reference.wolfram.com/language/tutorial/WolframLanguageScripts.html
+		elseif ("${Mathematica_VERSION}" VERSION_LESS "10.0")
+			# Although the -script option is supported since Mathematica 8, under Mathematica 9
+			# using the -script option does not work as expected, if it is preceded by multiple inline
+			# Mathematica commands using the -run option.
+			# Thus we use the Get function instead, which should work with all versions.
+			# According to http://reference.wolfram.com/language/tutorial/WolframLanguageScripts.html
 			# running the kernel with the -script option is equivalent to reading the file using the Get function
 			# with a single difference: after the last command in the file is evaluated, the kernel terminates
 			Mathematica_TO_NATIVE_PATH("${_scriptFileAbs}" _scriptFileMma)
@@ -2980,9 +3040,9 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar)
 			_code_segments_to_compound_expressions(_code _codeSegments)
 			list (APPEND ${_cmdVar} ${_codeSegments})
 		endif()
-		# finally, run given script with -script option if using Mathematica 8 or later
+		# finally, run given script with -script option if using Mathematica 10 or later
 		if (DEFINED ${_scriptVar})
-			if (NOT "${Mathematica_VERSION}" VERSION_LESS "8.0")
+			if (NOT "${Mathematica_VERSION}" VERSION_LESS "10.0")
 				list (APPEND ${_cmdVar} "-script" "${_scriptFileAbs}")
 				# after the last command in the script file is evaluated, the kernel terminates automatically
 			endif()
@@ -3456,9 +3516,9 @@ function (Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES)
 		foreach(_target ${ARGV})
 			get_target_property(_targetType ${_target} TYPE)
 			if (_targetType MATCHES "MODULE_LIBRARY|SHARED_LIBRARY|EXECUTABLE")
-				foreach(_library "${Mathematica_WolframLibrary_LIBRARY}" "${Mathematica_MathLink_LIBRARY}" "${Mathematica_WSTP_LIBRARY}")
-					if (_library)
-						_get_install_name("${_library}" _libraryInstallName _libraryAbsPath)
+				foreach(_library Mathematica_WolframLibrary_LIBRARY Mathematica_MathLink_LIBRARY Mathematica_WSTP_LIBRARY)
+					if (DEFINED ${_library})
+						_get_install_name("${${_library}}" _libraryInstallName _libraryAbsPath)
 						if (_libraryInstallName)
 							add_custom_command (TARGET ${_target}
 								POST_BUILD COMMAND "${CMAKE_INSTALL_NAME_TOOL}"
