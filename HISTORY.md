@@ -1,3 +1,11 @@
+## 3.1.1 (2015-04-21)
+
+* fix *Mathematica* 10.1 compatibility issues
+* do not use broken `-script` option for *Mathematica* earlier than 10.0
+* add variables `Mathematica_LibraryLink_PACKAGE_FILE` and `Mathematica_LibraryLink_PACKAGE_DIR`
+* copy standard examples to binary directory instead of source directory
+* add CMake tests for new LibraryLink examples
+
 ## 3.1.0 (2015-04-06)
 
 * add compatibility with *Mathematica* 10.1
