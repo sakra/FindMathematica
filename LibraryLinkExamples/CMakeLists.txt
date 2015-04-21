@@ -59,6 +59,9 @@ function (do_mathematica_librarylink_test _target _expectedOutputRegEx)
 			Mathematica_set_tests_properties (${_testName}
 				PROPERTIES TIMEOUT 10
 				PASS_REGULAR_EXPRESSION "${_expectedOutputRegEx}")
+			if (NOT CMAKE_VERSION LESS "3.0.0")
+				set_tests_properties(${_testName} PROPERTIES REQUIRED_FILES "$<TARGET_FILE:${_target}>")
+			endif()
 		else()
 			message (STATUS "Skipping test ${_testName}, cross-compiling from ${Mathematica_HOST_SYSTEM_ID}.")
 		endif()
