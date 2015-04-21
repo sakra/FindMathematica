@@ -291,6 +291,8 @@ The module defines the following variables for component `WolframLibrary`:
 * `Mathematica_WolframLibrary_VERSION_MAJOR` - WolframLibrary version number
 * `Mathematica_WolframLibrary_VERSION_STRING` - WolframLibrary version number given as "version"
 * `Mathematica_WolframLibrary_VERSION_COUNT` - WolframLibrary number of version components (usually 1)
+* `Mathematica_LibraryLink_PACKAGE_FILE` - LibraryLink package file
+* `Mathematica_LibraryLink_PACKAGE_DIR` - LibraryLink package root directory
 
 The module defines the following variables for component `MathLink`:
 
