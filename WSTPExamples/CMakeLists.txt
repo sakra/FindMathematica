@@ -9,14 +9,15 @@ if (NOT CMAKE_CROSSCOMPILING)
 
 	# add a CMake executable target for each WSTP template based example
 	foreach (_Example ${_TemplateExamples})
-		if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}")
+		if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_Example}")
 			get_filename_component(_OutputName ${_Example} NAME_WE)
 			set (_TargetName "ws${_OutputName}")
-			if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_OutputName}.c")
-				Mathematica_WSTP_add_executable (${_TargetName} ${_Example} ${_OutputName}.c)
+			if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.c")
+				Mathematica_WSTP_add_executable (${_TargetName}
+					"${CMAKE_CURRENT_BINARY_DIR}/${_Example}" "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.c")
 			else()
-				Mathematica_WSTP_WSPREP_TARGET(${_Example} OUTPUT ${_Example}.c)
-				add_executable (${_TargetName} WIN32 ${_Example}.c)
+				Mathematica_WSTP_WSPREP_TARGET("${CMAKE_CURRENT_BINARY_DIR}/${_Example}" OUTPUT ${_Example}.c)
+				add_executable (${_TargetName} WIN32 "${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c")
 				target_link_libraries (${_TargetName} ${Mathematica_WSTP_LIBRARIES})
 			endif()
 			if (TARGET ${_TargetName})
@@ -32,7 +33,7 @@ if (NOT CMAKE_CROSSCOMPILING)
 
 	# export wsprep header and trailer code for the current target platform
 	Mathematica_WSTP_WSPREP_EXPORT_FRAMES(
-		OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/wsprep-frames"
+		OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/wsprep-frames"
 		SYSTEM_ID ${Mathematica_SYSTEM_ID})
 
 else()
@@ -44,23 +45,24 @@ else()
 	# The exported frame files need to be stored in the build tree and can then be
 	# used upon cross-compiling.
 	set (_wsprepHeader
-		"${CMAKE_CURRENT_SOURCE_DIR}/wsprep-frames/wsprep_header_${Mathematica_SYSTEM_ID}.txt")
+		"${CMAKE_CURRENT_BINARY_DIR}/wsprep-frames/wsprep_header_${Mathematica_SYSTEM_ID}.txt")
 	set (_wsprepTrailer
-		"${CMAKE_CURRENT_SOURCE_DIR}/wsprep-frames/wsprep_trailer_${Mathematica_SYSTEM_ID}.txt")
+		"${CMAKE_CURRENT_BINARY_DIR}/wsprep-frames/wsprep_trailer_${Mathematica_SYSTEM_ID}.txt")
 	if (NOT EXISTS ${_wsprepHeader} OR
 		NOT EXISTS ${_wsprepTrailer})
 		message(STATUS "Skipping WSTP examples, wsprep frames for Mathematica system ID ${Mathematica_SYSTEM_ID} are not available.")
 	else()
 		foreach (_Example ${_TemplateExamples})
-			if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}")
+			if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_Example}")
 				get_filename_component(_OutputName ${_Example} NAME_WE)
 				set (_TargetName "ws${_OutputName}")
 				Mathematica_WSTP_WSPREP_TARGET(${_Example}
 					CUSTOM_HEADER "${_wsprepHeader}" CUSTOM_TRAILER "${_wsprepTrailer}")
-				if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_OutputName}.c")
-					add_executable (${_TargetName} WIN32 ${_Example}.c ${_OutputName}.c)
+				if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.c")
+					add_executable (${_TargetName} WIN32
+						"${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c" "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.c")
 				else()
-					add_executable (${_TargetName} WIN32 ${_Example}.c)
+					add_executable (${_TargetName} WIN32 "${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c")
 				endif()
 				if (TARGET ${_TargetName})
 					target_link_libraries (${_TargetName} ${Mathematica_WSTP_LIBRARIES})
@@ -78,7 +80,7 @@ set(_Examples factor.c factor2.c factor3.c quotient.c)
 
 # add a CMake executable target for each WSTP C only example
 foreach (_Example ${_Examples})
-	if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}")
+	if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_Example}")
 		get_filename_component(_OutputName ${_Example} NAME_WE)
 		set (_TargetName "ws${_OutputName}")
 		add_executable (${_TargetName} ${_Example})
@@ -145,7 +147,7 @@ do_WSTP_test(wsbitops
 bitComplements\\[{x1,x2,...}\\] generates  a list of the bitwise complements of the integers xi\\.
 579
 {-1, -2, -3}"
-SCRIPT "bitopsTest.m"
+SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/bitopsTest.m"
 )
 
 do_WSTP_test(wscounter

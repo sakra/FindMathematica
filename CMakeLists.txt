@@ -89,11 +89,12 @@ endif()
 
 if (${Mathematica_WolframLibrary_FOUND})
 	# copy LibraryLink example files from Mathematica installation to source directory
-	if (EXISTS "${Mathematica_HOST_ROOT_DIR}/SystemFiles/Links/LibraryLink")
+	if (EXISTS "${Mathematica_LibraryLink_PACKAGE_DIR}/LibraryResources")
 		file (GLOB_RECURSE _LibraryLinkExamples
-			"${Mathematica_HOST_ROOT_DIR}/SystemFiles/Links/LibraryLink/*.c")
+			"${Mathematica_LibraryLink_PACKAGE_DIR}/LibraryResources/*.c"
+			"${Mathematica_LibraryLink_PACKAGE_DIR}/LibraryResources/*.cxx")
 		file (COPY ${_LibraryLinkExamples}
-			DESTINATION "${CMAKE_SOURCE_DIR}/LibraryLinkExamples"
+			DESTINATION "${CMAKE_BINARY_DIR}/LibraryLinkExamples"
 			NO_SOURCE_PERMISSIONS)
 		add_subdirectory(LibraryLinkExamples)
 	endif()
@@ -107,7 +108,7 @@ if (${Mathematica_MathLink_FOUND})
 			"${Mathematica_MathLink_HOST_ROOT_DIR}/MathLinkExamples/*.tm"
 			"${Mathematica_MathLink_HOST_ROOT_DIR}/MathLinkExamples/*.c")
 		file (COPY ${_MathLinkExamples}
-			DESTINATION "${CMAKE_SOURCE_DIR}/MathLinkExamples"
+			DESTINATION "${CMAKE_BINARY_DIR}/MathLinkExamples"
 			NO_SOURCE_PERMISSIONS)
 		add_subdirectory(MathLinkExamples)
 	endif()
@@ -120,7 +121,7 @@ if (${Mathematica_WSTP_FOUND})
 			"${Mathematica_WSTP_HOST_ROOT_DIR}/WSTPExamples/*.tm"
 			"${Mathematica_WSTP_HOST_ROOT_DIR}/WSTPExamples/*.c")
 		file (COPY ${_WSTPExamples}
-			DESTINATION "${CMAKE_SOURCE_DIR}/WSTPExamples"
+			DESTINATION "${CMAKE_BINARY_DIR}/WSTPExamples"
 			NO_SOURCE_PERMISSIONS)
 		add_subdirectory(WSTPExamples)
 	endif()
@@ -136,7 +137,7 @@ if (JAVA_FOUND AND Mathematica_JLink_FOUND)
 		file (GLOB_RECURSE _JLinkLinkExamples
 			"${Mathematica_JLink_PACKAGE_DIR}/Examples/*.java")
 		file (COPY ${_JLinkLinkExamples}
-			DESTINATION "${CMAKE_SOURCE_DIR}/JLinkExamples"
+			DESTINATION "${CMAKE_BINARY_DIR}/JLinkExamples"
 			NO_SOURCE_PERMISSIONS)
 		add_subdirectory(JLinkExamples)
 	endif()

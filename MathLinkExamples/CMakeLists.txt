@@ -10,12 +10,13 @@ if (NOT CMAKE_CROSSCOMPILING)
 	# add a CMake executable target for each MathLink template based example
 	foreach (_Example ${_TemplateExamples})
 		get_filename_component(_TargetName ${_Example} NAME_WE)
-		if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}" AND
-			EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_TargetName}.c")
-			Mathematica_MathLink_add_executable (${_TargetName} ${_Example} ${_TargetName}.c)
-		elseif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}")
-			Mathematica_MathLink_MPREP_TARGET(${_Example} OUTPUT ${_Example}.c)
-			add_executable (${_TargetName} WIN32 ${_Example}.c)
+		if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_Example}" AND
+			EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.c")
+			Mathematica_MathLink_add_executable (${_TargetName}
+				"${CMAKE_CURRENT_BINARY_DIR}/${_Example}" "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.c")
+		elseif (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_Example}")
+			Mathematica_MathLink_MPREP_TARGET("${CMAKE_CURRENT_BINARY_DIR}/${_Example}" OUTPUT ${_Example}.c)
+			add_executable (${_TargetName} WIN32 "${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c")
 			target_link_libraries (${_TargetName} ${Mathematica_MathLink_LIBRARIES})
 		endif()
 		if (TARGET ${_TargetName})
@@ -29,7 +30,7 @@ if (NOT CMAKE_CROSSCOMPILING)
 
 	# export mprep header and trailer code for the current target platform
 	Mathematica_MathLink_MPREP_EXPORT_FRAMES(
-		OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/mprep-frames"
+		OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/mprep-frames"
 		SYSTEM_ID ${Mathematica_SYSTEM_ID})
 
 else()
@@ -41,21 +42,22 @@ else()
 	# The exported frame files need to be stored in the build tree and can then be
 	# used upon cross-compiling.
 	set (_mprepHeader
-		"${CMAKE_CURRENT_SOURCE_DIR}/mprep-frames/mprep_header_${Mathematica_SYSTEM_ID}.txt")
+		"${CMAKE_CURRENT_BINARY_DIR}/mprep-frames/mprep_header_${Mathematica_SYSTEM_ID}.txt")
 	set (_mprepTrailer
-		"${CMAKE_CURRENT_SOURCE_DIR}/mprep-frames/mprep_trailer_${Mathematica_SYSTEM_ID}.txt")
+		"${CMAKE_CURRENT_BINARY_DIR}/mprep-frames/mprep_trailer_${Mathematica_SYSTEM_ID}.txt")
 	if (NOT EXISTS ${_mprepHeader} OR
 		NOT EXISTS ${_mprepTrailer})
 		message(STATUS "Skipping MathLink examples, mprep frames for Mathematica system ID ${Mathematica_SYSTEM_ID} are not available.")
 	else()
 		foreach (_Example ${_TemplateExamples})
 			get_filename_component(_TargetName ${_Example} NAME_WE)
-			Mathematica_MathLink_MPREP_TARGET(${_Example}
+			Mathematica_MathLink_MPREP_TARGET("${CMAKE_CURRENT_BINARY_DIR}/${_Example}"
 				CUSTOM_HEADER "${_mprepHeader}" CUSTOM_TRAILER "${_mprepTrailer}")
-			if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_TargetName}.c")
-				add_executable (${_TargetName} WIN32 ${_Example}.c ${_TargetName}.c)
+			if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.c")
+				add_executable (${_TargetName} WIN32
+					"${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c" "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.c")
 			else()
-				add_executable (${_TargetName} WIN32 ${_Example}.c)
+				add_executable (${_TargetName} WIN32 "${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c")
 			endif()
 			target_link_libraries (${_TargetName} ${Mathematica_MathLink_LIBRARIES})
 			set_target_properties(${_TargetName} PROPERTIES FOLDER "MathLink")
@@ -131,7 +133,7 @@ do_mathlink_test(bitops
 bitComplements\\[{x1,x2,...}\\] generates  a list of the bitwise complements of the integers xi\\.
 579
 {-1, -2, -3}"
-SCRIPT "bitopsTest.m"
+SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/bitopsTest.m"
 )
 
 do_mathlink_test(counter

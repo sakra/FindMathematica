@@ -12,10 +12,10 @@ if (NOT CYGWIN)
 	# UseJava module cannot handle Cygwin path syntax
 	add_jar(AddTwo AddTwo.java)
 	add_jar(FormatArray FormatArray.java)
-	add_jar(GraphicsApp GraphicsApp.java)
-	add_jar(GraphicsDlg GraphicsDlg.java)
-	add_jar(SampleProgram SampleProgram.java)
-	add_jar(SimpleFrontEnd SimpleFrontEnd.java)
+	add_jar(GraphicsApp "${CMAKE_CURRENT_BINARY_DIR}/GraphicsApp.java")
+	add_jar(GraphicsDlg "${CMAKE_CURRENT_BINARY_DIR}/GraphicsDlg.java")
+	add_jar(SampleProgram "${CMAKE_CURRENT_BINARY_DIR}/SampleProgram.java")
+	add_jar(SimpleFrontEnd "${CMAKE_CURRENT_BINARY_DIR}/SimpleFrontEnd.java")
 	set_target_properties(AddTwo FormatArray GraphicsApp GraphicsDlg SampleProgram SimpleFrontEnd PROPERTIES FOLDER "JLink")
 endif()
 
@@ -63,5 +63,5 @@ CODE
 do_jlink_test(FormatArray
 # Expected output regular expression
 "{\"1.0000\", \"2.0000\", \"3.0000\", \"4.0000\", \"5.0000\", \"6.0000\", \"7.0000\", \"8.0000\", \"9.0000\", \"10.0000\"}"
-SCRIPT "FormatArrayTest.m"
+SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/FormatArrayTest.m"
 )

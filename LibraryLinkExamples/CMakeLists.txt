@@ -4,14 +4,15 @@ include_directories(${Mathematica_INCLUDE_DIRS})
 
 set(_Examples
 	arbitraryTensor.c demo.c demo_callback.c demo_eval.c demo_mathlink.c demo_LinkObject.c
-	demo_error.c demo_numerical.c demo_shared.c demo_string.c demo_sparse.c)
+	demo_error.c demo_numerical.c demo_shared.c demo_string.c demo_sparse.c
+	demo_image.cxx demo_managed.cxx)
 
 # add a CMake shared library target for each LibraryLink example
 set (_Targets "")
 foreach (_Example ${_Examples})
-	if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}")
-		file (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}" _includesMathLink REGEX ".*#include.*mathlink.h.*")
-		file (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/${_Example}" _includesWSTP REGEX ".*#include.*wstp.h.*")
+	if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_Example}")
+		file (STRINGS "${CMAKE_CURRENT_BINARY_DIR}/${_Example}" _includesMathLink REGEX ".*#include.*mathlink.h.*")
+		file (STRINGS "${CMAKE_CURRENT_BINARY_DIR}/${_Example}" _includesWSTP REGEX ".*#include.*wstp.h.*")
 		set (_honorExample TRUE)
 		if (_includesMathLink AND NOT Mathematica_MathLink_FOUND)
 			set (_honorExample FALSE)
@@ -21,7 +22,7 @@ foreach (_Example ${_Examples})
 		endif()
 		if (_honorExample)
 			get_filename_component(_TargetName ${_Example} NAME_WE)
-			Mathematica_ADD_LIBRARY (${_TargetName} ${_Example})
+			Mathematica_ADD_LIBRARY (${_TargetName} "${CMAKE_CURRENT_BINARY_DIR}/${_Example}")
 			if (_includesMathLink)
 				target_link_libraries(${_TargetName} ${Mathematica_MathLink_LIBRARIES})
 				if (Mathematica_MathLink_LINKER_FLAGS)
@@ -90,7 +91,7 @@ do_mathematica_librarylink_test(demo
 False
 1. - 2.*I
 Null"
-SCRIPT "demo_test.m")
+SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/demo_test.m")
 
 do_mathematica_librarylink_test(demo_string
 # Expected output regular expression
