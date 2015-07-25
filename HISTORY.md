@@ -1,3 +1,8 @@
+## 3.1.2 (2015-07-25)
+
+* *Mathematica* 10.2 compatibility
+* fix variable dereferences in `if` commands
+
 ## 3.1.1 (2015-04-21)
 
 * fix *Mathematica* 10.1 compatibility issues
