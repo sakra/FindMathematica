@@ -33,6 +33,9 @@ cmake_policy(PUSH)
 cmake_minimum_required(VERSION 2.8.12)
 cmake_policy(POP)
 
+set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+set (Mathematica_CMAKE_MODULE_VERSION "3.1.3")
+
 # activate select policies
 if (POLICY CMP0026)
 	# disallow use of the LOCATION target property
@@ -99,9 +102,6 @@ include(TestBigEndian)
 include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
 include(CMakeFindFrameworks)
-
-set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set (Mathematica_CMAKE_MODULE_VERSION "3.1.2")
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
