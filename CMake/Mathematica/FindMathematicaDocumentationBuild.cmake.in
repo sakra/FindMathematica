@@ -59,7 +59,7 @@ if (_buildDocu)
 	# clean previously built documentation files
 	file (REMOVE_RECURSE "${DOCU_OUTPUT_DIRECTORY}")
 	file (MAKE_DIRECTORY "${DOCU_OUTPUT_DIRECTORY}")
-	get_filename_component(_appPath "${Mathematica_DocumentationBuild_PACKAGE_DIR}" PATH)
+	get_filename_component(_appPath "${Mathematica_DocumentationBuild_PACKAGE_DIR}" DIRECTORY)
 	string (TOLOWER "${DOCU_TYPE}.xml" _buildFileName)
 	set (_buildFile "${Mathematica_DocumentationBuild_PACKAGE_DIR}/SystemFiles/ant/Build/${_buildFileName}")
 	_to_native_path ("${Mathematica_ANT_EXECUTABLE}" _antExecutableNative)
