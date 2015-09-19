@@ -1807,11 +1807,30 @@ macro (_find_jlink)
 	)
 	set (CMAKE_FIND_LIBRARY_PREFIXES "${_findLibraryPrefixesSave}")
 	set (CMAKE_FIND_LIBRARY_SUFFIXES "${_findLibrarySuffixesSave}")
+	if (CMAKE_HOST_APPLE)
+		if (EXISTS "${Mathematica_HOST_ROOT_DIR}/Contents/SystemFiles/Java")
+			set (_mmaJavaHome "${Mathematica_HOST_ROOT_DIR}/Contents/SystemFiles/Java")
+		else()
+			# OS X versions of Mathematica earlier than 10 did not have a JVM bundled
+			# but used the Java JVM pre-installed on system
+			set (_mmaJavaHome "${Mathematica_HOST_ROOT_DIR}/SystemFiles/Java")
+			if (DEFINED Mathematica_VERSION)
+				if ("${Mathematica_VERSION}" VERSION_LESS "10.0")
+					# use java_home to find path to JVM installed on system
+					if (EXISTS "/usr/libexec/java_home")
+						execute_process(
+							COMMAND "/usr/libexec/java_home" "--version" "1.6"
+							TIMEOUT 10 OUTPUT_VARIABLE _mmaJavaHome ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+					endif()
+				endif()
+			endif()
+		endif()
+	else()
+		set (_mmaJavaHome "${Mathematica_HOST_ROOT_DIR}/SystemFiles/Java")
+	endif()
 	find_program (Mathematica_JLink_JAVA_EXECUTABLE
 		NAMES "bin/${_JLinkJavaNames}"
-		HINTS
-			"${Mathematica_HOST_ROOT_DIR}/SystemFiles/Java"
-			"${Mathematica_HOST_ROOT_DIR}/Contents/SystemFiles/Java"
+		HINTS "${_mmaJavaHome}"
 		PATH_SUFFIXES ${_HostSystemIDs}
 		DOC "J/Link Java launcher."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
