@@ -1,5 +1,9 @@
 # FindMathematica @Mathematica_CMAKE_MODULE_VERSION@ documentation build script
 
+# JAVACMD is an environment variable that points to the full path to the Java runtime executable
+# used by the Apache Ant wrapper scripts
+set (ENV{JAVACMD} "@_option_JAVACMD@")
+
 set (Mathematica_KERNEL_EXECUTABLE "@Mathematica_KERNEL_EXECUTABLE@")
 set (Mathematica_ANT_EXECUTABLE "@Mathematica_ANT_EXECUTABLE@")
 set (Mathematica_JLink_PACKAGE_DIR "@Mathematica_JLink_PACKAGE_DIR@")
