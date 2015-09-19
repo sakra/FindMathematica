@@ -787,12 +787,12 @@ This function is available if the *Mathematica* kernel executable has been found
 
 This function runs at CMake configure time and exports the default header and trailer code produced
 by `mprep` on the host platform to text files. The files are written to the given `OUTPUT_DIRECTORY`
-(defaults to `CMAKE_CURRENT_BINARY_DIR`). Existing frame files in the output directory are not
-overwritten unless the option `FORCE` is used.
+(defaults to the value of `CMAKE_CURRENT_BINARY_DIR`). Existing frame files in the output directory
+are not overwritten unless the option `FORCE` is used.
 
-The `SYSTEM_ID` option lets you set the System ID the frames are exported for. It defaults to
-`Mathematica_HOST_SYSTEM_ID`. The exported files can be used as custom `mprep` header and trailer
-code when cross-compiling on a different host platform then.
+The `SYSTEM_ID` option lets you set the System ID the frames are exported for. It defaults to the
+value of `Mathematica_HOST_SYSTEM_ID`. The exported files can be used as custom `mprep` header and
+trailer code when cross-compiling on a different host platform then.
 
 E.g., exporting the *Mathematica* 8 mprep frames under 32-bit Windows will produce the files
 `mprep_header_Windows.txt` and `mprep_trailer_Windows.txt`.
@@ -962,6 +962,7 @@ the MUnit package and the *Mathematica* kernel executable have been found.
       [ CHECK_TIMESTAMPS ]
       [ INCLUDE_NOTEBOOKS ]
       [ COMMENT comment ]
+      [ JAVACMD path ]
       [ SOURCES src1 [ src2... ] ])
 
 This function adds a custom target which builds documentation from previously authored *Mathematica*
@@ -973,7 +974,8 @@ scripts provided by the `DocumentationBuild` package.
 
 The build script looks for documentation notebooks in the given `INPUT_DIRECTORY` and writes the
 built documentation to the given `OUTPUT_DIRECTORY`. If omitted, `INPUT_DIRECTORY` defaults to
-`CMAKE_CURRENT_SOURCE_DIR` and `OUTPUT_DIRECTORY` defaults to `CMAKE_CURRENT_BINARY_DIR`.
+the value of `CMAKE_CURRENT_SOURCE_DIR` and `OUTPUT_DIRECTORY` defaults to the value of
+`CMAKE_CURRENT_BINARY_DIR`.
 
 Previously built documentation files in `OUTPUT_DIRECTORY` are removed before the Ant script is
 invoked.
@@ -982,7 +984,7 @@ invoked.
 `"Notebook"` being the default.
 
 `APPLICATION_NAME` gives the base name of the generated documentation links (defaults to
-`PROJECT_NAME`).
+the value of `PROJECT_NAME`).
 
 `LANGUAGE` sets the documentation language (e.g., `"Japanese"`). It defaults to `"English"`, if
 omitted.
@@ -993,6 +995,9 @@ the `OUTPUT_DIRECTORY`.
 
 If the `INCLUDE_NOTEBOOKS` option is `TRUE`, the existing documentation notebooks will be added as
 sources to the generated custom target.
+
+The option `JAVACMD` can be set to the full path to the Java runtime executable use by Apache Ant.
+It defaults to the value of `Mathematica_JLink_JAVA_EXECUTABLE`.
 
 The other options are passed through to the CMake command `add_custom_target`.
 
