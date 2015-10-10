@@ -1,3 +1,11 @@
+## 3.1.3 (2015-10-10)
+
+* add timestamp check for HTML docu generation
+* add `JAVACMD` option to `Mathematica_ADD_DOCUMENTATION`
+* use `java_home` to find Java runtime executable under OS X
+* remove obsolete code
+* documentation updates
+
 ## 3.1.2 (2015-07-25)
 
 * *Mathematica* 10.2 compatibility
