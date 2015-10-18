@@ -34,9 +34,14 @@ cmake_minimum_required(VERSION 2.8.12)
 cmake_policy(POP)
 
 set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set (Mathematica_CMAKE_MODULE_VERSION "3.1.3")
+set (Mathematica_CMAKE_MODULE_VERSION "3.1.4")
 
 # activate select policies
+if (POLICY CMP0025)
+	# Compiler id for Apple Clang is now AppleClang
+	cmake_policy(SET CMP0025 NEW)
+endif()
+
 if (POLICY CMP0026)
 	# disallow use of the LOCATION target property
 	if (CYGWIN OR MSYS)
