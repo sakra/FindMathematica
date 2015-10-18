@@ -1,3 +1,8 @@
+## 3.1.4 (2015-10-18)
+
+* *Mathematica* 10.3 compatibility
+* add work-around to compile LibraryLink examples with Visual Studio 2015
+
 ## 3.1.3 (2015-10-10)
 
 * add timestamp check for HTML docu generation
