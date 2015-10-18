@@ -2370,6 +2370,7 @@ macro (_get_dependent_cache_variables _var _outDependentVars)
 	elseif ("_${_var}" STREQUAL "_Mathematica_ROOT_DIR" OR
 			"_${_var}" STREQUAL "_Mathematica_SYSTEM_IDS")
 		list (APPEND ${_outDependentVars}
+			Mathematica_VERSION
 			Mathematica_INCLUDE_DIR
 			Mathematica_WolframLibrary_VERSION
 			Mathematica_WolframLibrary_INCLUDE_DIR
