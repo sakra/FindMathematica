@@ -7,6 +7,11 @@ set(_Examples
 	demo_error.c demo_numerical.c demo_shared.c demo_string.c demo_sparse.c
 	demo_image.cxx demo_managed.cxx)
 
+if (MSVC14)
+ 	# demo_managed requires hash_map
+	add_definitions(-D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS)
+endif()
+
 # add a CMake shared library target for each LibraryLink example
 set (_Targets "")
 foreach (_Example ${_Examples})
