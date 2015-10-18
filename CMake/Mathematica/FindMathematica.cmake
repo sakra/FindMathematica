@@ -1035,8 +1035,10 @@ macro (_append_mathlink_needed_system_libraries _outLibraries)
 			if ("${Mathematica_MathLink_VERSION_MINOR}" GREATER 18)
 				# Apple MathLink API revision >= 19 has dependency on C++ standard library
 				if (Mathematica_USE_LIBCXX_LIBRARIES)
+					# LLVM libc++
 					list (APPEND ${_outLibraries} c++ )
 				else()
+					# GNU libstdc++
 					list (APPEND ${_outLibraries} stdc++ )
 				endif()
 			endif()
@@ -1048,7 +1050,7 @@ macro (_append_mathlink_needed_system_libraries _outLibraries)
 	elseif (UNIX)
 		if (DEFINED Mathematica_MathLink_VERSION_MINOR)
 			if ("${Mathematica_MathLink_VERSION_MINOR}" GREATER 18)
-				# UNIX MathLink API revision >= 19 has dependency on libstc++
+				# UNIX MathLink API revision >= 19 has dependency on GNU libstdc++
 				list (APPEND ${_outLibraries} stdc++ )
 			endif()
 		endif()
@@ -1105,7 +1107,7 @@ macro (_append_WSTP_needed_system_libraries _outLibraries)
 		if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 			if (DEFINED Mathematica_WSTP_VERSION_MINOR)
 				if ("${Mathematica_WSTP_VERSION_MINOR}" GREATER 18)
-					# UNIX WSTP API revision >= 19 has dependency on libstc++
+					# UNIX WSTP API revision >= 19 has dependency on GNU libstdc++
 					list (APPEND ${_outLibraries} stdc++ )
 				endif()
 			endif()
@@ -1385,7 +1387,7 @@ macro (_setup_findmathematica_options)
 		endif()
 	endif()
 	option (Mathematica_USE_LIBCXX_LIBRARIES
-		"prefer Mathematica libraries linked with libc++ to those linked with libstdc++?"
+		"prefer Mathematica libraries linked with LLVM libc++ to those linked with GNU libstdc++?"
 		${Mathematica_USE_LIBCXX_LIBRARIES_INIT})
 	if (NOT DEFINED Mathematica_DEBUG_INIT)
 		if (DEFINED Mathematica_DEBUG)
