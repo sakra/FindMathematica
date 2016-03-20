@@ -245,8 +245,10 @@ The module uses the following variables upon the invocation of `find_package`:
 * `Mathematica_USE_STATIC_LIBRARIES` - if `TRUE`, prefer static libraries to dynamic libraries (defaults to `FALSE`)
 * `Mathematica_USE_MINIMAL_LIBRARIES` - if `TRUE`, prefer minimal libraries to full libraries (defaults to `FALSE`)
 * `Mathematica_USE_LIBCXX_LIBRARIES` - if `TRUE`, prefer libc++ linked libraries to libstdc++ linked libraries (defaults to `FALSE`, only applies to OS X)
-* `Mathematica_MathLink_FIND_VERSION_MAJOR` - requested MathLink major version (e.g., `"3"`)
-* `Mathematica_WSTP_FIND_VERSION_MAJOR` - requested WSTP major version (e.g., `"4"`)
+* `Mathematica_MathLink_FIND_VERSION_MAJOR` - requested MathLink interface version (e.g., `"3"`)
+* `Mathematica_MathLink_FIND_VERSION_MINOR` - requested MathLink revision number (e.g., `"16"`)
+* `Mathematica_WSTP_FIND_VERSION_MAJOR` - requested WSTP interface version (e.g., `"4"`)
+* `Mathematica_WSTP_FIND_VERSION_MINOR` - requested WSTP revision version (e.g., `"25"`)
 * `Mathematica_DEBUG` - if `TRUE`, enable debugging output (defaults to `FALSE`)
 
 Defined Variables
@@ -336,7 +338,7 @@ The module defines the following variables for component `JLink`:
 * `Mathematica_JLink_PACKAGE_DIR` - J/Link package root directory
 * `Mathematica_JLink_JAR_FILE` - Full path to J/Link JAR file
 * `Mathematica_JLink_JAVA_EXECUTABLE` - path to the host Java runtime executable used by J/Link
-* `Mathematica_JLink_LIBRARY` - Full path to JLinkNativeLibrary
+* `Mathematica_JLink_RUNTIME_LIBRARY` - Full path to JLinkNativeLibrary
 * `Mathematica_JLink_VERSION` - J/Link version number given as "major.minor.patch"
 * `Mathematica_JLink_VERSION_MAJOR` - J/Link major version number
 * `Mathematica_JLink_VERSION_MINOR` - J/Link minor version number

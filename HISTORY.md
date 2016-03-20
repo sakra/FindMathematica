@@ -1,3 +1,10 @@
+## 3.2.0 (2016-03-20)
+
+* *Mathematica* 10.4 compatibility
+* add variable `Mathematica_MathLink_FIND_VERSION_MINOR` (requested MathLink revision)
+* add variable `Mathematica_WSTP_FIND_VERSION_MINOR` (requested WSTP revision)
+* rename `Mathematica_JLink_LIBRARY` to `Mathematica_JLink_RUNTIME_LIBRARY`
+
 ## 3.1.4 (2015-10-18)
 
 * *Mathematica* 10.3 compatibility
