@@ -1804,7 +1804,7 @@ macro (_find_jlink)
 		set (CMAKE_FIND_LIBRARY_PREFIXES "")
 		set (CMAKE_FIND_LIBRARY_SUFFIXES ".dll")
 	endif()
-	find_library (Mathematica_JLink_LIBRARY
+	find_library (Mathematica_JLink_RUNTIME_LIBRARY
 		NAMES "JLinkNativeLibrary"
 		HINTS "${Mathematica_JLink_PACKAGE_DIR}/SystemFiles/Libraries"
 		PATHS ENV JLINK_LIB_DIR
@@ -2301,7 +2301,7 @@ macro (_log_found_variables)
 			message (STATUS "J/Link ${Mathematica_JLink_VERSION} found")
 			message (STATUS "J/Link package dir ${Mathematica_JLink_PACKAGE_DIR}")
 			message (STATUS "J/Link JAR file ${Mathematica_JLink_JAR_FILE}")
-			message (STATUS "J/Link native library ${Mathematica_JLink_LIBRARY}")
+			message (STATUS "J/Link native library ${Mathematica_JLink_RUNTIME_LIBRARY}")
 			message (STATUS "J/Link java launcher ${Mathematica_JLink_JAVA_EXECUTABLE}")
 		else()
 			message (STATUS "J/Link not found")
@@ -2459,7 +2459,7 @@ macro (_get_dependent_cache_variables _var _outDependentVars)
 			Mathematica_WSTP_LIBRARY)
 	elseif ("_${_var}" STREQUAL "_Mathematica_JLink_PACKAGE_DIR")
 		list (APPEND ${_outDependentVars}
-			Mathematica_JLink_VERSION Mathematica_JLink_LIBRARY)
+			Mathematica_JLink_VERSION Mathematica_JLink_RUNTIME_LIBRARY)
 	elseif ("_${_var}" STREQUAL "_Mathematica_MUnit_PACKAGE_FILE")
 		list (APPEND ${_outDependentVars}
 			Mathematica_MUnit_VERSION)
@@ -2539,7 +2539,7 @@ macro (_update_cache)
 		Mathematica_KERNEL_USERBASE_DIR
 		Mathematica_MUnit_PACKAGE_FILE
 		Mathematica_LibraryLink_PACKAGE_FILE
-		Mathematica_JLink_LIBRARY
+		Mathematica_JLink_RUNTIME_LIBRARY
 		Mathematica_JLink_JAVA_EXECUTABLE
 	)
 	_get_cache_variables(_CacheVariables)
@@ -4399,8 +4399,8 @@ function (Mathematica_JLink_ADD_TEST)
 				list (APPEND _cmd "java")
 			endif()
 		endif()
-		if (Mathematica_JLink_LIBRARY)
-			get_filename_component(_jlinkLibraryDir ${Mathematica_JLink_LIBRARY} DIRECTORY)
+		if (Mathematica_JLink_RUNTIME_LIBRARY)
+			get_filename_component(_jlinkLibraryDir ${Mathematica_JLink_RUNTIME_LIBRARY} DIRECTORY)
 			_to_native_path ("${_jlinkLibraryDir}" _jlinkLibraryDirNative)
 			list (APPEND _cmd "-Dcom.wolfram.jlink.libdir=${_jlinkLibraryDirNative}")
 		endif()
