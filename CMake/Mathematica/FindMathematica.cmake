@@ -984,7 +984,9 @@ macro (_get_WSTP_library_names _outLibraryNames)
 		endif()
 	elseif (APPLE)
 		if (Mathematica_USE_STATIC_LIBRARIES)
-			if (DEFINED Mathematica_WSTP_FIND_VERSION_MAJOR)
+			if (DEFINED Mathematica_WSTP_FIND_VERSION_MAJOR AND DEFINED Mathematica_WSTP_FIND_VERSION_MINOR)
+				set (${_outLibraryNames} "libWSTPi${Mathematica_WSTP_FIND_VERSION_MAJOR}.${Mathematica_WSTP_FIND_VERSION_MINOR}.a")
+			elseif (DEFINED Mathematica_WSTP_FIND_VERSION_MAJOR)
 				set (${_outLibraryNames} "libWSTPi${Mathematica_WSTP_FIND_VERSION_MAJOR}.a")
 			else()
 				set (${_outLibraryNames} "libWSTPi4.a" "libWSTPi3.a")
@@ -1751,9 +1753,15 @@ macro (_find_WSTP)
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
 	)
 	if (APPLE AND DEFINED Mathematica_WSTP_FIND_VERSION_MAJOR AND IS_DIRECTORY "${Mathematica_WSTP_LIBRARY}")
-		set (_frameworkVersionSubDir "${Mathematica_WSTP_LIBRARY}/Versions/${Mathematica_WSTP_FIND_VERSION_MAJOR}.[0-9][0-9]")
+		if (DEFINED Mathematica_WSTP_FIND_VERSION_MINOR)
+			set (_frameworkVersionSubDir "${Mathematica_WSTP_LIBRARY}/Versions/${Mathematica_WSTP_FIND_VERSION_MAJOR}.${Mathematica_WSTP_FIND_VERSION_MINOR}")
+		else()
+			set (_frameworkVersionSubDir "${Mathematica_WSTP_LIBRARY}/Versions/${Mathematica_WSTP_FIND_VERSION_MAJOR}.[0-9]+")
+		endif()
 		file (GLOB _versionedLibrary "${_frameworkVersionSubDir}/wstp")
 		if (_versionedLibrary)
+			# use last if there are multiple
+			list (GET _versionedLibrary -1 _versionedLibrary)
 			set (Mathematica_WSTP_LIBRARY "${_versionedLibrary}" CACHE FILEPATH "WSTP library to link against." FORCE)
 		endif()
 		file (GLOB _versionedHeaderDir "${_frameworkVersionSubDir}/Headers")
@@ -2234,7 +2242,8 @@ macro (_log_used_variables)
 		message (STATUS "Find MathLink interface version: ${Mathematica_MathLink_FIND_VERSION_MAJOR}")
 		message (STATUS "Find MathLink revision number: ${Mathematica_MathLink_FIND_VERSION_MINOR}")
 		message (STATUS "Find required WSTP: ${Mathematica_FIND_REQUIRED_WSTP}")
-		message (STATUS "Find WSTP major version: ${Mathematica_WSTP_FIND_VERSION_MAJOR}")
+		message (STATUS "Find WSTP interface version: ${Mathematica_WSTP_FIND_VERSION_MAJOR}")
+		message (STATUS "Find WSTP revision number: ${Mathematica_WSTP_FIND_VERSION_MINOR}")
 		message (STATUS "Find required WolframLibrary: ${Mathematica_FIND_REQUIRED_WolframLibrary}")
 		message (STATUS "Find required J/Link: ${Mathematica_FIND_REQUIRED_JLink}")
 		message (STATUS "Find required MUnit: ${Mathematica_FIND_REQUIRED_MUnit}")
@@ -2359,6 +2368,7 @@ macro (_get_cache_variables _CacheVariables)
 		Mathematica_MathLink_ROOT_DIR
 		Mathematica_MathLink_HOST_ROOT_DIR
 		Mathematica_WSTP_FIND_VERSION_MAJOR
+		Mathematica_WSTP_FIND_VERSION_MINOR
 		Mathematica_WSTP_ROOT_DIR
 		Mathematica_WSTP_HOST_ROOT_DIR
 		Mathematica_JLink_PACKAGE_DIR
@@ -2445,7 +2455,8 @@ macro (_get_dependent_cache_variables _var _outDependentVars)
 		list (APPEND ${_outDependentVars}
 			Mathematica_WSTP_HOST_INCLUDE_DIR
 			Mathematica_WSTP_WSPREP_EXECUTABLE)
-	elseif ("_${_var}" STREQUAL "_Mathematica_WSTP_FIND_VERSION_MAJOR")
+	elseif ("_${_var}" STREQUAL "_Mathematica_WSTP_FIND_VERSION_MAJOR" OR
+			"_${_var}" STREQUAL "_Mathematica_WSTP_FIND_VERSION_MINOR")
 		list (APPEND ${_outDependentVars}
 			Mathematica_WSTP_VERSION
 			Mathematica_WSTP_INCLUDE_DIR
