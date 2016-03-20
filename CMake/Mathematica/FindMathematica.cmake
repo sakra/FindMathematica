@@ -911,7 +911,9 @@ macro (_get_mathlink_library_names _outLibraryNames)
 		endif()
 	elseif (APPLE)
 		if (Mathematica_USE_STATIC_LIBRARIES)
-			if (DEFINED Mathematica_MathLink_FIND_VERSION_MAJOR)
+			if (DEFINED Mathematica_MathLink_FIND_VERSION_MAJOR AND DEFINED Mathematica_MathLink_FIND_VERSION_MINOR)
+				set (${_outLibraryNames} "libMLi${Mathematica_MathLink_FIND_VERSION_MAJOR}.${Mathematica_MathLink_FIND_VERSION_MINOR}.a")
+			elseif (DEFINED Mathematica_MathLink_FIND_VERSION_MAJOR)
 				set (${_outLibraryNames} "libMLi${Mathematica_MathLink_FIND_VERSION_MAJOR}.a")
 			else()
 				set (${_outLibraryNames} "libMLi4.a" "libMLi3.a" "libML.a")
@@ -1636,9 +1638,15 @@ macro (_find_mathlink)
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
 	)
 	if (APPLE AND DEFINED Mathematica_MathLink_FIND_VERSION_MAJOR AND IS_DIRECTORY "${Mathematica_MathLink_LIBRARY}")
-		set (_frameworkVersionSubDir "${Mathematica_MathLink_LIBRARY}/Versions/${Mathematica_MathLink_FIND_VERSION_MAJOR}.[0-9][0-9]")
+		if (DEFINED Mathematica_MathLink_FIND_VERSION_MINOR)
+			set (_frameworkVersionSubDir "${Mathematica_MathLink_LIBRARY}/Versions/${Mathematica_MathLink_FIND_VERSION_MAJOR}.${Mathematica_MathLink_FIND_VERSION_MINOR}")
+		else()
+			set (_frameworkVersionSubDir "${Mathematica_MathLink_LIBRARY}/Versions/${Mathematica_MathLink_FIND_VERSION_MAJOR}.[0-9]+")
+		endif()
 		file (GLOB _versionedLibrary "${_frameworkVersionSubDir}/mathlink")
 		if (_versionedLibrary)
+			# use last if there are multiple
+			list (GET _versionedLibrary -1 _versionedLibrary)
 			set (Mathematica_MathLink_LIBRARY "${_versionedLibrary}" CACHE FILEPATH "MathLink library to link against." FORCE)
 		endif()
 		file (GLOB _versionedHeaderDir "${_frameworkVersionSubDir}/Headers")
@@ -2223,7 +2231,8 @@ macro (_log_used_variables)
 		message (STATUS "Find required: ${Mathematica_FIND_REQUIRED}")
 		message (STATUS "Find components: ${Mathematica_FIND_COMPONENTS}")
 		message (STATUS "Find required MathLink: ${Mathematica_FIND_REQUIRED_MathLink}")
-		message (STATUS "Find MathLink major version: ${Mathematica_MathLink_FIND_VERSION_MAJOR}")
+		message (STATUS "Find MathLink interface version: ${Mathematica_MathLink_FIND_VERSION_MAJOR}")
+		message (STATUS "Find MathLink revision number: ${Mathematica_MathLink_FIND_VERSION_MINOR}")
 		message (STATUS "Find required WSTP: ${Mathematica_FIND_REQUIRED_WSTP}")
 		message (STATUS "Find WSTP major version: ${Mathematica_WSTP_FIND_VERSION_MAJOR}")
 		message (STATUS "Find required WolframLibrary: ${Mathematica_FIND_REQUIRED_WolframLibrary}")
@@ -2346,6 +2355,7 @@ macro (_get_cache_variables _CacheVariables)
 		Mathematica_ROOT_DIR
 		Mathematica_HOST_ROOT_DIR
 		Mathematica_MathLink_FIND_VERSION_MAJOR
+		Mathematica_MathLink_FIND_VERSION_MINOR
 		Mathematica_MathLink_ROOT_DIR
 		Mathematica_MathLink_HOST_ROOT_DIR
 		Mathematica_WSTP_FIND_VERSION_MAJOR
@@ -2418,7 +2428,8 @@ macro (_get_dependent_cache_variables _var _outDependentVars)
 		list (APPEND ${_outDependentVars}
 			Mathematica_MathLink_HOST_INCLUDE_DIR
 			Mathematica_MathLink_MPREP_EXECUTABLE)
-	elseif ("_${_var}" STREQUAL "_Mathematica_MathLink_FIND_VERSION_MAJOR")
+	elseif ("_${_var}" STREQUAL "_Mathematica_MathLink_FIND_VERSION_MAJOR" OR
+			"_${_var}" STREQUAL "_Mathematica_MathLink_FIND_VERSION_MINOR")
 		list (APPEND ${_outDependentVars}
 			Mathematica_MathLink_VERSION
 			Mathematica_MathLink_INCLUDE_DIR
