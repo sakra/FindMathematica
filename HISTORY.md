@@ -1,3 +1,9 @@
+## 3.2.1 (2016-08-17)
+
+* *Mathematica* 11 compatibility
+* fix rpath handling for code generation examples under Linux and OS X
+* fix handling of `Mathematica_USE_LIBCXX_LIBRARIES` for *Mathematica* 10.4 and 11
+
 ## 3.2.0 (2016-03-20)
 
 * *Mathematica* 10.4 compatibility
