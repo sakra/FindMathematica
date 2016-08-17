@@ -8,14 +8,14 @@ Mathematica_GENERATE_C_CODE(compute.m OUTPUT compute.c)
 add_executable (compute compute_main.c compute.c)
 set_target_properties(compute PROPERTIES FOLDER "CodeGeneration")
 target_link_libraries (compute ${Mathematica_WolframLibrary_LIBRARIES})
-set_target_properties(compute PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}")
+set_target_properties(compute PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}" BUILD_WITH_INSTALL_RPATH ON)
 
 # add CMake executable target for multiple Mathematica functions
 Mathematica_GENERATE_C_CODE(functions.m)
 add_executable (functions functions.c functions.m.c)
 set_target_properties(functions PROPERTIES FOLDER "CodeGeneration")
 target_link_libraries (functions ${Mathematica_WolframLibrary_LIBRARIES})
-set_target_properties(functions PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}")
+set_target_properties(functions PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}" BUILD_WITH_INSTALL_RPATH ON)
 
 # fix MathLink shared library references under Mac OS X
 Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES(compute functions)
