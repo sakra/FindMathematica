@@ -804,9 +804,13 @@ macro (_get_target_flavor _outFlavor)
 			set (${_outFlavor} "mldev32")
 		endif()
 	elseif (APPLE)
+		set (${_outFlavor} "")
 		if (Mathematica_VERSION)
-			if (NOT "${Mathematica_VERSION}" VERSION_LESS "10.0" AND Mathematica_USE_LIBCXX_LIBRARIES)
-				# Mathematica 10 added libc++ compiled version in AlternativeLibraries directory
+			if (Mathematica_USE_LIBCXX_LIBRARIES AND
+				NOT "${Mathematica_VERSION}" VERSION_LESS "10.0" AND
+				"${Mathematica_VERSION}" VERSION_LESS "10.4")
+				# Mathematica 10 added LLVM libc++ compiled version in AlternativeLibraries directory
+				# Mathematica 10.4 and later only ship with LLVM libc++ compiled version
 				set (${_outFlavor} "AlternativeLibraries")
 			endif()
 		endif()
@@ -834,9 +838,13 @@ macro (_get_host_flavor _outFlavor)
 			endif()
 		endif()
 	elseif (CMAKE_HOST_APPLE)
+		set (${_outFlavor} "")
 		if (Mathematica_VERSION)
-			if (NOT "${Mathematica_VERSION}" VERSION_LESS "10.0" AND Mathematica_USE_LIBCXX_LIBRARIES)
-				# Mathematica 10 added libc++ compiled version in AlternativeLibraries directory
+			if (Mathematica_USE_LIBCXX_LIBRARIES AND
+				NOT "${Mathematica_VERSION}" VERSION_LESS "10.0" AND
+				"${Mathematica_VERSION}" VERSION_LESS "10.4")
+				# Mathematica 10 added LLVM libc++ compiled version in AlternativeLibraries directory
+				# Mathematica 10.4 and later only ship with LLVM libc++ compiled version
 				set (${_outFlavor} "AlternativeLibraries")
 			endif()
 		endif()
@@ -1037,7 +1045,7 @@ macro (_append_mathlink_needed_system_libraries _outLibraries)
 	if (APPLE)
 		if (DEFINED Mathematica_MathLink_VERSION_MINOR)
 			if ("${Mathematica_MathLink_VERSION_MINOR}" GREATER 18)
-				# Apple MathLink API revision >= 19 has dependency on C++ standard library
+				# OS X MathLink API revision >= 19 has dependency on C++ standard library
 				if (Mathematica_USE_LIBCXX_LIBRARIES)
 					# LLVM libc++
 					list (APPEND ${_outLibraries} c++ )
@@ -1095,10 +1103,12 @@ macro (_append_WSTP_needed_system_libraries _outLibraries)
 	if (APPLE)
 		if (DEFINED Mathematica_WSTP_VERSION_MINOR)
 			if ("${Mathematica_WSTP_VERSION_MINOR}" GREATER 18)
-				# Apple WSTP API revision >= 19 has dependency on c++ standard library
+				# OS X WSTP API revision >= 19 has dependency on C++ standard library
 				if (Mathematica_USE_LIBCXX_LIBRARIES)
+					# LLVM libc++
 					list (APPEND ${_outLibraries} c++ )
 				else()
+					# GNU libstdc++
 					list (APPEND ${_outLibraries} stdc++ )
 				endif()
 			endif()
