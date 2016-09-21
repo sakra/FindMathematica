@@ -1854,9 +1854,11 @@ macro (_find_jlink)
 			if (DEFINED Mathematica_VERSION)
 				if ("${Mathematica_VERSION}" VERSION_LESS "10.0")
 					# use java_home to find path to JVM installed on system
-					if (EXISTS "/usr/libexec/java_home")
+					find_program(Mathematica_JAVA_HOME_EXECUTABLE "java_home" PATHS "/usr/libexec/")
+					mark_as_advanced(Mathematica_JAVA_HOME_EXECUTABLE)
+					if (Mathematica_JAVA_HOME_EXECUTABLE)
 						execute_process(
-							COMMAND "/usr/libexec/java_home" "--version" "1.6"
+							COMMAND "${Mathematica_JAVA_HOME_EXECUTABLE}" "--version" "1.6"
 							TIMEOUT 10 OUTPUT_VARIABLE _mmaJavaHome ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 					endif()
 				endif()
