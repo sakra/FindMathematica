@@ -113,8 +113,10 @@ include(CMakeFindFrameworks)
 # file(TO_CMAKE_PATH "C:\Program Files" ...) would result in unworkable "C;/Program Files"
 function (_to_cmake_path _inPath _outPathVariable)
 	if (CYGWIN)
+		find_program(Mathematica_CYGPATH_EXECUTABLE "cygpath")
+		mark_as_advanced(Mathematica_CYGPATH_EXECUTABLE)
 		execute_process(
-			COMMAND cygpath "--unix" "${_inPath}" TIMEOUT 5
+			COMMAND "${Mathematica_CYGPATH_EXECUTABLE}" "--unix" "${_inPath}" TIMEOUT 5
 			OUTPUT_VARIABLE ${_outPathVariable} OUTPUT_STRIP_TRAILING_WHITESPACE)
 	else()
 		file(TO_CMAKE_PATH "${_inPath}" ${_outPathVariable})
@@ -130,8 +132,10 @@ function (_to_native_path _inPath _outPathVariable)
 	# and special characters
 	# under MinGW it produces unworkable paths with forward slashes
 	if (CYGWIN)
+		find_program(Mathematica_CYGPATH_EXECUTABLE "cygpath")
+		mark_as_advanced(Mathematica_CYGPATH_EXECUTABLE)
 		execute_process(
-			COMMAND cygpath "--mixed" "${_inPath}" TIMEOUT 5
+			COMMAND "${Mathematica_CYGPATH_EXECUTABLE}" "--mixed" "${_inPath}" TIMEOUT 5
 			OUTPUT_VARIABLE ${_outPathVariable} OUTPUT_STRIP_TRAILING_WHITESPACE)
 	elseif (CMAKE_HOST_UNIX)
 		# use CMake path literally under UNIX
