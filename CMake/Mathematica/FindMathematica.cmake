@@ -2715,10 +2715,22 @@ macro (_get_install_name _libraryPath _libraryInstallName _libraryAbsPath)
 			set (_path "${_libraryPath}")
 		endif()
 		if (EXISTS "${_path}")
+			find_program(Mathematica_OTOOL_EXECUTABLE "otool")
+			mark_as_advanced(Mathematica_OTOOL_EXECUTABLE)
 			get_filename_component(${_libraryAbsPath} ${_path} ABSOLUTE)
-			execute_process(
-				COMMAND otool "-D" "-X" "${${_libraryAbsPath}}" TIMEOUT 5
-				OUTPUT_VARIABLE ${_libraryInstallName} OUTPUT_STRIP_TRAILING_WHITESPACE)
+			set (_otoolOutput "")
+			if (Mathematica_OTOOL_EXECUTABLE)
+				execute_process(
+					COMMAND "${Mathematica_OTOOL_EXECUTABLE}" "-D" "-X" "${${_libraryAbsPath}}" TIMEOUT 5
+					OUTPUT_VARIABLE _otoolOutput OUTPUT_STRIP_TRAILING_WHITESPACE)
+				# install name is in last line of otool output
+				string (REPLACE "\n" ";" _otoolOutput "${_otoolOutput}")
+			endif()
+			if (_otoolOutput)
+				list (GET _otoolOutput -1 ${_libraryInstallName})
+			else()
+				set (${_libraryInstallName} "")
+			endif()
 		endif()
 	endif()
 endmacro()
