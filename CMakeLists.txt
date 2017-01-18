@@ -86,6 +86,8 @@ if (${Mathematica_FOUND})
 	message(STATUS "Mathematica Base Directory ${Mathematica_BASE_DIR}")
 	# Mathematica_USERBASE_DIR is the directory for user-specific files to be loaded by Mathematica
 	message(STATUS "Mathematica User Base Directory ${Mathematica_USERBASE_DIR}")
+	message(STATUS "Mathematica runtime library dirs: ${Mathematica_RUNTIME_LIBRARY_DIRS}")
+	message(STATUS "Mathematica runtime library dirs debug: ${Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG}")
 	add_subdirectory(MathematicaExamples)
 	if (${Mathematica_JLink_FOUND})
 		add_subdirectory(DocumentationExamples)
