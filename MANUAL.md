@@ -295,6 +295,8 @@ The module defines the following variables for component `WolframLibrary`:
 * `Mathematica_WolframLibrary_VERSION_COUNT` - WolframLibrary number of version components (usually 1)
 * `Mathematica_LibraryLink_PACKAGE_FILE` - LibraryLink package file
 * `Mathematica_LibraryLink_PACKAGE_DIR` - LibraryLink package root directory
+* `Mathematica_WolframLibrary_RUNTIME_LIBRARY_DIRS` - list of WolframLibrary library directories required at runtime
+* `Mathematica_WolframLibrary_RUNTIME_LIBRARY_DIRS_DEBUG` - list of debug WolframLibrary library directories required at runtime
 
 The module defines the following variables for component `MathLink`:
 
@@ -313,6 +315,8 @@ The module defines the following variables for component `MathLink`:
 * `Mathematica_MathLink_VERSION_MINOR` - MathLink revision number
 * `Mathematica_MathLink_VERSION_STRING` - MathLink version string given as "interface.revision"
 * `Mathematica_MathLink_VERSION_COUNT` - MathLink number of version components (usually 2)
+* `Mathematica_MathLink_RUNTIME_LIBRARY_DIRS` - list of MathLink library directories required at runtime
+* `Mathematica_MathLink_RUNTIME_LIBRARY_DIRS_DEBUG` - list of debug MathLink library directories required at runtime
 
 The module defines the following variables for component `WSTP`:
 
@@ -331,6 +335,8 @@ The module defines the following variables for component `WSTP`:
 * `Mathematica_WSTP_VERSION_MINOR` - WSTP revision number
 * `Mathematica_WSTP_VERSION_STRING` - WSTP version string given as "interface.revision"
 * `Mathematica_WSTP_VERSION_COUNT` - WSTP number of version components (usually 2)
+* `Mathematica_WSTP_RUNTIME_LIBRARY_DIRS` - list of WSTP library directories required at runtime
+* `Mathematica_WSTP_RUNTIME_LIBRARY_DIRS_DEBUG` - list of debug WSTP library directories required at runtime
 
 The module defines the following variables for component `JLink`:
 
