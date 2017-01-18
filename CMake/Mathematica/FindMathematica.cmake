@@ -355,7 +355,7 @@ function (_add_launch_services_search_paths _outSearchPaths)
 		foreach (_bundleID IN ITEMS ${ARGN})
 			execute_process(
 				COMMAND "${Mathematica_LSRegister_EXECUTABLE}" "-dump"
-				COMMAND "grep" "--before-context=5" "--after-context=5" " ${_bundleID} "
+				COMMAND "grep" "--before-context=12" "--after-context=12" " ${_bundleID} "
 				COMMAND "grep" "--only-matching" "/.*\\.app"
 				TIMEOUT 10 OUTPUT_VARIABLE _queryResult ERROR_QUIET)
 			string (REPLACE ";" "\\;" _queryResult "${_queryResult}")
@@ -364,6 +364,8 @@ function (_add_launch_services_search_paths _outSearchPaths)
 				# put paths into canonical order
 				list (SORT _appPaths)
 				list (REVERSE _appPaths)
+			else()
+				message (STATUS "No Mathematica apps registered in Mac OS X LaunchServices database.")
 			endif()
 			if (Mathematica_DEBUG)
 				message (STATUS "Mac OS X LaunchServices database registered apps=${_appPaths}")
@@ -1441,6 +1443,7 @@ macro (_find_mathematica)
 		if (Mathematica_DEBUG)
 			message (STATUS "SearchPaths ${_SearchPaths}")
 			message (STATUS "ProgramNames ${_ProgramNames}")
+			message (STATUS "KernelExecutables ${_KernelExecutables}")
 		endif()
 		find_path (Mathematica_HOST_ROOT_DIR
 			NAMES ${_KernelExecutables}
