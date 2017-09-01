@@ -14,6 +14,10 @@ if (NOT CMAKE_CROSSCOMPILING)
 			if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.c")
 				Mathematica_MathLink_add_executable (${_TargetName}
 					"${CMAKE_CURRENT_BINARY_DIR}/${_Example}" "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.c")
+			elseif (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.cxx")
+				Mathematica_MathLink_MPREP_TARGET("${CMAKE_CURRENT_BINARY_DIR}/${_Example}" OUTPUT ${_Example}.cxx)
+				add_executable (${_TargetName} WIN32 "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.cxx" "${CMAKE_CURRENT_BINARY_DIR}/${_Example}.cxx")
+				target_link_libraries (${_TargetName} ${Mathematica_MathLink_LIBRARIES})
 			else()
 				Mathematica_MathLink_MPREP_TARGET("${CMAKE_CURRENT_BINARY_DIR}/${_Example}" OUTPUT ${_Example}.c)
 				add_executable (${_TargetName} WIN32 "${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c")
@@ -53,12 +57,19 @@ else()
 		foreach (_Example ${_TemplateExamples})
 			if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_Example}")
 				get_filename_component(_TargetName "${CMAKE_CURRENT_BINARY_DIR}/${_Example}" NAME_WE)
-				Mathematica_MathLink_MPREP_TARGET("${CMAKE_CURRENT_BINARY_DIR}/${_Example}"
-					CUSTOM_HEADER "${_mprepHeader}" CUSTOM_TRAILER "${_mprepTrailer}")
 				if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.c")
+					Mathematica_MathLink_MPREP_TARGET("${CMAKE_CURRENT_BINARY_DIR}/${_Example}" OUTPUT ${_Example}.c
+						CUSTOM_HEADER "${_mprepHeader}" CUSTOM_TRAILER "${_mprepTrailer}")
 					add_executable (${_TargetName} WIN32
 						"${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c" "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.c")
+				elseif (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.cxx")
+					Mathematica_MathLink_MPREP_TARGET("${CMAKE_CURRENT_BINARY_DIR}/${_Example}" OUTPUT ${_Example}.cxx
+						CUSTOM_HEADER "${_mprepHeader}" CUSTOM_TRAILER "${_mprepTrailer}")
+					add_executable (${_TargetName} WIN32
+						"${CMAKE_CURRENT_BINARY_DIR}/${_Example}.cxx" "${CMAKE_CURRENT_BINARY_DIR}/${_TargetName}.cxx")
 				else()
+					Mathematica_MathLink_MPREP_TARGET("${CMAKE_CURRENT_BINARY_DIR}/${_Example}" OUTPUT ${_Example}.c
+						CUSTOM_HEADER "${_mprepHeader}" CUSTOM_TRAILER "${_mprepTrailer}")
 					add_executable (${_TargetName} WIN32 "${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c")
 				endif()
 				if (TARGET ${_TargetName})
@@ -75,7 +86,7 @@ else()
 
 endif()
 
-set(_Examples factor.c factor2.c factor3.c quotient.c)
+set(_Examples factor.c factor2.c factor3.c quotient.c factor.cxx factor2.cxx factor3.cxx quotient.cxx)
 
 # add a CMake executable target for each MathLink C only example
 foreach (_Example ${_Examples})

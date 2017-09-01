@@ -113,7 +113,8 @@ if (${Mathematica_MathLink_FOUND})
 	if (EXISTS "${Mathematica_MathLink_HOST_ROOT_DIR}/MathLinkExamples")
 		file (GLOB_RECURSE _MathLinkExamples
 			"${Mathematica_MathLink_HOST_ROOT_DIR}/MathLinkExamples/*.tm"
-			"${Mathematica_MathLink_HOST_ROOT_DIR}/MathLinkExamples/*.c")
+			"${Mathematica_MathLink_HOST_ROOT_DIR}/MathLinkExamples/*.c"
+			"${Mathematica_MathLink_HOST_ROOT_DIR}/MathLinkExamples/*.cxx")
 		file (COPY ${_MathLinkExamples}
 			DESTINATION "${CMAKE_BINARY_DIR}/MathLinkExamples"
 			NO_SOURCE_PERMISSIONS)
