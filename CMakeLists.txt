@@ -127,7 +127,8 @@ if (${Mathematica_WSTP_FOUND})
 	if (EXISTS "${Mathematica_WSTP_HOST_ROOT_DIR}/WSTPExamples")
 		file (GLOB_RECURSE _WSTPExamples
 			"${Mathematica_WSTP_HOST_ROOT_DIR}/WSTPExamples/*.tm"
-			"${Mathematica_WSTP_HOST_ROOT_DIR}/WSTPExamples/*.c")
+			"${Mathematica_WSTP_HOST_ROOT_DIR}/WSTPExamples/*.c"
+			"${Mathematica_WSTP_HOST_ROOT_DIR}/WSTPExamples/*.cxx")
 		file (COPY ${_WSTPExamples}
 			DESTINATION "${CMAKE_BINARY_DIR}/WSTPExamples"
 			NO_SOURCE_PERMISSIONS)

@@ -15,6 +15,10 @@ if (NOT CMAKE_CROSSCOMPILING)
 			if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.c")
 				Mathematica_WSTP_add_executable (${_TargetName}
 					"${CMAKE_CURRENT_BINARY_DIR}/${_Example}" "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.c")
+			elseif (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.cxx")
+				Mathematica_WSTP_WSPREP_TARGET("${CMAKE_CURRENT_BINARY_DIR}/${_Example}" OUTPUT ${_Example}.cxx)
+				add_executable (${_TargetName} WIN32 "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.cxx" "${CMAKE_CURRENT_BINARY_DIR}/${_Example}.cxx")
+				target_link_libraries (${_TargetName} ${Mathematica_WSTP_LIBRARIES})
 			else()
 				Mathematica_WSTP_WSPREP_TARGET("${CMAKE_CURRENT_BINARY_DIR}/${_Example}" OUTPUT ${_Example}.c)
 				add_executable (${_TargetName} WIN32 "${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c")
@@ -56,12 +60,19 @@ else()
 			if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_Example}")
 				get_filename_component(_OutputName "${CMAKE_CURRENT_BINARY_DIR}/${_Example}" NAME_WE)
 				set (_TargetName "ws${_OutputName}")
-				Mathematica_WSTP_WSPREP_TARGET(${_Example}
-					CUSTOM_HEADER "${_wsprepHeader}" CUSTOM_TRAILER "${_wsprepTrailer}")
 				if (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.c")
+					Mathematica_WSTP_WSPREP_TARGET(${_Example} OUTPUT ${_Example}.c
+						CUSTOM_HEADER "${_wsprepHeader}" CUSTOM_TRAILER "${_wsprepTrailer}")
 					add_executable (${_TargetName} WIN32
 						"${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c" "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.c")
+				elseif (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.cxx")
+					Mathematica_WSTP_WSPREP_TARGET(${_Example} OUTPUT ${_Example}.cxx
+						CUSTOM_HEADER "${_wsprepHeader}" CUSTOM_TRAILER "${_wsprepTrailer}")
+					add_executable (${_TargetName} WIN32
+						"${CMAKE_CURRENT_BINARY_DIR}/${_Example}.cxx" "${CMAKE_CURRENT_BINARY_DIR}/${_OutputName}.cxx")
 				else()
+					Mathematica_WSTP_WSPREP_TARGET(${_Example} OUTPUT ${_Example}.c
+						CUSTOM_HEADER "${_wsprepHeader}" CUSTOM_TRAILER "${_wsprepTrailer}")
 					add_executable (${_TargetName} WIN32 "${CMAKE_CURRENT_BINARY_DIR}/${_Example}.c")
 				endif()
 				if (TARGET ${_TargetName})
@@ -79,7 +90,7 @@ else()
 
 endif()
 
-set(_Examples factor.c factor2.c factor3.c quotient.c)
+set(_Examples factor.c factor2.c factor3.c quotient.c factor.cxx factor2.cxx factor3.cxx quotient.cxx)
 
 # add a CMake executable target for each WSTP C only example
 foreach (_Example ${_Examples})
@@ -95,6 +106,8 @@ foreach (_Example ${_Examples})
 			set_target_properties(${_TargetName} PROPERTIES LINK_FLAGS "${Mathematica_WSTP_LINKER_FLAGS}")
 		endif()
 		list (APPEND _Targets ${_TargetName})
+		set_target_properties(${_TargetName} PROPERTIES FOLDER "WSTP")
+		set_target_properties(${_TargetName} PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}")
 	endif()
 endforeach()
 
