@@ -244,7 +244,7 @@ macro (_get_program_names _outProgramNames)
 	# Mathematica products in order of preference
 	set (_MathematicaApps "Mathematica" "gridMathematica Server")
 	# Mathematica product versions in order of preference
-	set (_MathematicaVersions "11.1" "11.0" "10.4" "10.3" "10.2" "10.1" "10.0" "9.0" "8.0" "7.0" "6.0" "5.2")
+	set (_MathematicaVersions "11.2" "11.1" "11.0" "10.4" "10.3" "10.2" "10.1" "10.0" "9.0" "8.0" "7.0" "6.0" "5.2")
 	# search for explicitly requested application version first
 	if (Mathematica_FIND_VERSION AND Mathematica_FIND_VERSION_EXACT)
 		foreach (_product IN LISTS _MathematicaApps)
@@ -1958,12 +1958,12 @@ macro (_setup_mathematica_version_variables)
 			else()
 				set (_versionLine "")
 			endif()
-		elseif (Mathematica_MathLink_INCLUDE_DIR AND
+		elseif (DEFINED Mathematica_MathLink_INCLUDE_DIR AND
 			EXISTS "${Mathematica_MathLink_INCLUDE_DIR}/mathlink.h")
 			# parse version number from mathlink.h
 			file (STRINGS "${Mathematica_MathLink_INCLUDE_DIR}/mathlink.h" _versionLine
 				REGEX ".*define.*MLMATHVERSION.*")
-		elseif (Mathematica_MathLink_HOST_INCLUDE_DIR AND
+		elseif (DEFINED Mathematica_MathLink_HOST_INCLUDE_DIR AND
 			EXISTS "${Mathematica_MathLink_HOST_INCLUDE_DIR}/mathlink.h")
 			# parse version number from mathlink.h
 			file (STRINGS "${Mathematica_MathLink_HOST_INCLUDE_DIR}/mathlink.h" _versionLine
@@ -2033,11 +2033,13 @@ macro (_setup_WSTP_version_variables)
 			if (DEFINED Mathematica_WSTP_FIND_VERSION_MAJOR)
 				set (_wstpInterface "${Mathematica_WSTP_FIND_VERSION_MAJOR}")
 			else()
-				file (STRINGS "${_file}" _wstpInterfaceLine REGEX ".*define.*WSINTERFACE.*")
-				string (REGEX REPLACE "[^0-9]*([0-9]+).*" "\\1" _wstpInterface
-					${_wstpInterfaceLine})
+				file (STRINGS "${_file}" _wstpInterfaceLine REGEX ".*define.*(WS|ML)INTERFACE.*")
+				if (_wstpInterfaceLine)
+					string (REGEX REPLACE "[^0-9]*([0-9]+).*" "\\1" _wstpInterface
+						${_wstpInterfaceLine})
+				endif()
 			endif()
-			file (STRINGS "${_file}" _wstpRevisionLine REGEX ".*define.*WSREVISION.*")
+			file (STRINGS "${_file}" _wstpRevisionLine REGEX ".*define.*(WS|ML)REVISION.*")
 			string (REGEX REPLACE "[^0-9]*([0-9]+).*" "\\1" _wstpRevision
 				${_wstpRevisionLine})
 			if (DEFINED _wstpInterface AND DEFINED _wstpRevision)
