@@ -355,7 +355,7 @@ function (_add_launch_services_search_paths _outSearchPaths)
 		foreach (_bundleID IN ITEMS ${ARGN})
 			execute_process(
 				COMMAND "${Mathematica_LSRegister_EXECUTABLE}" "-dump"
-				COMMAND "grep" "--before-context=12" "--after-context=12" " ${_bundleID} "
+				COMMAND "grep" "--before-context=20" "--after-context=20" " ${_bundleID} "
 				COMMAND "grep" "--only-matching" "/.*\\.app"
 				TIMEOUT 10 OUTPUT_VARIABLE _queryResult ERROR_QUIET)
 			string (REPLACE ";" "\\;" _queryResult "${_queryResult}")
