@@ -1,4 +1,7 @@
 # ignore CMake build directories
-build*/
+*build*/
 .DS_Store
 .project
+.vs
+.vscode
+.idea
