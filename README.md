@@ -8,7 +8,7 @@ Features
 --------
 
 * Works with Windows, Linux and OS X versions of *Mathematica*.
-* Finds *Mathematica* versions from 5.2 to 11.0.
+* Finds *Mathematica* versions from 5.2 to 11.2.
 * Finds include directories and libraries for [LibraryLink][wll] (*Mathematica* 8 to 11).
 * Finds include directories and libraries for [WSTP][wstp] (*Mathematica* 10 to 11).
 * Finds installation directory and JAR file of [J/Link][jlnk].
