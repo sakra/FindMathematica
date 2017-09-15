@@ -1,3 +1,10 @@
+## 3.2.3 (2017-09-15)
+
+* *Mathematica* 11.2 compatibility
+* *Mathematica* 11.1 compatibility
+* add new variables for component runtime directories (e.g.,
+  `Mathematica_MathLink_RUNTIME_LIBRARY_DIRS`)
+
 ## 3.2.2 (2016-09-28)
 
 * Xcode 8 compatibility fix
