@@ -3539,11 +3539,10 @@ function (Mathematica_FIND_PACKAGE _var _packageName)
 	endif()
 	# determine MUnit package directory
 	Mathematica_TO_NATIVE_STRING("${_packageName}" _packageNameMma)
+	# default to using FileNames function
+	set (_findPackage "Print[StandardForm[Check[First[FileNames[ContextToFileName[${_packageNameMma}],$Path]],$Failed]]]")
 	if (DEFINED Mathematica_VERSION)
-		if ("${Mathematica_VERSION}" VERSION_LESS "7.0")
-			# default to using FileNames function
-			set (_findPackage "Print[StandardForm[Check[First[FileNames[ContextToFileName[${_packageNameMma}],$Path]],$Failed]]]")
-		else()
+		if (NOT "${Mathematica_VERSION}" VERSION_LESS "7.0")
 			# function FindFile available since Mathematica 7
 			set (_findPackage "Print[StandardForm[FindFile[${_packageNameMma}]]]")
 		endif()
