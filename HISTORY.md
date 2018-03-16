@@ -1,4 +1,4 @@
-## 3.2.4
+## 3.2.4 (2018-03-16)
 
 * *Mathematica* 11.3 compatibility
 
