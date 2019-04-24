@@ -18,11 +18,6 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS 1)
 
-if (POLICY CMP0058)
-	# suppress phony rules warning when using ninja generator
-	cmake_policy(SET CMP0058 OLD)
-endif()
-
 # find Java
 find_package(Java 1.6 COMPONENTS Development)
 
