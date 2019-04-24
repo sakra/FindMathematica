@@ -152,36 +152,30 @@ endfunction ()
 
 do_WSTP_test(wsaddtwo
 # Expected output regular expression
-"AddTwo\\[x, y\\] gives the sum of two machine integers x and y\\.
-5
+"5
 (-2147483648|0)
 \\$Failed"
 CODE
-"?AddTwo
-Print[AddTwo[2, 3]]
+"Print[AddTwo[2, 3]]
 Print[AddTwo[2^31 - 1, 1]]
 Print[AddTwo[2^31, 1]]"
 )
 
 do_WSTP_test(wsbitops
 # Expected output regular expression
-"bitAnd\\[x, y\\] gives the bitwise conjunction  of two integers x and y\\.
-bitComplements\\[{x1,x2,...}\\] generates  a list of the bitwise complements of the integers xi\\.
-579
+"579
 {-1, -2, -3}"
 SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/bitopsTest.m"
 )
 
 do_WSTP_test(wscounter
 # Expected output regular expression
-"AddToCounter\\[ ck, n\\] adds n to the counter *ck and returns the accumulated value\\.
-11
+"11
 12
 32"
 CODE
 "link2=Install[First[link]]"
-"?AddToCounter
-Print[AddToCounter[link,11]]
+"Print[AddToCounter[link,11]]
 Print[AddToCounter[link2,12]]
 Print[AddToCounter[link,21]]
 Uninstall[link2]"
