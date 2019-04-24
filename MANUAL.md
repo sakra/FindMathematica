@@ -1023,3 +1023,4 @@ Known Issues
 [aant]:http://ant.apache.org/
 [cgwn]:http://www.cygwin.com/
 [cmtut]:http://www.cmake.org/cmake-tutorial/
+[mingw]:http://www.mingw.org/

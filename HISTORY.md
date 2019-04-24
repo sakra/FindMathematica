@@ -1,3 +1,8 @@
+## 3.2.5
+
+* *Mathematica* 12.0 compatibility
+* add `libuuid` to list of required runtime libraries under Linux
+
 ## 3.2.4 (2018-03-16)
 
 * *Mathematica* 11.3 compatibility

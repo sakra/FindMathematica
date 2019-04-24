@@ -8,9 +8,9 @@ Features
 --------
 
 * Works with Windows, Linux and OS X versions of *Mathematica*.
-* Finds *Mathematica* versions from 5.2 to 11.3.
-* Finds include directories and libraries for [LibraryLink][wll] (*Mathematica* 8 to 11).
-* Finds include directories and libraries for [WSTP][wstp] (*Mathematica* 10 to 11).
+* Finds *Mathematica* versions from 5.2 to 12.0.
+* Finds include directories and libraries for [LibraryLink][wll] (*Mathematica* 8 or later).
+* Finds include directories and libraries for [WSTP][wstp] (*Mathematica* 10 or later).
 * Finds installation directory and JAR file of [J/Link][jlnk].
 * Finds include directories and libraries for MathLink (obsolete as of *Mathematica* 10).
 * Finds installation directory of Wolfram MUnit testing package.
@@ -21,9 +21,9 @@ Features
 * Allows for running *Mathematica* MUnit test files and suites as CMake test targets.
 * Supports generating C code from WSTP template files using `wsprp` executable.
 * Supports generating C code from MathLink template files using `mprep` executable.
-* Supports building dynamic libraries loadable with [LibraryLink][wll] (*Mathematica* 8 to 11).
+* Supports building dynamic libraries loadable with [LibraryLink][wll] (*Mathematica* 8 or later).
 * Supports generating stand-alone C code from *Mathematica* code with [CCodeGenerator][ccg]
-  (*Mathematica* 8 to 11).
+  (*Mathematica* 8 or later).
 * Provides CMake interface to *Mathematica*'s [Encode][encd] function.
 * Supports generating *Mathematica* documentation with the DocumentationBuild package.
 * Fully leverages CMake's [cross-compiling][ccrc] support.
