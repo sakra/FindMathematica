@@ -155,4 +155,11 @@ do_mathematica_librarylink_test(demo_sparse
 "\"ImplicitValue\" *-> *0"
 SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/demo_sparse.m")
 
+do_mathematica_librarylink_test(demo_shared
+# Expected output regular expression
+"10.
+15.
+20."
+SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/demo_shared.m")
+
 add_convenience_test_target(LibraryLinkTests "LibraryLink")
