@@ -5,7 +5,7 @@ include_directories(${Mathematica_INCLUDE_DIRS})
 set(_Examples
 	arbitraryTensor.c demo.c demo_callback.c demo_eval.c demo_mathlink.c demo_LinkObject.c
 	demo_error.c demo_numerical.c demo_shared.c demo_string.c demo_sparse.c
-	demo_image.cxx demo_managed.cxx)
+	demo_image.cxx demo_managed.cxx demo_numericarray.cxx)
 
 if (MSVC14)
  	# demo_managed requires hash_map
@@ -161,5 +161,13 @@ do_mathematica_librarylink_test(demo_shared
 15.
 20."
 SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/demo_shared.m")
+
+do_mathematica_librarylink_test(demo_numericarray
+# Expected output regular expression
+"{5, 4, 3, 2, 1}
+{.*}
+{.*}
+15799"
+SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/demo_numericarray_test.m")
 
 add_convenience_test_target(LibraryLinkTests "LibraryLink")
