@@ -62,7 +62,7 @@ function (do_mathematica_librarylink_test _target _expectedOutputRegEx)
 				NAME ${_testName} TARGET ${_target}
 				SYSTEM_ID "${_systemID}" ${ARGN})
 			Mathematica_set_tests_properties (${_testName}
-				PROPERTIES TIMEOUT 10
+				PROPERTIES TIMEOUT 20
 				PASS_REGULAR_EXPRESSION "${_expectedOutputRegEx}")
 			if (NOT CMAKE_VERSION LESS "3.0.0")
 				set_tests_properties(${_testName} PROPERTIES REQUIRED_FILES "$<TARGET_FILE:${_target}>")
