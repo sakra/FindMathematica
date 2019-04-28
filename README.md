@@ -36,6 +36,7 @@ Requirements
 * [Visual Studio C++][vslstd], [MinGW][mingw] or [Cygwin][cgwn] under Windows.
 * [GCC][gcc] or [Clang][clang] under Linux or OS X.
 * [Xcode][xcdt] application or Xcode Command Line Tools under OS X.
+* [libuuid][uuid] under Linux.
 
 Installation
 ------------
@@ -63,6 +64,7 @@ See the [FindMathematica manual][manual] for more information.
 [encd]:http://reference.wolfram.com/language/ref/Encode.html
 [gcc]:http://gcc.gnu.org/
 [jlnk]:http://reference.wolfram.com/language/JLink/tutorial/Overview.html
+[libuuid]:https://linux.die.net/man/3/libuuid
 [manual]:https://github.com/sakra/FindMathematica/blob/master/MANUAL.md
 [mingw]:http://www.mingw.org/
 [vslstd]:http://msdn.microsoft.com/vstudio/
