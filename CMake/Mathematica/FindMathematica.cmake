@@ -1307,7 +1307,8 @@ macro (_setup_mathematica_base_directory)
 	else ()
 		# guess Mathematica_BASE_DIR from environment
 		# environment variable MATHEMATICA_BASE may override default
-		# $BaseDirectory, see http://reference.wolfram.com/language/tutorial/ConfigurationFiles.html
+		# $BaseDirectory, see
+		# https://reference.wolfram.com/language/tutorial/ConfigurationFiles.html
 		if (DEFINED ENV{MATHEMATICA_BASE})
 			set (Mathematica_BASE_DIR "$ENV{MATHEMATICA_BASE}")
 		elseif (CMAKE_HOST_WIN32 OR CYGWIN)
@@ -1358,7 +1359,8 @@ macro (_setup_mathematica_userbase_directory)
 	else ()
 		# guess Mathematica_USERBASE_DIR from environment
 		# environment variable MATHEMATICA_USERBASE may override default
-		# $UserBaseDirectory, see http://reference.wolfram.com/language/tutorial/ConfigurationFiles.html
+		# $UserBaseDirectory, see
+		# https://reference.wolfram.com/language/tutorial/ConfigurationFiles.html
 		if (DEFINED ENV{MATHEMATICA_USERBASE})
 			set (Mathematica_USERBASE_DIR "$ENV{MATHEMATICA_USERBASE}")
 		elseif (CMAKE_HOST_WIN32 OR CYGWIN)
@@ -3145,7 +3147,7 @@ macro (_add_script_or_code _cmdVar _scriptVar _codeVar)
 			# using the -script option does not work as expected, if it is preceded by multiple inline
 			# Mathematica commands using the -run option.
 			# Thus we use the Get function instead, which should work with all versions.
-			# According to http://reference.wolfram.com/language/tutorial/WolframLanguageScripts.html
+			# According to https://reference.wolfram.com/language/tutorial/WolframLanguageScripts.html
 			# running the kernel with the -script option is equivalent to reading the file using the Get function
 			# with a single difference: after the last command in the file is evaluated, the kernel terminates
 			Mathematica_TO_NATIVE_PATH("${_scriptFileAbs}" _scriptFileMma)

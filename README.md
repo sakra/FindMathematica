@@ -56,19 +56,19 @@ command:
 
 See the [FindMathematica manual][manual] for more information.
 
-[ccg]:http://reference.wolfram.com/language/CCodeGenerator/guide/CCodeGenerator.html
-[ccrc]:http://www.cmake.org/Wiki/CMake_Cross_Compiling
-[clang]:http://clang.llvm.org/
-[cgwn]:http://www.cygwin.com/
-[cmk]:http://www.cmake.org/download/
-[encd]:http://reference.wolfram.com/language/ref/Encode.html
-[gcc]:http://gcc.gnu.org/
-[jlnk]:http://reference.wolfram.com/language/JLink/tutorial/Overview.html
+[ccg]:https://reference.wolfram.com/language/CCodeGenerator/guide/CCodeGenerator.html
+[ccrc]:https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/CrossCompiling
+[clang]:https://clang.llvm.org/
+[cgwn]:https://www.cygwin.com/
+[cmk]:https://cmake.org/download/
+[encd]:https://reference.wolfram.com/language/ref/Encode.html
+[gcc]:https://gcc.gnu.org/
+[jlnk]:https://reference.wolfram.com/language/JLink/tutorial/Overview.html
 [libuuid]:https://linux.die.net/man/3/libuuid
 [manual]:https://github.com/sakra/FindMathematica/blob/master/MANUAL.md
 [mingw]:http://www.mingw.org/
-[vslstd]:http://msdn.microsoft.com/vstudio/
-[wll]:http://reference.wolfram.com/language/guide/LibraryLink.html
-[wmma]:http://www.wolfram.com/mathematica/
-[wstp]:http://reference.wolfram.com/language/tutorial/WSTPAndExternalProgramCommunicationOverview.html
-[xcdt]:http://developer.apple.com/xcode/
+[vslstd]:https://visualstudio.microsoft.com/
+[wll]:https://reference.wolfram.com/language/guide/LibraryLink.html
+[wmma]:https://www.wolfram.com/mathematica/
+[wstp]:https://reference.wolfram.com/language/tutorial/WSTPAndExternalProgramCommunicationOverview.html
+[xcdt]:https://developer.apple.com/xcode/

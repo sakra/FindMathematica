@@ -1020,7 +1020,7 @@ Known Issues
   Mathematica controller kernel license. You may run out of controller kernel licenses, if you
   do a parallel build with CMake or run tests in parallel with CTest.
 
-[aant]:http://ant.apache.org/
-[cgwn]:http://www.cygwin.com/
-[cmtut]:http://www.cmake.org/cmake-tutorial/
+[aant]:https://ant.apache.org/
+[cgwn]:https://www.cygwin.com/
+[cmtut]:https://cmake.org/cmake-tutorial/
 [mingw]:http://www.mingw.org/
