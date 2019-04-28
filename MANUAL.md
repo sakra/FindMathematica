@@ -79,10 +79,6 @@ provided by the FindMathematica module:
 
 ### Basic Windows Usage
 
-The module has been tested with *Mathematica* version 10.0 and Visual Studio C++ 2010 under
-Windows 7, with *Mathematica* version 10.0 and MinGW under Windows 7 and with *Mathematica*
-version 10 and Cygwin 1.7 under Windows 7.
-
 #### Visual Studio
 
 To build the FindMathematica project with Visual Studio C++ 2010 for 32-bit Windows, open a Visual
@@ -180,9 +176,6 @@ need to be installed. To force a 32-bit build then, run:
 
     $ cmake -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 ..
 
-The module has been tested with *Mathematica* version 10.0 and GCC 4.8 under 32-bit and
-64-bit versions of Ubuntu 12.
-
 ### Basic OS X Usage
 
 To build the FindMathematica project with the CMake makefile generator, open Terminal.app,
@@ -223,9 +216,6 @@ If you are running *Mathematica* 5.2 on a 64-bit capable Intel Mac, note that 5.
 support `x86_64`. To get a workable project set CMake's target architecture to 32-bit by running:
 
     $ cmake "-DCMAKE_OSX_ARCHITECTURES=i386" ..
-
-The module has been tested with with *Mathematica* version 10 and Xcode 5.1 under
-Mavericks (10.9) on an Intel Mac.
 
 Used Variables
 -------------
