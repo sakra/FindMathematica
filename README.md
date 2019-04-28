@@ -37,6 +37,7 @@ Requirements
 * [GCC][gcc] or [Clang][clang] under Linux or OS X.
 * [Xcode][xcdt] application or Xcode Command Line Tools under OS X.
 * [libuuid][uuid] under Linux.
+* [Apache Ant][aant] is required for generating *Mathematica* documentation. 
 
 Installation
 ------------
@@ -56,6 +57,7 @@ command:
 
 See the [FindMathematica manual][manual] for more information.
 
+[aant]:https://ant.apache.org/
 [ccg]:https://reference.wolfram.com/language/CCodeGenerator/guide/CCodeGenerator.html
 [ccrc]:https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/CrossCompiling
 [clang]:https://clang.llvm.org/
