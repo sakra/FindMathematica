@@ -49,7 +49,7 @@ top-level `CMakeList.txt` file, add the module directory to the CMake module sea
 Usage
 -----
 
-To find the newest *Mathematica* installation in a CMake listfile, run the `find_package`
+To find the newest *Mathematica* installation in a CMake list file, run the `find_package`
 command:
 
     find_package(Mathematica)
