@@ -1,7 +1,8 @@
-## 3.2.5
+## 3.2.5 (2019-04-28)
 
 * *Mathematica* 12.0 compatibility
 * add `libuuid` to list of required runtime libraries under Linux
+* remove 32-bit Linux from supported system IDs for *Mathematica* versions >= 11.3
 
 ## 3.2.4 (2018-03-16)
 
