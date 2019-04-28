@@ -66,7 +66,7 @@ See the [FindMathematica manual][manual] for more information.
 [encd]:https://reference.wolfram.com/language/ref/Encode.html
 [gcc]:https://gcc.gnu.org/
 [jlnk]:https://reference.wolfram.com/language/JLink/tutorial/Overview.html
-[libuuid]:https://linux.die.net/man/3/libuuid
+[uuid]:https://linux.die.net/man/3/libuuid
 [manual]:https://github.com/sakra/FindMathematica/blob/master/MANUAL.md
 [mingw]:http://www.mingw.org/
 [vslstd]:https://visualstudio.microsoft.com/
