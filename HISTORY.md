@@ -1,3 +1,8 @@
+## 3.2.6 (2020-02-07)
+
+* Wolfram Desktop compatibility
+* Wolfram Engine compatibility
+
 ## 3.2.5 (2019-04-28)
 
 * *Mathematica* 12.0 compatibility
