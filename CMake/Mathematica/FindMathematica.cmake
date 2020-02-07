@@ -34,7 +34,7 @@ cmake_minimum_required(VERSION 2.8.12)
 cmake_policy(POP)
 
 set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set (Mathematica_CMAKE_MODULE_VERSION "3.2.5")
+set (Mathematica_CMAKE_MODULE_VERSION "3.2.6")
 
 # activate select policies
 if (POLICY CMP0025)
@@ -242,7 +242,7 @@ endmacro()
 macro (_get_program_names _outProgramNames)
 	set (${_outProgramNames} "")
 	# Mathematica products in order of preference
-	set (_MathematicaApps "Mathematica" "gridMathematica Server")
+	set (_MathematicaApps "Mathematica" "Wolfram Desktop" "Wolfram Engine" "gridMathematica Server")
 	# Mathematica product versions in order of preference
 	set (_MathematicaVersions
 		"12.0" "11.3" "11.2" "11.1" "11.0"
@@ -271,7 +271,9 @@ endmacro()
 
 # internal function to get Mathematica Windows installation directory for a registry entry
 function (_add_registry_search_path _registryKey _outSearchPaths)
-	set (_ProductNamePatterns "Wolfram Mathematica [0-9]+" "Wolfram Finance Platform")
+	set (_ProductNamePatterns
+		"Wolfram Mathematica [0-9.]+" "Wolfram Desktop [0-9.]+"
+		"Wolfram Engine [0-9.]+" "Wolfram Finance Platform")
 	get_filename_component (
 		_productName "[${_registryKey};ProductName]" NAME)
 	get_filename_component (
@@ -2660,7 +2662,7 @@ macro (_get_required_vars _component _outVars)
 	if ("${_component}" STREQUAL "Mathematica")
 		set (${_outVars}
 			Mathematica_ROOT_DIR
-			Mathematica_KERNEL_EXECUTABLE Mathematica_FRONTEND_EXECUTABLE)
+			Mathematica_KERNEL_EXECUTABLE)
 	elseif ("${_component}" STREQUAL "MathLink")
 		set (${_outVars}
 			Mathematica_MathLink_LIBRARY Mathematica_MathLink_INCLUDE_DIR)
