@@ -1510,6 +1510,7 @@ macro (_find_mathematica)
 		HINTS
 			"${Mathematica_ROOT_DIR}/SystemFiles/IncludeFiles"
 			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/IncludeFiles"
+			"${Mathematica_ROOT_DIR}/Contents/Resources/Wolfram Player.app/Contents/SystemFiles/IncludeFiles"
 		PATH_SUFFIXES "C"
 		DOC "Mathematica C language definitions include directory."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1576,6 +1577,7 @@ macro (_find_wolframlibrary)
 		HINTS
 			"${Mathematica_ROOT_DIR}/SystemFiles/Libraries"
 			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/Libraries"
+			"${Mathematica_ROOT_DIR}/Contents/Resources/Wolfram Player.app/Contents/SystemFiles/Libraries"
 		PATH_SUFFIXES ${_SystemIDs}
 		DOC "Mathematica Wolfram Runtime Library."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1585,6 +1587,7 @@ macro (_find_wolframlibrary)
 		HINTS
 			"${Mathematica_ROOT_DIR}/SystemFiles/IncludeFiles"
 			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/IncludeFiles"
+			"${Mathematica_ROOT_DIR}/Contents/Resources/Wolfram Player.app/Contents/SystemFiles/IncludeFiles"
 		PATH_SUFFIXES "C"
 		DOC "Mathematica WolframLibrary include directory."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1617,6 +1620,7 @@ macro (_find_mathlink)
 		HINTS
 			"${Mathematica_ROOT_DIR}/SystemFiles/Links/MathLink/DeveloperKit"
 			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/Links/MathLink/DeveloperKit"
+			"${Mathematica_ROOT_DIR}/Contents/Resources/Wolfram Player.app/Contents/SystemFiles/Links/MathLink/DeveloperKit"
 			"${Mathematica_ROOT_DIR}/AddOns/MathLink/DeveloperKit"
 		PATH_SUFFIXES ${_SystemIDs}
 		DOC "MathLink target SDK root directory."
@@ -1634,6 +1638,7 @@ macro (_find_mathlink)
 		HINTS
 			"${Mathematica_HOST_ROOT_DIR}/SystemFiles/Links/MathLink/DeveloperKit"
 			"${Mathematica_HOST_ROOT_DIR}/Contents/SystemFiles/Links/MathLink/DeveloperKit"
+			"${Mathematica_HOST_ROOT_DIR}/Contents/Resources/Wolfram Player.app/Contents/SystemFiles/Links/MathLink/DeveloperKit"
 			"${Mathematica_HOST_ROOT_DIR}/AddOns/MathLink/DeveloperKit"
 		PATH_SUFFIXES ${_HostSystemIDs}
 		DOC "MathLink host SDK root directory."
@@ -1732,6 +1737,7 @@ macro (_find_WSTP)
 		HINTS
 			"${Mathematica_ROOT_DIR}/SystemFiles/Links/WSTP/DeveloperKit"
 			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/Links/WSTP/DeveloperKit"
+			"${Mathematica_ROOT_DIR}/Contents/Resources/Wolfram Player.app/Contents/SystemFiles/Links/WSTP/DeveloperKit"
 		PATH_SUFFIXES ${_SystemIDs}
 		DOC "WSTP target SDK root directory."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1748,6 +1754,7 @@ macro (_find_WSTP)
 		HINTS
 			"${Mathematica_HOST_ROOT_DIR}/SystemFiles/Links/WSTP/DeveloperKit"
 			"${Mathematica_HOST_ROOT_DIR}/Contents/SystemFiles/Links/WSTP/DeveloperKit"
+			"${Mathematica_HOST_ROOT_DIR}/Contents/Resources/Wolfram Player.app/Contents/SystemFiles/Links/WSTP/DeveloperKit"
 		PATH_SUFFIXES ${_HostSystemIDs}
 		DOC "WSTP host SDK root directory."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1842,6 +1849,7 @@ macro (_find_jlink)
 		HINTS
 			"${Mathematica_ROOT_DIR}/SystemFiles/Links/JLink"
 			"${Mathematica_ROOT_DIR}/Contents/SystemFiles/Links/JLink"
+			"${Mathematica_ROOT_DIR}/Contents/Resources/Wolfram Player.app/Contents/SystemFiles/Links/JLink"
 			"${Mathematica_ROOT_DIR}/AddOns/JLink"
 		DOC "J/Link SDK root directory."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
@@ -1873,6 +1881,8 @@ macro (_find_jlink)
 	if (CMAKE_HOST_APPLE)
 		if (EXISTS "${Mathematica_HOST_ROOT_DIR}/Contents/SystemFiles/Java")
 			set (_mmaJavaHome "${Mathematica_HOST_ROOT_DIR}/Contents/SystemFiles/Java")
+		elseif (EXISTS "${Mathematica_HOST_ROOT_DIR}/Contents/Resources/Wolfram Player.app/Contents/SystemFiles/Java")
+			set (_mmaJavaHome "${Mathematica_HOST_ROOT_DIR}/Contents/Resources/Wolfram Player.app/Contents/SystemFiles/Java")
 		else()
 			# OS X versions of Mathematica earlier than 10 did not have a JVM bundled
 			# but used the Java JVM pre-installed on system
