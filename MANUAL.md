@@ -39,7 +39,7 @@ Usage
 
 If you are new to CMake, check out the [CMake tutorial][cmtut] first.
 
-To find the newest *Mathematica* installation in a CMake listfile, run the `find_package`
+To find the newest *Mathematica* installation in a CMake list file, run the `find_package`
 command:
 
     find_package(Mathematica)
@@ -48,7 +48,7 @@ The FindMathematica module will look for a *Mathematica* installation in the def
 location of the used platform. Under Windows it will also use installation locations from the
 Windows Registry. Under OS X it will also query the Launch Services database.
 
-By default FindMathematica will return the newest *Mathematica* installation it can find.
+By default, FindMathematica will return the newest *Mathematica* installation it can find.
 To find a minimum version of *Mathematica*, run the `find_package` command with a version
 argument:
 
@@ -130,7 +130,7 @@ prompt:
 
 Under [Cygwin][cgwn] the FindMathematica module requires the Cygwin version of CMake, which is
 different to the regular Windows CMake version.
-To build the FindMathematica project open a Cygwin shell prompt and run the the following
+To build the FindMathematica project open a Cygwin shell prompt and run the following
 commands in the `FindMathematica` root directory:
 
     $ mkdir build
@@ -218,7 +218,7 @@ support `x86_64`. To get a workable project set CMake's target architecture to 3
     $ cmake "-DCMAKE_OSX_ARCHITECTURES=i386" ..
 
 Used Variables
--------------
+--------------
 
 The module uses the following variables upon the invocation of `find_package`:
 
@@ -252,12 +252,12 @@ The module defines the following variables:
 * `Mathematica_SYSTEM_ID` - default build target platform *Mathematica* System ID (e.g., `"Windows"` or `"Linux"`)
 * `Mathematica_SYSTEM_IDS` - list of supported build target platform *Mathematica* System IDs (e.g., `"MacOSX"`, `"MacOSX-x86"`, `"MacOSX-x86-64"`)
 * `Mathematica_HOST_SYSTEM_ID` - default host platform *Mathematica* System ID (e.g., `"Windows-x86-64"` or `"MacOSX-x86-64"`)
-* `Mathematica_HOST_SYSTEM_IDS` - list of *Mathematica* System IDs available with host *Mathematica* installation
+* `Mathematica_HOST_SYSTEM_IDS` - list of *Mathematica* System IDs available with the host *Mathematica* installation
 * `Mathematica_ROOT_DIR` - *Mathematica* installation directory valid for build target platform
 * `Mathematica_HOST_ROOT_DIR` - *Mathematica* installation directory valid for host platform (corresponds to `$InstallationDirectory`)
 * `Mathematica_KERNEL_EXECUTABLE` - path to host *Mathematica* kernel executable
 * `Mathematica_FRONTEND_EXECUTABLE` - path to host *Mathematica* frontend executable
-* `Mathematica_BASE_DIR` - directory for systemwide files to be loaded by *Mathematica* (corresponds to `$BaseDirectory`)
+* `Mathematica_BASE_DIR` - directory for system wide files to be loaded by *Mathematica* (corresponds to `$BaseDirectory`)
 * `Mathematica_USERBASE_DIR` - directory for user-specific files to be loaded by *Mathematica* (corresponds to `$UserBaseDirectory`)
 * `Mathematica_INCLUDE_DIR` - header file `mdefs.h` include directory
 * `Mathematica_INCLUDE_DIRS` - list of include directories for all components
@@ -297,8 +297,8 @@ The module defines the following variables for component `MathLink`:
 * `Mathematica_MathLink_LIBRARY` - path to MathLink library for default target platform
 * `Mathematica_MathLink_LIBRARIES` - MathLink library for all target platforms and required system libraries
 * `Mathematica_MathLink_MPREP_EXECUTABLE` - path to host `mprep` executable (MathLink template file preprocessor)
-* `Mathematica_MathLink_HOST_INCLUDE_DIR` - header file mathlink.h include directory for host platform
-* `Mathematica_MathLink_DEFINITIONS` - MathLink compile definitions, e.g., "-DMLINTERFACE=3"
+* `Mathematica_MathLink_HOST_INCLUDE_DIR` - header file `mathlink.h` include directory for host platform
+* `Mathematica_MathLink_DEFINITIONS` - MathLink compile definitions, e.g., `-DMLINTERFACE=3
 * `Mathematica_MathLink_LINKER_FLAGS` - MathLink linker flags
 * `Mathematica_MathLink_VERSION` - MathLink version number given as "interface.revision"
 * `Mathematica_MathLink_VERSION_MAJOR` - MathLink interface number
@@ -318,7 +318,7 @@ The module defines the following variables for component `WSTP`:
 * `Mathematica_WSTP_LIBRARIES` - WSTP library for all target platforms and required system libraries
 * `Mathematica_WSTP_WSPREP_EXECUTABLE` - path to host `wsprep` executable (WSTP template file preprocessor)
 * `Mathematica_WSTP_HOST_INCLUDE_DIR` - header file wstp.h include directory for host platform
-* `Mathematica_WSTP_DEFINITIONS` - WSTP compile definitions, e.g., "-DWSINTERFACE=4"
+* `Mathematica_WSTP_DEFINITIONS` - WSTP compile definitions, e.g., `-DWSINTERFACE=4`
 * `Mathematica_WSTP_LINKER_FLAGS` - WSTP linker flags
 * `Mathematica_WSTP_VERSION` - WSTP version number given as "interface.revision"
 * `Mathematica_WSTP_VERSION_MAJOR` - WSTP interface number
@@ -393,7 +393,7 @@ script file. Multiple in-line statements are wrapped inside a *Mathematica* `Com
 
 If the optional `CACHE` argument is specified, the captured result of the executed *Mathematica*
 code is added to a cache variable named `<output variable>`. The execution will not be repeated
-unless the variable is cleared or the result is the *Mathematica* expression `$Failed` or
+unless the variable is cleared, or the result is the *Mathematica* expression `$Failed` or
 `$Aborted`, or a false CMake constant.
 
 The `SYSTEM_ID` option lets you override the *Mathematica* kernel executable architecture used.
@@ -586,7 +586,7 @@ LibraryLink (this requires at least *Mathematica* 8).
       [ OUTPUT <C source file> ])
 
 This function uses the CCodeGenerator package to convert *Mathematica* code to C code that can be
-run independently from *Mathematica*. Upon running the C code only requires the Wolfram Runtime
+run independently of *Mathematica*. Upon running the C code only requires the Wolfram Runtime
 Library.
 
 The *Mathematica* script file needs to set up definitions of compiled functions and return a list
@@ -636,7 +636,7 @@ function `Splice` has been deprecated as of *Mathematica* 10.
 This function adds a custom command which runs the *Mathematica* function `Encode` on the given input
 files. *Mathematica* encoded files contain only printable ASCII characters.
 
-By default each encoded output files is created with the same name as the corresponding input file
+By default, each encoded output files is created with the same name as the corresponding input file
 in `CMAKE_CURRENT_BINARY_DIR`. The `OUTPUT` option can be used to create the output files in
 a different directory or with different names.
 
@@ -703,7 +703,7 @@ environment variable to be set.
       [ CUSTOM_TRAILER <trailer file> ]
       [ LINE_DIRECTIVES ])
 
-This functions adds a custom command which creates a C source file from a MathLink template (.tm)
+This function adds a custom command which creates a C source file from a MathLink template (.tm)
 file with `mprep`. The generated C source file contains MathLink glue code that makes C functions
 callable from *Mathematica* via a MathLink connection.
 
@@ -894,7 +894,7 @@ This function is available if the *Mathematica* kernel executable has been found
 
 This function resolves `TestSuite[{ ... }]` expressions in the given MUnit test files (.mt or .wlt)
 into the list of underlying MUnit test files. The test file names are interpreted relative to
-the test suite file. By default the function returns the absolute paths of the parsed test
+the test suite file. By default, the function returns the absolute paths of the parsed test
 files. If the `RELATIVE` option is specified, results will be returned as a relative path to
 the given path. If a given test file does not contain a `TestSuite` expression, its path will
 be returned instead.
