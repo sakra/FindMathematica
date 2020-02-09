@@ -1,3 +1,9 @@
+## 3.2.7 (2020-02-09)
+
+* fix compatibility with Wolfram Engine under OS X
+* fix front end detection for Wolfram Desktop
+* manual updates
+
 ## 3.2.6 (2020-02-07)
 
 * Wolfram Desktop compatibility
