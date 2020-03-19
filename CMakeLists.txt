@@ -21,9 +21,6 @@ if (NOT CMAKE_VERSION VERSION_LESS "3.1")
 	set (CMAKE_CXX_STANDARD 11)
 endif()
 
-# find Java
-find_package(Java 1.6 COMPONENTS Development)
-
 # default settings for options that affect search
 #set (Mathematica_USE_STATIC_LIBRARIES OFF)
 #set (Mathematica_USE_MINIMAL_LIBRARIES ON)
@@ -40,6 +37,12 @@ find_package(Mathematica)
 
 # finds Mathematica >= 9 installation and optional components
 #find_package(Mathematica 9 COMPONENTS MathLink JLink)
+
+# find Java and use the Java installation bundled with Mathematica
+if (Mathematica_JLink_JAVA_HOME AND NOT APPLE)
+	set (JAVA_HOME "${Mathematica_JLink_JAVA_HOME}")
+endif()
+find_package(Java 1.6 COMPONENTS Development)
 
 if (Mathematica_MathLink_DEFINITIONS)
 	add_definitions(${Mathematica_MathLink_DEFINITIONS})

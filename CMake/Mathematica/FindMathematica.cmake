@@ -1929,6 +1929,13 @@ macro (_find_jlink)
 		DOC "J/Link Java launcher."
 		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
 	)
+	find_path (Mathematica_JLink_JAVA_HOME
+		NAMES "bin/${_JLinkJavaNames}"
+		HINTS "${_mmaJavaHome}"
+		PATH_SUFFIXES ${_HostSystemIDs}
+		DOC "J/Link Java home directory."
+		NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH
+	)
 endmacro()
 
 # internal macro to find MUnit package
@@ -2431,6 +2438,7 @@ macro (_log_found_variables)
 			message (STATUS "J/Link JAR file ${Mathematica_JLink_JAR_FILE}")
 			message (STATUS "J/Link native library ${Mathematica_JLink_RUNTIME_LIBRARY}")
 			message (STATUS "J/Link java launcher ${Mathematica_JLink_JAVA_EXECUTABLE}")
+			message (STATUS "J/Link java home directory ${Mathematica_JLink_JAVA_HOME}")
 		else()
 			message (STATUS "J/Link not found")
 		endif()
@@ -2534,7 +2542,8 @@ macro (_get_dependent_cache_variables _var _outDependentVars)
 			Mathematica_JLink_PACKAGE_DIR
 			Mathematica_MUnit_PACKAGE_FILE
 			Mathematica_LibraryLink_PACKAGE_FILE
-			Mathematica_JLink_JAVA_EXECUTABLE)
+			Mathematica_JLink_JAVA_EXECUTABLE
+			Mathematica_JLink_JAVA_HOME)
 		_get_dependent_cache_variables("Mathematica_MathLink_HOST_ROOT_DIR" ${_outDependentVars})
 		_get_dependent_cache_variables("Mathematica_WSTP_HOST_ROOT_DIR" ${_outDependentVars})
 		_get_dependent_cache_variables("Mathematica_JLink_PACKAGE_DIR" ${_outDependentVars})
@@ -2673,6 +2682,7 @@ macro (_update_cache)
 		Mathematica_LibraryLink_PACKAGE_FILE
 		Mathematica_JLink_RUNTIME_LIBRARY
 		Mathematica_JLink_JAVA_EXECUTABLE
+		Mathematica_JLink_JAVA_HOME
 	)
 	_get_cache_variables(_CacheVariables)
 	foreach (_CacheVariable IN LISTS _CacheVariables)
@@ -4443,7 +4453,7 @@ endfunction (Mathematica_ADD_DOCUMENTATION)
 
 endif (Mathematica_KERNEL_EXECUTABLE AND Mathematica_JLink_FOUND)
 
-if (Mathematica_KERNEL_EXECUTABLE AND Mathematica_JLink_FOUND AND JAVA_FOUND)
+if (Mathematica_KERNEL_EXECUTABLE AND Mathematica_JLink_FOUND)
 
 # public function to simplify testing J/Link programs
 function (Mathematica_JLink_ADD_TEST)
@@ -4514,4 +4524,4 @@ function (Mathematica_JLink_ADD_TEST)
 	add_test (${_cmd})
 endfunction(Mathematica_JLink_ADD_TEST)
 
-endif(Mathematica_KERNEL_EXECUTABLE AND Mathematica_JLink_FOUND AND JAVA_FOUND)
+endif(Mathematica_KERNEL_EXECUTABLE AND Mathematica_JLink_FOUND)
