@@ -330,6 +330,7 @@ The module defines the following variables for component `JLink`:
 * `Mathematica_JLink_FOUND` - True if the Wolfram Language installation has J/Link SDK
 * `Mathematica_JLink_PACKAGE_DIR` - J/Link package root directory
 * `Mathematica_JLink_JAR_FILE` - Full path to J/Link JAR file
+* `Mathematica_JLink_JAVA_HOME` - Full path to Java SDK bundled with *Mathematica*
 * `Mathematica_JLink_JAVA_EXECUTABLE` - path to the host Java runtime executable used by J/Link
 * `Mathematica_JLink_RUNTIME_LIBRARY` - Full path to JLinkNativeLibrary
 * `Mathematica_JLink_VERSION` - J/Link version number given as "major.minor.patch"
