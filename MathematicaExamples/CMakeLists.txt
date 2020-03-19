@@ -28,20 +28,6 @@ Mathematica_EXECUTE(
 	SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/directories.m"
 	OUTPUT_FILE "directories.m.log" TIMEOUT 10)
 
-# generate a static library from a template file that is processed by
-# the Mathematica function Splice before compiling
-include_directories(${Mathematica_INCLUDE_DIR})
-Mathematica_SPLICE_C_CODE(spliceDemo.mc OUTPUT spliceDemo.c)
-add_library(spliceDemo STATIC spliceDemo.c)
-set_target_properties(spliceDemo PROPERTIES FOLDER "Mathematica")
-
-if ("${Mathematica_VERSION_MAJOR}" GREATER 5)
-	# add a post-build action which computes the MD5 checksum of the library
-	Mathematica_ADD_CUSTOM_COMMAND(TARGET spliceDemo POST_BUILD
-		CODE "Print[OutputForm[BaseForm[FileHash[\"$<TARGET_FILE:spliceDemo>\",\"MD5\"],16]]]"
-		COMMENT "Computing spliceDemo MD5 checksum.")
-endif()
-
 # add a stand-alone target which runs Mathematica code
 Mathematica_ADD_CUSTOM_TARGET(CurrentDate ALL
 	CODE "Print[DateString[]]"
@@ -61,8 +47,7 @@ add_custom_target(MathematicaExamples ALL
 	DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/demo.m"
 	SOURCES
 		"${CMAKE_CURRENT_SOURCE_DIR}/demo.m"
-		"${CMAKE_CURRENT_SOURCE_DIR}/directories.m"
-		"${CMAKE_CURRENT_SOURCE_DIR}/spliceDemo.mc")
+		"${CMAKE_CURRENT_SOURCE_DIR}/directories.m")
 set_target_properties(MathematicaExamples PROPERTIES FOLDER "Mathematica")
 
 # define a helper function to simplify CMake Mathematica tests

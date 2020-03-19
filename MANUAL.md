@@ -607,21 +607,6 @@ The `OUTPUT` option can be used to produce output files with different names.
 This function is available if the Wolfram Language kernel executable has been found and if the
 Wolfram Language installation has a Wolfram Runtime Library.
 
-    Mathematica_SPLICE_C_CODE(
-      <input file>
-      [ OUTPUT <C source file> ])
-
-This function adds a custom command which runs the Wolfram Language function `Splice` on the input
-file. Text enclosed between `<*` and `*>` in the input file is evaluated as Wolfram Language input and
-replaced with the resulting Wolfram Language output.
-
-The output file is created in the `CMAKE_CURRENT_BINARY_DIR`. The name of the output file is
-obtained by adding the extensions .c to the input file base name. The `OUTPUT` option can be used to
-produce an output file with a different name.
-
-This function is available if the Wolfram Language kernel executable has been found. Note that the
-function `Splice` has been deprecated as of *Mathematica* 10.
-
     Mathematica_ENCODE(
       <input file> [ <input file> ... ]
       [ OUTPUT <output file> [ <output file> ... ] | <output directory> ]

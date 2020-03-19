@@ -3426,54 +3426,6 @@ function (Mathematica_ADD_TEST)
 	add_test (${_cmd})
 endfunction (Mathematica_ADD_TEST)
 
-# public function to add target that runs Mathematica Splice function on template file
-function (Mathematica_SPLICE_C_CODE _templateFile)
-	get_filename_component(_templateFileBaseName ${_templateFile} NAME_WE)
-	get_filename_component(_templateFileName ${_templateFile} NAME)
-	get_filename_component(_templateFileAbs ${_templateFile} ABSOLUTE)
-	get_filename_component(_templateFileExt ${_templateFileName} EXT)
-	set(_options "")
-	set(_oneValueArgs "OUTPUT")
-	set(_multiValueArgs "")
-	cmake_parse_arguments(_option "${_options}" "${_oneValueArgs}" "${_multiValueArgs}" ${ARGN})
-	if(_option_UNPARSED_ARGUMENTS)
-		message (FATAL_ERROR "Unknown keywords: ${_option_UNPARSED_ARGUMENTS}")
-	endif()
-	# Mathematica function Splice does not produce output in current working directory
-	# Use absolute paths to make it write to the current binary directory
-	if (_option_OUTPUT)
-		if (IS_ABSOLUTE ${_option_OUTPUT})
-			set (_outputFileAbs "${_option_OUTPUT}")
-		else()
-			set (_outputFileAbs "${CMAKE_CURRENT_BINARY_DIR}/${_option_OUTPUT}")
-		endif()
-	else()
-		set (_outputFileAbs "${CMAKE_CURRENT_BINARY_DIR}/${_templateFileBaseName}.c")
-	endif()
-	# Always set FormatType option to prevent Splice function from failing with a
-	# Splice::splict error if the template file path contains more than one dot character
-	string(TOLOWER ${_templateFileExt} _templateFileExt)
-	if ("${_templateFileExt}" STREQUAL ".mc")
-		set (_formatType "CForm")
-	elseif ("${_templateFileExt}" STREQUAL ".mf")
-		set (_formatType "FortranForm")
-	elseif ("${_templateFileExt}" STREQUAL ".mtex")
-		set (_formatType "TeXForm")
-	else()
-		set (_formatType "Automatic")
-	endif()
-	get_filename_component(_outputFileName ${_outputFileAbs} NAME)
-	Mathematica_TO_NATIVE_PATH("${_templateFileAbs}" _templateFileMma)
-	Mathematica_TO_NATIVE_PATH("${_outputFileAbs}" _outputFileMma)
-	set (_msg "Splicing Mathematica code in ${_templateFileName} to ${_outputFileName}")
-	Mathematica_ADD_CUSTOM_COMMAND(
-		CODE "Splice[${_templateFileMma}, ${_outputFileMma}, FormatType->${_formatType}]"
-		OUTPUT "${_outputFileAbs}"
-		DEPENDS "${_templateFileAbs}"
-		COMMENT ${_msg})
-	set_source_files_properties(${_outputFileAbs} PROPERTIES GENERATED TRUE LABELS "Mathematica")
-endfunction(Mathematica_SPLICE_C_CODE)
-
 # public function to add target that runs Mathematica Encode function on input files
 function (Mathematica_ENCODE)
 	set(_options "CHECK_TIMESTAMPS")
