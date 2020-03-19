@@ -245,7 +245,8 @@ macro (_get_program_names _outProgramNames)
 	set (_MathematicaApps "Mathematica" "Wolfram Desktop" "Wolfram Engine" "gridMathematica Server")
 	# Mathematica product versions in order of preference
 	set (_MathematicaVersions
-		"12.0" "11.3" "11.2" "11.1" "11.0"
+		"12.1" "12.0"
+		"11.3" "11.2" "11.1" "11.0"
 		"10.4" "10.3" "10.2" "10.1" "10.0"
 		"9.0" "8.0" "7.0" "6.0" "5.2")
 	# search for explicitly requested application version first
@@ -647,7 +648,17 @@ macro (_get_host_system_IDs _outSystemIDs)
 endmacro()
 
 macro (_get_supported_systemIDs _version _outSystemIDs)
-	if (NOT "${_version}" VERSION_LESS "10.0")
+	if (NOT "${_version}" VERSION_LESS "12.1")
+		set (${_outSystemIDs}
+			"Windows-x86-64"
+			"Linux-x86-64" "Linux-ARM"
+			"MacOSX-x86-64")
+	elseif (NOT "${_version}" VERSION_LESS "11.3")
+		set (${_outSystemIDs}
+			"Windows" "Windows-x86-64"
+			"Linux-x86-64" "Linux-ARM"
+			"MacOSX-x86-64")
+	elseif (NOT "${_version}" VERSION_LESS "10.0")
 		set (${_outSystemIDs}
 			"Windows" "Windows-x86-64"
 			"Linux" "Linux-x86-64" "Linux-ARM"
@@ -704,8 +715,16 @@ macro (_get_compatible_system_IDs _systemID _outSystemIDs)
 		else()
 			list (APPEND ${_outSystemIDs} "Windows-x86-64")
 		endif()
-		# Windows x64 can run x86 through WoW64
-		list (APPEND ${_outSystemIDs} "Windows")
+		if (Mathematica_VERSION)
+			# Mathematica 12.1 dropped support for x86
+			if ("${Mathematica_VERSION}" VERSION_LESS "12.1")
+				# Windows x64 can run x86 through WoW64
+				list (APPEND ${_outSystemIDs} "Windows")
+			endif()
+		else()
+			# Windows x64 can run x86 through WoW64
+			list (APPEND ${_outSystemIDs} "Windows")
+		endif()
 	elseif ("${_systemID}" MATCHES "MacOSX|Darwin")
 		if ("${_systemID}" MATCHES "MacOSX-x86")
 			if (Mathematica_VERSION)
