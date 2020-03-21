@@ -2753,6 +2753,8 @@ macro (_setup_found_variables)
 	_get_components_to_find(_components)
 	foreach(_component IN LISTS _components)
 		_get_required_vars(${_component} _requiredComponentVars)
+		# suppress find_package_handle_standard_args warning on mismatching names
+		set (FPHSA_NAME_MISMATCHED On)
 		find_package_handle_standard_args(
 			Mathematica_${_component}
 			REQUIRED_VARS ${_requiredComponentVars}
