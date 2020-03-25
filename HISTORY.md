@@ -1,3 +1,11 @@
+## 3.3.0 (2020-03-25)
+
+* *Mathematica* 12.1 compatibility
+* remove `Mathematica_SPLICE_C_CODE` whose underlying *Mathematica* function `Splice` 
+  has been deprecated since *Mathematica* 10 and has been removed in *Mathematica* 12.1
+* add new variable `Mathematica_JLink_JAVA_HOME`, which contains the full path to Java SDK 
+  bundled with *Mathematica*
+
 ## 3.2.6 (2020-02-07)
 
 * Wolfram Desktop compatibility
