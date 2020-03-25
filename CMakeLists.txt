@@ -42,7 +42,7 @@ find_package(Mathematica)
 if (Mathematica_JLink_JAVA_HOME AND NOT APPLE)
 	set (JAVA_HOME "${Mathematica_JLink_JAVA_HOME}")
 endif()
-find_package(Java 1.6 COMPONENTS Development)
+find_package(Java 1.7 COMPONENTS Development)
 
 if (Mathematica_MathLink_DEFINITIONS)
 	add_definitions(${Mathematica_MathLink_DEFINITIONS})
