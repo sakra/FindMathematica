@@ -1262,7 +1262,7 @@ macro (_setup_mathematica_systemIDs)
 	_get_system_IDs(Mathematica_SYSTEM_IDS)
 	# default target platform system ID is first one in Mathematica_SYSTEM_IDS
 	list(GET Mathematica_SYSTEM_IDS 0 Mathematica_SYSTEM_ID)
-	if (COMMAND Mathematica_EXECUTE)
+	if (Mathematica_RUN_KERNEL_ON_CONFIGURE AND COMMAND Mathematica_EXECUTE)
 		# determine true host system ID which depends on both Mathematica version
 		# and OS variant by running Mathematica kernel
 		Mathematica_EXECUTE(
@@ -1315,7 +1315,7 @@ endmacro()
 
 # internal macro to set up Mathematica base directory variable
 macro (_setup_mathematica_base_directory)
-	if (COMMAND Mathematica_EXECUTE)
+	if (Mathematica_RUN_KERNEL_ON_CONFIGURE AND COMMAND Mathematica_EXECUTE)
 		# determine true $BaseDirectory
 		Mathematica_EXECUTE(
 			CODE "Print[StandardForm[$BaseDirectory]]"
@@ -1367,7 +1367,7 @@ endmacro()
 
 # internal macro to set up Mathematica user base directory variable
 macro (_setup_mathematica_userbase_directory)
-	if (COMMAND Mathematica_EXECUTE)
+	if (Mathematica_RUN_KERNEL_ON_CONFIGURE AND COMMAND Mathematica_EXECUTE)
 		# determine true $UserBaseDirectory
 		Mathematica_EXECUTE(
 			CODE "Print[StandardForm[$UserBaseDirectory]]"
@@ -1461,6 +1461,16 @@ macro (_setup_findmathematica_options)
 	option (Mathematica_DEBUG
 		"enable FindMathematica debugging output?"
 		${Mathematica_DEBUG_INIT})
+	if (NOT DEFINED Mathematica_RUN_KERNEL_ON_CONFIGURE_INIT)
+		if (DEFINED Mathematica_RUN_KERNEL_ON_CONFIGURE)
+			set (Mathematica_RUN_KERNEL_ON_CONFIGURE_INIT ${Mathematica_RUN_KERNEL_ON_CONFIGURE})
+		else()
+			set (Mathematica_RUN_KERNEL_ON_CONFIGURE_INIT TRUE)
+		endif()
+	endif()
+	option (Mathematica_RUN_KERNEL_ON_CONFIGURE
+		"allow FindMathematica to run Mathematica kernel on CMake configure?"
+		${Mathematica_RUN_KERNEL_ON_CONFIGURE_INIT})
 endmacro()
 
 # internal macro to find Mathematica installation

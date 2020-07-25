@@ -237,6 +237,7 @@ The module uses the following variables upon the invocation of `find_package`:
 * `Mathematica_WSTP_FIND_VERSION_MAJOR` - requested WSTP interface version (e.g., `"4"`)
 * `Mathematica_WSTP_FIND_VERSION_MINOR` - requested WSTP revision version (e.g., `"25"`)
 * `Mathematica_DEBUG` - if `TRUE`, enable debugging output (defaults to `FALSE`)
+* `Mathematica_RUN_KERNEL_ON_CONFIGURE` - if `TRUE`, allow FindMathematica to run *Mathematica* kernel on CMake configure (defaults to `TRUE`)
 
 Defined Variables
 -----------------
