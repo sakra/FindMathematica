@@ -1964,7 +1964,7 @@ endmacro()
 
 # internal macro to find LibaryLink package
 macro (_find_librarylink_package)
-	if (COMMAND Mathematica_FIND_PACKAGE)
+	if (Mathematica_RUN_KERNEL_ON_CONFIGURE AND COMMAND Mathematica_FIND_PACKAGE)
 		Mathematica_FIND_PACKAGE(Mathematica_LibraryLink_PACKAGE_FILE "LibraryLink`LibraryLink`")
 		# determine enclosing LibraryLink package directory
 		if (Mathematica_LibraryLink_PACKAGE_FILE)
