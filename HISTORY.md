@@ -1,3 +1,9 @@
+## 3.4.0
+
+* *Mathematica* 12.2 compatibility
+* add `Mathematica_RUN_KERNEL_ON_CONFIGURE` switch to control if FindMathematica is allowed to
+  implicitly run the *Mathematica* kernel at CMake configuration time
+
 ## 3.3.0 (2020-03-25)
 
 * *Mathematica* 12.1 compatibility
