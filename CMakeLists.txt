@@ -28,6 +28,7 @@ endif()
 #set (Mathematica_MathLink_FIND_VERSION_MAJOR 3)
 #set (Mathematica_WSTP_FIND_VERSION_MAJOR 3)
 #set (Mathematica_DEBUG OFF)
+#set (Mathematica_RUN_KERNEL_ON_CONFIGURE ON)
 
 # finds newest Mathematica installation and its default components
 find_package(Mathematica)

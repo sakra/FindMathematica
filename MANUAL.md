@@ -34,6 +34,15 @@ The `DocumentationBuild` package also requires the installation of [Apache Ant][
 Apache Ant to be found by CMake, the environment variable `ANT_HOME` needs to point to Apache Ant's
 installation directory.
 
+MathLink and WSTP require the installation of [libuuid][uuid] under Linux. To install `libuuid`
+under Debian-based distros run:
+
+    $ sudo apt install uuid-dev
+
+To install `libuuid` under RedHat-based distros run:
+
+    $ sudo dnf install libuuid-devel
+
 Usage
 -----
 
@@ -237,6 +246,7 @@ The module uses the following variables upon the invocation of `find_package`:
 * `Mathematica_WSTP_FIND_VERSION_MAJOR` - requested WSTP interface version (e.g., `"4"`)
 * `Mathematica_WSTP_FIND_VERSION_MINOR` - requested WSTP revision version (e.g., `"25"`)
 * `Mathematica_DEBUG` - if `TRUE`, enable debugging output (defaults to `FALSE`)
+* `Mathematica_RUN_KERNEL_ON_CONFIGURE` - if `TRUE`, allow FindMathematica to implicitly run the *Mathematica* kernel at CMake configure time (defaults to `TRUE`)
 
 Defined Variables
 -----------------
@@ -996,4 +1006,5 @@ Known Issues
 [aant]:https://ant.apache.org/
 [cgwn]:https://www.cygwin.com/
 [cmtut]:https://cmake.org/cmake/help/latest/guide/tutorial/index.html
+[uuid]:https://linux.die.net/man/3/libuuid
 [mingw]:http://www.mingw.org/

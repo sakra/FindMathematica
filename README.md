@@ -8,7 +8,7 @@ Features
 --------
 
 * Works with Windows, Linux and OS X versions of the [Wolfram Language][wlang].
-* Supports Wolfram Language versions from 5.2 to 12.1.
+* Supports Wolfram Language versions from 5.2 to 12.2.
 * Supports Wolfram Language implementations [Wolfram Mathematica][wmma],
   [Wolfram|One][wone], [Wolfram Engine][weng] and [Wolfram gridMathematica][wgrid].
 * Finds include directories and libraries for [LibraryLink][wll] (version 8 or later).
@@ -60,6 +60,12 @@ command:
 
 See the [FindMathematica manual][manual] for more information.
 
+Alternatives
+------------
+
+In October 2020 Wolfram has released [LibraryLinkUtilities][wllu] as an open source project
+that provides modern C++ wrappers for conveniently wrapping Wolfram LibraryLink code.
+
 [aant]:https://ant.apache.org/
 [ccg]:https://reference.wolfram.com/language/CCodeGenerator/guide/CCodeGenerator.html
 [ccrc]:https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/CrossCompiling
@@ -76,6 +82,7 @@ See the [FindMathematica manual][manual] for more information.
 [weng]:https://www.wolfram.com/engine
 [wgrid]:https://www.wolfram.com/gridmathematica/
 [wlang]:https://www.wolfram.com/language
+[wllu]:https://github.com/WolframResearch/LibraryLinkUtilities
 [wll]:https://reference.wolfram.com/language/guide/LibraryLink.html
 [wmma]:https://www.wolfram.com/mathematica/
 [wone]:https://www.wolfram.com/wolfram-one/

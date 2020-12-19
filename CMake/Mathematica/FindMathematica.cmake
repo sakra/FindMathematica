@@ -34,7 +34,7 @@ cmake_minimum_required(VERSION 2.8.12)
 cmake_policy(POP)
 
 set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set (Mathematica_CMAKE_MODULE_VERSION "3.3.0")
+set (Mathematica_CMAKE_MODULE_VERSION "3.4.0")
 
 # activate select policies
 if (POLICY CMP0025)
@@ -245,7 +245,7 @@ macro (_get_program_names _outProgramNames)
 	set (_MathematicaApps "Mathematica" "Wolfram Desktop" "Wolfram Engine" "gridMathematica Server")
 	# Mathematica product versions in order of preference
 	set (_MathematicaVersions
-		"12.1" "12.0"
+		"12.2" "12.1" "12.0"
 		"11.3" "11.2" "11.1" "11.0"
 		"10.4" "10.3" "10.2" "10.1" "10.0"
 		"9.0" "8.0" "7.0" "6.0" "5.2")
@@ -1262,7 +1262,7 @@ macro (_setup_mathematica_systemIDs)
 	_get_system_IDs(Mathematica_SYSTEM_IDS)
 	# default target platform system ID is first one in Mathematica_SYSTEM_IDS
 	list(GET Mathematica_SYSTEM_IDS 0 Mathematica_SYSTEM_ID)
-	if (COMMAND Mathematica_EXECUTE)
+	if (Mathematica_RUN_KERNEL_ON_CONFIGURE AND COMMAND Mathematica_EXECUTE)
 		# determine true host system ID which depends on both Mathematica version
 		# and OS variant by running Mathematica kernel
 		Mathematica_EXECUTE(
@@ -1315,7 +1315,7 @@ endmacro()
 
 # internal macro to set up Mathematica base directory variable
 macro (_setup_mathematica_base_directory)
-	if (COMMAND Mathematica_EXECUTE)
+	if (Mathematica_RUN_KERNEL_ON_CONFIGURE AND COMMAND Mathematica_EXECUTE)
 		# determine true $BaseDirectory
 		Mathematica_EXECUTE(
 			CODE "Print[StandardForm[$BaseDirectory]]"
@@ -1367,7 +1367,7 @@ endmacro()
 
 # internal macro to set up Mathematica user base directory variable
 macro (_setup_mathematica_userbase_directory)
-	if (COMMAND Mathematica_EXECUTE)
+	if (Mathematica_RUN_KERNEL_ON_CONFIGURE AND COMMAND Mathematica_EXECUTE)
 		# determine true $UserBaseDirectory
 		Mathematica_EXECUTE(
 			CODE "Print[StandardForm[$UserBaseDirectory]]"
@@ -1461,6 +1461,16 @@ macro (_setup_findmathematica_options)
 	option (Mathematica_DEBUG
 		"enable FindMathematica debugging output?"
 		${Mathematica_DEBUG_INIT})
+	if (NOT DEFINED Mathematica_RUN_KERNEL_ON_CONFIGURE_INIT)
+		if (DEFINED Mathematica_RUN_KERNEL_ON_CONFIGURE)
+			set (Mathematica_RUN_KERNEL_ON_CONFIGURE_INIT ${Mathematica_RUN_KERNEL_ON_CONFIGURE})
+		else()
+			set (Mathematica_RUN_KERNEL_ON_CONFIGURE_INIT TRUE)
+		endif()
+	endif()
+	option (Mathematica_RUN_KERNEL_ON_CONFIGURE
+		"allow FindMathematica to implicitly run the Mathematica kernel at CMake configure time?"
+		${Mathematica_RUN_KERNEL_ON_CONFIGURE_INIT})
 endmacro()
 
 # internal macro to find Mathematica installation
@@ -1940,7 +1950,7 @@ endmacro()
 
 # internal macro to find MUnit package
 macro (_find_munit_package)
-	if (COMMAND Mathematica_FIND_PACKAGE)
+	if (Mathematica_RUN_KERNEL_ON_CONFIGURE AND COMMAND Mathematica_FIND_PACKAGE)
 		Mathematica_FIND_PACKAGE(Mathematica_MUnit_PACKAGE_FILE "MUnit`MUnit`")
 		# determine enclosing MUnit package directory
 		if (Mathematica_MUnit_PACKAGE_FILE)
@@ -1954,7 +1964,7 @@ endmacro()
 
 # internal macro to find LibaryLink package
 macro (_find_librarylink_package)
-	if (COMMAND Mathematica_FIND_PACKAGE)
+	if (Mathematica_RUN_KERNEL_ON_CONFIGURE AND COMMAND Mathematica_FIND_PACKAGE)
 		Mathematica_FIND_PACKAGE(Mathematica_LibraryLink_PACKAGE_FILE "LibraryLink`LibraryLink`")
 		# determine enclosing LibraryLink package directory
 		if (Mathematica_LibraryLink_PACKAGE_FILE)
@@ -3999,7 +4009,7 @@ function (Mathematica_MathLink_ADD_EXECUTABLE _executableName _templateFile)
 	_get_mprep_output_file(${_templateFile} _outfile)
 	Mathematica_MathLink_MPREP_TARGET(${_templateFile} OUTPUT ${_outfile})
 	add_executable (${_executableName} WIN32 ${_outfile} ${ARGN})
-	target_link_libraries(${_executableName} ${Mathematica_MathLink_LIBRARIES})
+	target_link_libraries(${_executableName} PRIVATE ${Mathematica_MathLink_LIBRARIES})
 	if (Mathematica_MathLink_LINKER_FLAGS)
 		set_target_properties(${_executableName} PROPERTIES LINK_FLAGS "${Mathematica_MathLink_LINKER_FLAGS}")
 	endif()
@@ -4129,7 +4139,7 @@ function (Mathematica_WSTP_ADD_EXECUTABLE _executableName _templateFile)
 	_get_mprep_output_file("${_templateFile}" _outfile)
 	Mathematica_WSTP_WSPREP_TARGET(${_templateFile} OUTPUT ${_outfile})
 	add_executable (${_executableName} WIN32 ${_outfile} ${ARGN})
-	target_link_libraries(${_executableName} ${Mathematica_WSTP_LIBRARIES})
+	target_link_libraries(${_executableName} PRIVATE ${Mathematica_WSTP_LIBRARIES})
 	if (Mathematica_WSTP_LINKER_FLAGS)
 		set_target_properties(${_executableName} PROPERTIES LINK_FLAGS "${Mathematica_WSTP_LINKER_FLAGS}")
 	endif()
