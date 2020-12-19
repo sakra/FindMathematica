@@ -34,6 +34,15 @@ The `DocumentationBuild` package also requires the installation of [Apache Ant][
 Apache Ant to be found by CMake, the environment variable `ANT_HOME` needs to point to Apache Ant's
 installation directory.
 
+MathLink and WSTP require the installation of [libuuid][uuid] under Linux. To install `libuuid`
+under Debian-based distros run:
+
+    $ sudo apt install uuid-dev
+
+To install `libuuid` under RedHat-based distros run:
+
+    $ sudo dnf install libuuid-devel
+
 Usage
 -----
 
@@ -997,4 +1006,5 @@ Known Issues
 [aant]:https://ant.apache.org/
 [cgwn]:https://www.cygwin.com/
 [cmtut]:https://cmake.org/cmake/help/latest/guide/tutorial/index.html
+[uuid]:https://linux.die.net/man/3/libuuid
 [mingw]:http://www.mingw.org/
