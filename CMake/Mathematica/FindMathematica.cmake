@@ -1469,7 +1469,7 @@ macro (_setup_findmathematica_options)
 		endif()
 	endif()
 	option (Mathematica_RUN_KERNEL_ON_CONFIGURE
-		"allow FindMathematica to run Mathematica kernel on CMake configure?"
+		"allow FindMathematica to implicitly run the Mathematica kernel at CMake configure time?"
 		${Mathematica_RUN_KERNEL_ON_CONFIGURE_INIT})
 endmacro()
 
