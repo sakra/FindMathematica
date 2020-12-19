@@ -1,4 +1,4 @@
-## 3.4.0
+## 3.4.0 (2020-12-19)
 
 * *Mathematica* 12.2 compatibility
 * add `Mathematica_RUN_KERNEL_ON_CONFIGURE` switch to control if FindMathematica is allowed to
