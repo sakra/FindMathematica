@@ -245,7 +245,7 @@ macro (_get_program_names _outProgramNames)
 	set (_MathematicaApps "Mathematica" "Wolfram Desktop" "Wolfram Engine" "gridMathematica Server")
 	# Mathematica product versions in order of preference
 	set (_MathematicaVersions
-		"12.2" "12.1" "12.0"
+		"12.3" "12.2" "12.1" "12.0"
 		"11.3" "11.2" "11.1" "11.0"
 		"10.4" "10.3" "10.2" "10.1" "10.0"
 		"9.0" "8.0" "7.0" "6.0" "5.2")
@@ -500,6 +500,8 @@ macro (_systemNameToSystemID _systemName _systemProcessor _outSystemIDs)
 			set (${_outSystemIDs} "MacOSX-x86")
 		elseif ("${_systemProcessor}" STREQUAL "x86_64")
 			set (${_outSystemIDs} "MacOSX-x86-64")
+		elseif ("${_systemProcessor}" STREQUAL "arm64")
+			set (${_outSystemIDs} "MacOSX-ARM64")
 		elseif ("${_systemProcessor}" MATCHES "ppc64|powerpc64")
 			set (${_outSystemIDs} "Darwin-PowerPC64")
 		elseif ("${_systemProcessor}" MATCHES "ppc|powerpc")
@@ -648,7 +650,12 @@ macro (_get_host_system_IDs _outSystemIDs)
 endmacro()
 
 macro (_get_supported_systemIDs _version _outSystemIDs)
-	if (NOT "${_version}" VERSION_LESS "12.1")
+	if (NOT "${_version}" VERSION_LESS "12.3")
+		set (${_outSystemIDs}
+			"Windows-x86-64"
+			"Linux-x86-64" "Linux-ARM"
+			"MacOSX-x86-64" "MacOSX-ARM64")
+	elseif (NOT "${_version}" VERSION_LESS "12.1")
 		set (${_outSystemIDs}
 			"Windows-x86-64"
 			"Linux-x86-64" "Linux-ARM"
@@ -741,6 +748,19 @@ macro (_get_compatible_system_IDs _systemID _outSystemIDs)
 			else()
 				list (APPEND ${_outSystemIDs} "MacOSX-x86-64" "MacOSX-x86")
 			endif()
+		elseif ("${_systemID}" MATCHES "MacOSX-ARM64")
+			if (Mathematica_VERSION)
+				# Mathematica 12.3 added support for MacOSX-ARM64
+				if (NOT "${Mathematica_VERSION}" VERSION_LESS "12.3")
+					list (APPEND ${_outSystemIDs} "MacOSX-ARM64")
+				endif()
+				# Mathematica 6 added support for MacOSX-x86-64
+				if (NOT "${Mathematica_VERSION}" VERSION_LESS "6.0")
+					list (APPEND ${_outSystemIDs} "MacOSX-x86-64")
+				endif()
+			else()
+				list (APPEND ${_outSystemIDs} "MacOSX-ARM64" "MacOSX-x86-64")
+			endif()
 		elseif ("${_systemID}" STREQUAL "Darwin-PowerPC64")
 			if (Mathematica_VERSION)
 				if (NOT "${Mathematica_VERSION}" VERSION_LESS "5.2" AND
@@ -801,7 +821,7 @@ macro(_get_developer_kit_system_IDs _outSystemIDs)
 				set (${_outSystemIDs} "")
 			else()
 				# Mathematica versions after 9 have a system ID subdirectory
-				set (${_outSystemIDs} "MacOSX-x86-64")
+				set (${_outSystemIDs} "MacOSX-x86-64" "MacOSX-ARM64")
 			endif()
 		else()
 			_get_system_IDs(${_outSystemIDs})
@@ -819,8 +839,8 @@ macro(_get_host_developer_kit_system_IDs _outSystemIDs)
 			if ("${Mathematica_VERSION}" VERSION_LESS "9.0")
 				set (${_outSystemIDs} "")
 			else()
-				# The MacOSX-x86-64 DeveloperKit is a universal binary with architectures i386 and x86_64
-				set (${_outSystemIDs} "MacOSX-x86-64")
+				# Mathematica versions after 9 have a system ID subdirectory
+				set (${_outSystemIDs} "MacOSX-x86-64" "MacOSX-ARM64")
 			endif()
 		else()
 			_get_host_system_IDs(${_outSystemIDs})
@@ -3019,6 +3039,8 @@ macro (_add_launch_prefix _cmdVar _systemIDVar)
 					list (APPEND ${_cmdVar} "/usr/bin/arch" "-i386")
 				elseif("${${_systemIDVar}}" STREQUAL "MacOSX-x86-64")
 					list (APPEND ${_cmdVar} "/usr/bin/arch" "-x86_64")
+				elseif("${${_systemIDVar}}" STREQUAL "MacOSX-ARM64")
+					list (APPEND ${_cmdVar} "/usr/bin/arch" "-arm64")
 				elseif("${${_systemIDVar}}" MATCHES "Darwin|MacOSX")
 					list (APPEND ${_cmdVar} "/usr/bin/arch" "-ppc")
 				elseif("${${_systemIDVar}}" STREQUAL "Darwin-PowerPC64")
