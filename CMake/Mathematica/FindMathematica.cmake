@@ -242,7 +242,10 @@ endmacro()
 macro (_get_program_names _outProgramNames)
 	set (${_outProgramNames} "")
 	# Mathematica products in order of preference
-	set (_MathematicaApps "Mathematica" "Wolfram Desktop" "Wolfram Engine" "gridMathematica Server")
+	set (_MathematicaApps
+		"mathematica" "Mathematica"
+		"Wolfram Desktop" "Wolfram Engine"
+		"gridMathematica Server")
 	# Mathematica product versions in order of preference
 	set (_MathematicaVersions
 		"12.3" "12.2" "12.1" "12.0"
@@ -461,6 +464,14 @@ macro (_get_search_paths _outSearchPaths)
 				list (APPEND ${_outSearchPaths} "${_unixPath}/Wolfram Research" )
 			endif()
 		endforeach()
+		# add default installation path
+		if (IS_DIRECTORY "C:/Program Files/Wolfram Research")
+			list (APPEND ${_outSearchPaths} "C:/Program Files/Wolfram Research" )
+		endif()
+		# Windows container paths may be lowercase
+		if (IS_DIRECTORY "C:/Program Files/wolfram research")
+			list (APPEND ${_outSearchPaths} "C:/Program Files/wolfram research" )
+		endif()
 	elseif (CMAKE_HOST_APPLE)
 		# add standard Mathematica Mac OS X installation paths
 		list (APPEND ${_outSearchPaths} "~/Applications;/Applications")
