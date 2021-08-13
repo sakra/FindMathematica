@@ -1,3 +1,8 @@
+## 3.5.1
+
+* warn explicitly about common mistakes users make
+* fix for Mathematica installed in Windows docker container
+
 ## 3.5.0 (2021-05-21)
 
 * *Mathematica* 12.3 compatibility
