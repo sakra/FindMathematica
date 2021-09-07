@@ -351,8 +351,10 @@ function (_add_launch_services_search_paths _outSearchPaths)
 		# the executable usually resides in the LaunchServices framework Support directory
 		# The LaunchServices framework is a sub-framework of the CoreServices umbrella framework
 		cmake_find_frameworks(CoreServices)
-		find_program (Mathematica_LSRegister_EXECUTABLE NAMES "lsregister" PATH_SUFFIXES "Support"
-			HINTS "${CoreServices_FRAMEWORKS}/Frameworks/LaunchServices.framework")
+		find_program (Mathematica_LSRegister_EXECUTABLE
+			NAMES "lsregister"
+			PATH_SUFFIXES "/Frameworks/LaunchServices.framework/Support"
+			HINTS ${CoreServices_FRAMEWORKS})
 		mark_as_advanced(
 			Mathematica_CoreServices_DIR
 			Mathematica_LaunchServices_DIR
