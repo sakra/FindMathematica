@@ -2,6 +2,7 @@
 
 * warn explicitly about common mistakes users make
 * fix for Mathematica installed in Windows docker container
+* fix broken launch services database search under OS X
 
 ## 3.5.0 (2021-05-21)
 
