@@ -34,7 +34,7 @@ cmake_minimum_required(VERSION 2.8.12)
 cmake_policy(POP)
 
 set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set (Mathematica_CMAKE_MODULE_VERSION "3.5.1")
+set (Mathematica_CMAKE_MODULE_VERSION "3.6.0")
 
 # activate select policies
 if (POLICY CMP0025)
