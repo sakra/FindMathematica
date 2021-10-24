@@ -4,9 +4,9 @@ include(UseJava)
 
 # add J/Link jar to Java compiler include path
 set (CMAKE_JAVA_INCLUDE_PATH "${Mathematica_JLink_JAR_FILE}")
-# force Java 6 compilation of example sources, J/Link is not compatible with Java 7
+# force Java 8 compilation of example sources
 # sample source files use Windows character encoding
-set (CMAKE_JAVA_COMPILE_FLAGS "-source" "1.7" "-target" "1.7" "-encoding" "Cp1252")
+set (CMAKE_JAVA_COMPILE_FLAGS "-source" "1.8" "-target" "1.8" "-encoding" "Cp1252")
 
 if (NOT CYGWIN)
 	# UseJava module cannot handle Cygwin path syntax
