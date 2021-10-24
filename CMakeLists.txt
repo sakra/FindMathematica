@@ -36,8 +36,8 @@ find_package(Mathematica)
 # finds Mathematica 10.0.2 installation and required components
 #find_package(Mathematica 10.0.2 EXACT REQUIRED MathLink WSTP JLink WolframLibrary)
 
-# finds Mathematica >= 9 installation and optional components
-#find_package(Mathematica 9 COMPONENTS MathLink JLink)
+# finds Mathematica >= 11 installation and optional components
+#find_package(Mathematica 11 COMPONENTS MathLink JLink)
 
 # find Java and use the Java installation bundled with Mathematica
 if (Mathematica_JLink_JAVA_HOME AND NOT APPLE)
@@ -77,14 +77,14 @@ if (${Mathematica_FOUND})
 	# Mathematica_SYSTEM_IDS contains the list of Mathematica platform system IDs that the
 	# project is being compiled for. This usually contains just one entry (e.g., "Windows").
 	# It may contain multiple entries if we are building a universal binary under Mac OS X
-	# (e.g., "MacOSX-x86-64;MacOSX-x86").
+	# (e.g., "MacOSX-x86-64;MacOSX-ARM64").
 	message(STATUS "Mathematica Target System IDs ${Mathematica_SYSTEM_IDS}")
 	# Mathematica_HOST_SYSTEM_IDS is the list of Mathematica platform system IDs that can
 	# run on the build host. If we are executing the CMake build under a 64-bit version of
 	# Windows this would be "Windows-x86-64;Windows". Under a 32-bit version of Windows this
 	# would be just "Windows".
 	message(STATUS "Mathematica Host System IDs ${Mathematica_HOST_SYSTEM_IDS}")
-	# Mathematica_BASE_DIR is the directory for systemwide files to be loaded by Mathematica
+	# Mathematica_BASE_DIR is the directory for system-wide files to be loaded by Mathematica
 	message(STATUS "Mathematica Base Directory ${Mathematica_BASE_DIR}")
 	# Mathematica_USERBASE_DIR is the directory for user-specific files to be loaded by Mathematica
 	message(STATUS "Mathematica User Base Directory ${Mathematica_USERBASE_DIR}")
