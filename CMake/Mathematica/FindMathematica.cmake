@@ -243,7 +243,7 @@ macro (_get_program_names _outProgramNames)
 	set (${_outProgramNames} "")
 	# Mathematica products in order of preference
 	set (_MathematicaApps
-		"mathematica" "Mathematica"
+		"Mathematica" "mathematica"
 		"Wolfram Desktop" "Wolfram Engine"
 		"gridMathematica Server")
 	# Mathematica product versions in order of preference
