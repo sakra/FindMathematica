@@ -1,5 +1,6 @@
-## 3.5.1
+## 3.6.0
 
+* *Mathematica* 13 compatibility
 * warn explicitly about common mistakes users make
 * fix for Mathematica installed in Windows docker container
 * fix broken launch services database search under OS X
