@@ -264,7 +264,7 @@ The module defines the following variables:
 * `Mathematica_HOST_ROOT_DIR` - Wolfram Language installation directory valid for host platform (corresponds to `$InstallationDirectory`)
 * `Mathematica_KERNEL_EXECUTABLE` - path to host Wolfram Language kernel executable
 * `Mathematica_FRONTEND_EXECUTABLE` - path to host Wolfram Language frontend executable
-* `Mathematica_BASE_DIR` - directory for system wide files (corresponds to `$BaseDirectory`)
+* `Mathematica_BASE_DIR` - directory for system-wide files (corresponds to `$BaseDirectory`)
 * `Mathematica_USERBASE_DIR` - directory for user-specific files (corresponds to `$UserBaseDirectory`)
 * `Mathematica_INCLUDE_DIR` - header file `mdefs.h` include directory
 * `Mathematica_INCLUDE_DIRS` - list of include directories for all components

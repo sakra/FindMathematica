@@ -1,4 +1,4 @@
-## 3.6.0
+## 3.6.0 (2021-12-15)
 
 * *Mathematica* 13 compatibility
 * warn explicitly about common mistakes users make
@@ -231,7 +231,7 @@
 * under Windows search registry determined installation locations first
 * under OS X search LaunchServices database determined installation locations first
 * under OS X programmatically find path to `lsregister` executable
-* tested with with CMake 2.8.7
+* tested with CMake 2.8.7
 
 ## 2.0.1 (2011-12-20)
 
