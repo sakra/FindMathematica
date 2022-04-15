@@ -248,7 +248,7 @@ macro (_get_program_names _outProgramNames)
 		"gridMathematica Server")
 	# Mathematica product versions in order of preference
 	set (_MathematicaVersions
-		"13.0"
+		"13.1" "13.0"
 		"12.3" "12.2" "12.1" "12.0"
 		"11.3" "11.2" "11.1" "11.0"
 		"10.4" "10.3" "10.2" "10.1" "10.0"
