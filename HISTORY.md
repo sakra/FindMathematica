@@ -1,3 +1,7 @@
+## 3.7.0 (2022-09-24)
+
+* *Mathematica* 13.1 compatibility
+
 ## 3.6.0 (2021-12-15)
 
 * *Mathematica* 13 compatibility
