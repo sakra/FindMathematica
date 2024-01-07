@@ -76,7 +76,7 @@ if (${Mathematica_FOUND})
 	message(STATUS "Mathematica Version ${Mathematica_VERSION}")
 	# Mathematica_SYSTEM_IDS contains the list of Mathematica platform system IDs that the
 	# project is being compiled for. This usually contains just one entry (e.g., "Windows").
-	# It may contain multiple entries if we are building a universal binary under Mac OS X
+	# It may contain multiple entries if we are building a universal binary under macOS
 	# (e.g., "MacOSX-x86-64;MacOSX-ARM64").
 	message(STATUS "Mathematica Target System IDs ${Mathematica_SYSTEM_IDS}")
 	# Mathematica_HOST_SYSTEM_IDS is the list of Mathematica platform system IDs that can

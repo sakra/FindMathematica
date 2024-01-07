@@ -111,7 +111,7 @@ foreach (_Example ${_Examples})
 	endif()
 endforeach()
 
-# fix WSTP shared library references under Mac OS X
+# fix WSTP shared library references under macOS
 Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES(${_Targets})
 
 if (DEFINED Mathematica_USERBASE_DIR)

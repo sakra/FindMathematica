@@ -8,7 +8,7 @@ set(_Examples
 	demo_image.cxx demo_managed.cxx demo_numericarray.cxx)
 
 if (MSVC14)
- 	# demo_managed requires hash_map
+	# demo_managed requires hash_map
 	add_definitions(-D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS)
 endif()
 

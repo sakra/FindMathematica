@@ -17,7 +17,7 @@ set_target_properties(functions PROPERTIES FOLDER "CodeGeneration")
 target_link_libraries (functions ${Mathematica_WolframLibrary_LIBRARIES})
 set_target_properties(functions PROPERTIES INSTALL_RPATH "${Mathematica_RUNTIME_LIBRARY_DIRS}" BUILD_WITH_INSTALL_RPATH ON)
 
-# fix MathLink shared library references under Mac OS X
+# fix MathLink shared library references under macOS
 Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES(compute functions)
 
 if (DEFINED Mathematica_USERBASE_DIR)

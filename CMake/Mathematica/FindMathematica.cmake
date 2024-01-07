@@ -217,12 +217,12 @@ macro (_get_host_frontend_names _outFrontEndNames)
 endmacro()
 
 # internal macro to compute program name from product name and version
-# E.g., "Mathematica" and "7.0" gives "Mathematica 7.0.app" for Mac OS X
+# E.g., "Mathematica" and "7.0" gives "Mathematica 7.0.app" for macOS
 macro (_append_program_names _product _version _outProgramNames)
 	string (REPLACE " " "" _productWithoutBlanks "${_product}")
 	if (CMAKE_HOST_APPLE)
 		if (${_version})
-			# under Mac OS X the application name may contain the version number as a suffix
+			# under macOS the application name may contain the version number as a suffix
 			list (APPEND ${_outProgramNames} "${_product} ${_version}.app")
 			list (APPEND ${_outProgramNames} "${_productWithoutBlanks} ${_version}.app")
 		else()
@@ -345,7 +345,7 @@ function (_add_registry_search_paths _outSearchPaths)
 	endif()
 endfunction()
 
-# internal function to determine Mathematica installation paths from Mac OS X LaunchServices database
+# internal function to determine Mathematica installation paths from macOS LaunchServices database
 function (_add_launch_services_search_paths _outSearchPaths)
 	if (CMAKE_HOST_APPLE)
 		# the lsregister executable is needed to search the LaunchServices database
@@ -377,10 +377,10 @@ function (_add_launch_services_search_paths _outSearchPaths)
 				list (SORT _appPaths)
 				list (REVERSE _appPaths)
 			else()
-				message (STATUS "No Mathematica apps registered in Mac OS X LaunchServices database.")
+				message (STATUS "No Mathematica apps registered in macOS LaunchServices database.")
 			endif()
 			if (Mathematica_DEBUG)
-				message (STATUS "Mac OS X LaunchServices database registered apps=${_appPaths}")
+				message (STATUS "macOS LaunchServices database registered apps=${_appPaths}")
 			endif()
 			if (_appPaths)
 				set (_paths "")
@@ -476,12 +476,12 @@ macro (_get_search_paths _outSearchPaths)
 			list (APPEND ${_outSearchPaths} "C:/Program Files/wolfram research" )
 		endif()
 	elseif (CMAKE_HOST_APPLE)
-		# add standard Mathematica Mac OS X installation paths
+		# add standard Mathematica macOS installation paths
 		list (APPEND ${_outSearchPaths} "~/Applications;/Applications")
 		if (CMAKE_SYSTEM_APPBUNDLE_PATH)
 			list (APPEND ${_outSearchPaths} ${CMAKE_SYSTEM_APPBUNDLE_PATH})
 		endif()
-		# add non-standard installation paths from Mac OS X LaunchServices database
+		# add non-standard installation paths from macOS LaunchServices database
 		_add_launch_services_search_paths(${_outSearchPaths} "com.wolfram.Mathematica")
 	elseif (CMAKE_HOST_UNIX)
 		# add standard Mathematica Unix installation paths
@@ -583,7 +583,7 @@ macro (_get_system_IDs _outSystemIDs)
 				if (_systemID)
 					list (APPEND ${_outSystemIDs} ${_systemID})
 				else()
-					message (FATAL_ERROR "Unsupported Mac OS X architecture ${_arch}")
+					message (FATAL_ERROR "Unsupported macOS architecture ${_arch}")
 				endif()
 			endforeach()
 		else()
@@ -648,7 +648,7 @@ macro (_get_host_system_IDs _outSystemIDs)
 		# always determine host system ID from
 		# CMAKE_HOST_SYSTEM_NAME and CMAKE_HOST_SYSTEM_PROCESSOR
 		if (_CMAKE_OSX_MACHINE)
-			# work-around for Mac OS X, where CMAKE_HOST_SYSTEM_PROCESSOR is not always accurate
+			# work-around for macOS, where CMAKE_HOST_SYSTEM_PROCESSOR is not always accurate
 			set (_hostSystemProcessor "${_CMAKE_OSX_MACHINE}")
 		else()
 			set (_hostSystemProcessor "${CMAKE_HOST_SYSTEM_PROCESSOR}")
@@ -787,8 +787,8 @@ macro (_get_compatible_system_IDs _systemID _outSystemIDs)
 			endif()
 		endif()
 		# handle ppc32 (Darwin or MacOSX)
-		# Mac OS X versions before Lion support ppc32 natively or through Rosetta
-		# (Mac OS X 10.7.0 is Darwin 11.0.0)
+		# macOS versions before Lion support ppc32 natively or through Rosetta
+		# (macOS 10.7.0 is Darwin 11.0.0)
 		if ("${CMAKE_HOST_SYSTEM_VERSION}" VERSION_LESS "11.0.0")
 			if (Mathematica_VERSION)
 				if ("${Mathematica_VERSION}" VERSION_LESS "6.0")
@@ -1126,7 +1126,7 @@ macro (_append_mathlink_needed_system_libraries _outLibraries)
 				endif()
 			endif()
 			if ("${Mathematica_MathLink_VERSION_MINOR}" GREATER 20)
-				# Mac OS X MathLink API revision >= 21 has dependency on Core Foundation framework
+				# macOS MathLink API revision >= 21 has dependency on Core Foundation framework
 				list (APPEND ${_outLibraries} "-framework Foundation" )
 			endif()
 		endif()
@@ -1193,7 +1193,7 @@ macro (_append_WSTP_needed_system_libraries _outLibraries)
 				endif()
 			endif()
 			if ("${Mathematica_WSTP_VERSION_MINOR}" GREATER 20)
-				# Mac OS X WSTP API revision >= 21 has dependency on Core Foundation framework
+				# macOS WSTP API revision >= 21 has dependency on Core Foundation framework
 				list (APPEND ${_outLibraries} "-framework Foundation" )
 			endif()
 		endif()
@@ -1595,7 +1595,7 @@ endmacro(_find_mathematica)
 # internal macro to init _LIBRARIES variable from given _LIBRARY variable
 macro (_setup_libraries_var _library_var _libraries_var)
 	if (APPLE)
-		# handle universal builds under Mac OS X
+		# handle universal builds under macOS
 		# we need to add a library for each architecture
 		_get_system_IDs(_SystemIDs)
 		foreach (_systemID IN LISTS _SystemIDs)
@@ -2527,7 +2527,7 @@ macro (_log_found_variables)
 		if (APPLE AND "${Mathematica_VERSION_MAJOR}" EQUAL 5 AND "${Mathematica_VERSION_MINOR}" EQUAL 2)
 			foreach (_systemID ${Mathematica_SYSTEM_IDS})
 				if ("${_systemID}" STREQUAL "MacOSX-x86-64")
-					message (WARNING "Mathematica 5.2 for Mac OS X does not support x86_64, run cmake with option -DCMAKE_OSX_ARCHITECTURES=i386.")
+					message (WARNING "Mathematica 5.2 for macOS does not support x86_64, run cmake with option -DCMAKE_OSX_ARCHITECTURES=i386.")
 				endif()
 			endforeach()
 		endif()
@@ -2880,7 +2880,7 @@ macro (_find_components)
 	list (REMOVE_DUPLICATES Mathematica_RUNTIME_LIBRARY_DIRS_DEBUG)
 endmacro()
 
-# internal helper function to compute the install name of a shared library under Mac OS X
+# internal helper function to compute the install name of a shared library under macOS
 macro (_get_install_name _libraryPath _libraryInstallName _libraryAbsPath)
 	if (APPLE)
 		set (${_libraryInstallName} "")
@@ -3072,9 +3072,9 @@ macro (_add_launch_prefix _cmdVar _systemIDVar)
 	if (DEFINED ${_systemIDVar})
 		if (CMAKE_HOST_APPLE)
 			if (NOT "${${_systemIDVar}}" STREQUAL "${Mathematica_HOST_SYSTEM_ID}")
-				# under Mac OS X, run appropriate target architecture of executable universal binary
+				# under macOS, run appropriate target architecture of executable universal binary
 				# by using the the /usr/bin/arch tool which is available since Leopard
-				# (Mac OS X 10.5.0 is Darwin 9.0.0)
+				# (macOS 10.5.0 is Darwin 9.0.0)
 				if ("${CMAKE_HOST_SYSTEM_VERSION}" VERSION_LESS "9.0.0")
 					message (STATUS "Executable system ID selection of ${${_systemIDVar}} is not supported, running default.")
 				elseif ("${${_systemIDVar}}" STREQUAL "MacOSX-x86")
@@ -3709,7 +3709,7 @@ _update_cache()
 _setup_found_variables()
 _log_found_variables()
 
-# public function for fixing shared library references to dynamic Mathematica runtime libraries under Mac OS X
+# public function for fixing shared library references to dynamic Mathematica runtime libraries under macOS
 function (Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES)
 	if (APPLE)
 		foreach(_target ${ARGV})
