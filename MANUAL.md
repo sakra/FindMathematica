@@ -55,7 +55,7 @@ command:
 
 The FindMathematica module will look for a Wolfram Language installation in the default installation
 location of the used platform. Under Windows, it will also use installation locations from the
-Windows Registry. Under OS X it will also query the Launch Services database.
+Windows Registry. Under macOS, it will also query the Launch Services database.
 
 By default, FindMathematica will return the newest Wolfram Language installation it can find.
 To find a minimum version of Wolfram Language, run the `find_package` command with a version
@@ -90,15 +90,15 @@ provided by the FindMathematica module:
 
 #### Visual Studio
 
-To build the FindMathematica project with Visual Studio C++ 2010 for 32-bit Windows, open a Visual
+To build the FindMathematica project with Visual Studio C++ for 64-bit Windows, open a Visual
 Studio command prompt, change directory to the `FindMathematica` root directory and run the
 following commands:
 
     D:\FindMathematica>mkdir build
     D:\FindMathematica>cd build
-    D:\FindMathematica\build>cmake -G "Visual Studio 10" ..
+    D:\FindMathematica\build>cmake -G "Visual Studio 16 2019" -A x64 ..
 
-Then open the generated Visual Studio solution file with Visual Studio C++ 2010:
+Then open the generated Visual Studio solution file with Visual Studio C++ 2019:
 
     D:\FindMathematica\build>start Mathematica-project.sln
 
@@ -115,11 +115,6 @@ To build the Wolfram Language documentation in notebook format, run:
 
     D:\FindMathematica\build>cmake --build . --config Debug --target documentation
 
-To build the FindMathematica project with Visual Studio C++ 2010 for 64-bit Windows, open a Visual
-Studio x64 cross tools command prompt in the `FindMathematica` build directory:
-
-    D:\FindMathematica\build>cmake -G "Visual Studio 10 Win64" ..
-
 FindMathematica supports building 32-bit and 64-bit MathLink executables and LibraryLink dynamic
 libraries using the appropriate link libraries that ship with the Windows version.
 If you are using a 32-bit version of Windows, you can run the Wolfram Language kernel only in
@@ -133,26 +128,6 @@ prompt:
 
     D:\FindMathematica\build>cmake -G "MinGW Makefiles" ..
     D:\FindMathematica\build>mingw32-make
-
-#### Cygwin
-
-Under [Cygwin][cgwn] the FindMathematica module requires the Cygwin version of CMake, which is
-different to the regular Windows CMake version.
-To build the FindMathematica project open a Cygwin shell prompt and run the following
-commands in the `FindMathematica` root directory:
-
-    $ mkdir build
-    $ cd build
-    $ cmake ..
-    $ make
-
-The Wolfram Language kernel cannot load a Cygwin generated LibraryLink DLL that has been linked with
-the Cygwin runtime library. As a work-around, the FindMathematica module suppresses linking with
-the Cygwin runtime library by adding the `-mno-cygwin` flag when a LibraryLink target is added.
-This flag is supported by Cygwin GCC version 3.x, but not by the default Cygwin GCC version 4.x.
-To force the use of GCC version 3.x under Cygwin, run:
-
-    $ cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-3.exe -DCMAKE_C_COMPILER=/usr/bin/gcc-3.exe ..
 
 ### Basic Linux Usage
 
@@ -183,7 +158,7 @@ need to be installed. To force a 32-bit build then, run:
 
     $ cmake -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 ..
 
-### Basic OS X Usage
+### Basic macOS Usage
 
 To build the FindMathematica project with the CMake makefile generator, open Terminal.app,
 change to the `FindMathematica` root directory and enter the following commands:
@@ -210,18 +185,12 @@ following arguments:
 Then open the generated Xcode project file `Mathematica-project.xcodeproj` with Xcode.app.
 
 FindMathematica supports building MathLink executables and LibraryLink shared libraries for any
-OS X architecture type supported by the installed OS X version (`x86_64` and `i386` as
-of *Mathematica* 8.0). To select the build target architecture types, set the CMake
-`CMAKE_OSX_ARCHITECTURES` variable.
+macOS architecture type supported by the installed macOS version. 
+To select the build target architecture types, set the CMake `CMAKE_OSX_ARCHITECTURES` variable.
 
-E.g., to build a 32/64-bit Intel universal binary use the following setting:
+E.g., to build a macOS universal binary use the following setting:
 
-    $ cmake "-DCMAKE_OSX_ARCHITECTURES=i386;x86_64" ..
-
-If you are running *Mathematica* 5.2 on a 64-bit capable Intel Mac, note that 5.2 does not
-support `x86_64`. To get a workable project set CMake's target architecture to 32-bit by running:
-
-    $ cmake "-DCMAKE_OSX_ARCHITECTURES=i386" ..
+    $ cmake "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" ..
 
 Used Variables
 --------------
@@ -240,7 +209,7 @@ The module uses the following variables upon the invocation of `find_package`:
 * `Mathematica_FIND_REQUIRED_MUnit` - `TRUE` if `REQUIRED` option was given for component MUnit
 * `Mathematica_USE_STATIC_LIBRARIES` - if `TRUE`, prefer static libraries to dynamic libraries (defaults to `FALSE`)
 * `Mathematica_USE_MINIMAL_LIBRARIES` - if `TRUE`, prefer minimal libraries to full libraries (defaults to `FALSE`)
-* `Mathematica_USE_LIBCXX_LIBRARIES` - if `TRUE`, prefer libc++ linked libraries to libstdc++ linked libraries (defaults to `FALSE`, only applies to OS X)
+* `Mathematica_USE_LIBCXX_LIBRARIES` - if `TRUE`, prefer libc++ linked libraries to libstdc++ linked libraries (defaults to `FALSE`, only applies to macOS)
 * `Mathematica_MathLink_FIND_VERSION_MAJOR` - requested MathLink interface version (e.g., `"3"`)
 * `Mathematica_MathLink_FIND_VERSION_MINOR` - requested MathLink revision number (e.g., `"16"`)
 * `Mathematica_WSTP_FIND_VERSION_MAJOR` - requested WSTP interface version (e.g., `"4"`)
@@ -260,8 +229,8 @@ The module defines the following variables:
 * `Mathematica_SYSTEM_IDS` - list of supported build target platform System IDs (e.g., `"MacOSX"`, `"MacOSX-x86"`, `"MacOSX-x86-64"`)
 * `Mathematica_HOST_SYSTEM_ID` - default host platform System ID (e.g., `"Windows-x86-64"` or `"MacOSX-x86-64"`)
 * `Mathematica_HOST_SYSTEM_IDS` - list of System IDs available with the host installation
-* `Mathematica_ROOT_DIR` - Wolfram Language installation directory valid for build target platform
-* `Mathematica_HOST_ROOT_DIR` - Wolfram Language installation directory valid for host platform (corresponds to `$InstallationDirectory`)
+* `Mathematica_ROOT_DIR` - Wolfram Language installation directory valid for the build target platform
+* `Mathematica_HOST_ROOT_DIR` - Wolfram Language installation directory valid for the host platform (corresponds to `$InstallationDirectory`)
 * `Mathematica_KERNEL_EXECUTABLE` - path to host Wolfram Language kernel executable
 * `Mathematica_FRONTEND_EXECUTABLE` - path to host Wolfram Language frontend executable
 * `Mathematica_BASE_DIR` - directory for system-wide files (corresponds to `$BaseDirectory`)
@@ -284,7 +253,7 @@ The module defines the following variables for component `WolframLibrary`:
 
 * `Mathematica_WolframLibrary_FOUND` - True if the Wolfram Language installation has WolframLibrary
 * `Mathematica_WolframLibrary_INCLUDE_DIR` - WolframLibrary include directory (contains header files `WolframLibrary.h` and `WolframRTL.h`)
-* `Mathematica_WolframLibrary_LIBRARY` - path to WolframRTL library for default target platform (e.g., `WolframRTL_Minimal.lib`)
+* `Mathematica_WolframLibrary_LIBRARY` - path to WolframRTL library for the default target platform (e.g., `WolframRTL_Minimal.lib`)
 * `Mathematica_WolframLibrary_LIBRARIES` - WolframRTL libraries for all target platforms and required system libraries
 * `Mathematica_WolframLibrary_VERSION` - WolframLibrary version number given as "version"
 * `Mathematica_WolframLibrary_VERSION_MAJOR` - WolframLibrary version number
@@ -298,13 +267,13 @@ The module defines the following variables for component `WolframLibrary`:
 The module defines the following variables for component `MathLink`:
 
 * `Mathematica_MathLink_FOUND` - True if the Wolfram Language installation has MathLink SDK
-* `Mathematica_MathLink_ROOT_DIR` - MathLink C SDK root directory for default target platform
-* `Mathematica_MathLink_HOST_ROOT_DIR` - MathLink C SDK root directory for host platform
-* `Mathematica_MathLink_INCLUDE_DIR` - header file `mathlink.h` include directory for default target platform
-* `Mathematica_MathLink_LIBRARY` - path to MathLink library for default target platform
+* `Mathematica_MathLink_ROOT_DIR` - MathLink C SDK root directory for the default target platform
+* `Mathematica_MathLink_HOST_ROOT_DIR` - MathLink C SDK root directory for the host platform
+* `Mathematica_MathLink_INCLUDE_DIR` - header file `mathlink.h` include directory for the default target platform
+* `Mathematica_MathLink_LIBRARY` - path to MathLink library for the default target platform
 * `Mathematica_MathLink_LIBRARIES` - MathLink library for all target platforms and required system libraries
 * `Mathematica_MathLink_MPREP_EXECUTABLE` - path to host `mprep` executable (MathLink template file preprocessor)
-* `Mathematica_MathLink_HOST_INCLUDE_DIR` - header file `mathlink.h` include directory for host platform
+* `Mathematica_MathLink_HOST_INCLUDE_DIR` - header file `mathlink.h` include directory for the host platform
 * `Mathematica_MathLink_DEFINITIONS` - MathLink compile definitions, e.g., `-DMLINTERFACE=3`
 * `Mathematica_MathLink_LINKER_FLAGS` - MathLink linker flags
 * `Mathematica_MathLink_VERSION` - MathLink version number given as "interface.revision"
@@ -318,13 +287,13 @@ The module defines the following variables for component `MathLink`:
 The module defines the following variables for component `WSTP`:
 
 * `Mathematica_WSTP_FOUND` - True if the Wolfram Language installation has WSTP SDK
-* `Mathematica_WSTP_ROOT_DIR` - WSTP C SDK root directory for default target platform
-* `Mathematica_WSTP_HOST_ROOT_DIR` - WSTP C SDK root directory for host platform
-* `Mathematica_WSTP_INCLUDE_DIR` - header file `wstp.h` include directory for default target platform
-* `Mathematica_WSTP_LIBRARY` - path to WSTP library for default target platform
+* `Mathematica_WSTP_ROOT_DIR` - WSTP C SDK root directory for the default target platform
+* `Mathematica_WSTP_HOST_ROOT_DIR` - WSTP C SDK root directory for the host platform
+* `Mathematica_WSTP_INCLUDE_DIR` - header file `wstp.h` include directory for the default target platform
+* `Mathematica_WSTP_LIBRARY` - path to WSTP library for the default target platform
 * `Mathematica_WSTP_LIBRARIES` - WSTP library for all target platforms and required system libraries
 * `Mathematica_WSTP_WSPREP_EXECUTABLE` - path to host `wsprep` executable (WSTP template file preprocessor)
-* `Mathematica_WSTP_HOST_INCLUDE_DIR` - header file wstp.h include directory for host platform
+* `Mathematica_WSTP_HOST_INCLUDE_DIR` - header file wstp.h include directory for the host platform
 * `Mathematica_WSTP_DEFINITIONS` - WSTP compile definitions, e.g., `-DWSINTERFACE=4`
 * `Mathematica_WSTP_LINKER_FLAGS` - WSTP linker flags
 * `Mathematica_WSTP_VERSION` - WSTP version number given as "interface.revision"
@@ -365,7 +334,7 @@ The module defines the following variables for component `MUnit`:
 Defined Functions
 -----------------
 
-Depending on the Wolfram Language version and components found, the module defines following functions:
+Depending on the Wolfram Language version and components found, the module defines the following functions:
 
     Mathematica_TO_NATIVE_STRING(string result)
 
@@ -404,10 +373,12 @@ code is added to a cache variable named `<output variable>`. The execution will 
 unless the variable is cleared, or the result is the Wolfram Language expression `$Failed` or
 `$Aborted`, or a false CMake constant.
 
-The `SYSTEM_ID` option lets you override the Wolfram Language kernel executable architecture used.
-E.g., on Windows-x86-64 you can set the `SYSTEM_ID` option to `"Windows"` to run the 32-bit kernel
-executable. On Linux-x86-64 set the `SYSTEM_ID` option to `"Linux"` to run the 32-bit version of the
-kernel. On OS X you can set the `SYSTEM_ID` option to `"MacOSX-x86"` to execute the 32-bit
+The `SYSTEM_ID` option lets you override the Wolfram Language kernel executable architecture used
+(e.g., on Windows-x86-64 you can set the `SYSTEM_ID` option to `"Windows"` to run the 32-bit kernel
+executable). 
+On Linux-x86-64 set the `SYSTEM_ID` option to `"Linux"` to run the 32-bit version of the
+kernel. 
+On macOS, you can set the `SYSTEM_ID` option to `"MacOSX-x86"` to execute the 32-bit
 portion of the Wolfram Language kernel universal binary.
 
 The `KERNEL_OPTIONS` parameter lets you add launch arguments (e.g., `"-pwfile mathpass"`) used upon
@@ -500,19 +471,19 @@ This function is available if the Wolfram Language kernel executable has been fo
       [ CONFIGURATIONS [ Debug | Release | ... ] ])
 
 This function adds a CMake test to the project which runs Wolfram Language code. The code can
-be specified as a list of in-line Wolfram Language statements and/or as path to a Wolfram Language
+be specified as a list of in-line Wolfram Language statements and/or as a path to a Wolfram Language
 script file. Multiple in-line statements are wrapped inside a Wolfram Language `CompoundExpression`.
 
 The `SYSTEM_ID` option lets you override the Wolfram Language kernel executable used for running this
 test. This is necessary for testing LibraryLink dynamic libraries which require an architecture
-compatible kernel executable. E.g., on Windows-x86-64 you can set the `SYSTEM_ID` option to
-`"Windows"` to run the 32-bit kernel executable.
+compatible kernel executable (e.g., on Windows-x86-64 you can set the `SYSTEM_ID` option to
+`"Windows"` to run the 32-bit kernel executable).
 
 The `KERNEL_OPTIONS` parameter lets you add launch arguments (e.g., `"-pwfile mathpass"`) used upon
 starting the Wolfram Language kernel. If the option is missing, it defaults to `"-noinit -noprompt"`.
 
 The string specified by the `INPUT` option is fed to the Wolfram Language kernel as standard input.
-The `INPUT_FILE` option specifies a file that is fed to the Wolfram Language kernel as standard input.
+The `INPUT_FILE` option specifies a file fed to the Wolfram Language kernel as standard input.
 
 The test driver sets up environment variables `TEST_NAME` and `TEST_CONFIGURATION` which can be
 queried in the Wolfram Language code by using the `Environment` function.
@@ -572,11 +543,11 @@ wrapped into code that loads the WolframLibrary target shared library in the fol
     LibraryUnload[ libPath ]
 
 The string specified by the `INPUT` option is fed to the Wolfram Language kernel as standard input.
-The `INPUT_FILE` option specifies a file that is fed to the Wolfram Language kernel as standard input.
+The `INPUT_FILE` option specifies a file fed to the Wolfram Language kernel as standard input.
 
 The `SYSTEM_ID` option lets you override the Wolfram Language kernel executable used for running this
-test. E.g., on OS X you can set the `SYSTEM_ID` option to `"MacOSX-x86"` to execute the 32-bit
-portion of the Wolfram Language kernel universal binary.
+test (e.g., on macOS you can set the `SYSTEM_ID` option to `"MacOSX-x86"` to execute the 32-bit
+portion of the Wolfram Language kernel universal binary).
 
 The `KERNEL_OPTIONS` parameter lets you add launch arguments (e.g., `"-pwfile mathpass"`) used upon
 starting the Wolfram Language kernel. If the option is missing, it defaults to `"-noinit -noprompt"`.
@@ -594,8 +565,8 @@ LibraryLink.
       [ OUTPUT <C source file> ])
 
 This function uses the CCodeGenerator package to convert Wolfram Language code to C code that can be
-run independently of the Wolfram Language kernel. Upon running the C code only requires the Wolfram Runtime
-Library.
+run independently of the Wolfram Language kernel. 
+Upon running, the C code only requires the Wolfram Runtime Library.
 
 The Wolfram Language kernel script file needs to set up definitions of compiled functions and return a list
 of them along with their desired C function names in the last line. Example:
@@ -629,7 +600,7 @@ Wolfram Language installation has a Wolfram Runtime Library.
 This function adds a custom command which runs the Wolfram Language function `Encode` on the given input
 files. Wolfram Language encoded files contain only printable ASCII characters.
 
-By default, each encoded output files is created with the same name as the corresponding input file
+By default, each encoded output file is created with the same name as the corresponding input file
 in `CMAKE_CURRENT_BINARY_DIR`. The `OUTPUT` option can be used to create the output files in
 a different directory or with different names.
 
@@ -653,7 +624,7 @@ This function finds the full CMake style path of the Wolfram Language package fi
 loaded by the command `Get[<package name>]`.
 
 A cache entry named by `<variable>` will be created to store the result. If the full path to the
-package file is found the result is stored in the variable and the search will not be repeated
+package file is found, the result is stored in the variable and the search will not be repeated
 unless the variable is cleared. If nothing is found, the result will be `<variable>-NOTFOUND`, and
 the search will be attempted again the next time `Mathematica_FIND_PACKAGE` is invoked with the same
 variable.
@@ -675,11 +646,11 @@ directory of the Wolfram Language package and returns it in `<variable>`.
     Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES(
       targetname [ targetname...])
 
-Under OS X this function replaces the default install names used for the Wolfram Language shared
-libraries with absolute paths to those shared libraries for the given targets. On other platforms
-the function does not have an effect.
+Under macOS, this function replaces the default install names used for the Wolfram Language shared
+libraries with absolute paths to those shared libraries for the given targets. 
+On other platforms, the function does not have an effect.
 
-E.g., in *Mathematica* 10 the default install name for the MathLink shared library is:
+e.g., in *Mathematica* 10, the default install name for the MathLink shared library is:
 
     @executable_path/../Frameworks/mathlink.framework/Versions/4.25/mathlink
 
@@ -756,11 +727,11 @@ parameter to `Launch`.
 The `LINK_PROTOCOL` parameter specifies the MathLink link protocol (e.g., `"TCPIP"`) to use.
 
 The text specified by the `INPUT` option is fed to the launched executable as standard input.
-The `INPUT_FILE` option specifies a file that is fed to the launched executable as standard input.
+The `INPUT_FILE` option specifies a file fed to the launched executable as standard input.
 
 The `SYSTEM_ID` option lets you override the Wolfram Language kernel executable used for running this
-test. E.g., on Linux-x86-64 set the `SYSTEM_ID` option to `"Linux"` to run the 32-bit version of the
-kernel.
+test (e.g., on Linux-x86-64 set the `SYSTEM_ID` option to `"Linux"` to run the 32-bit version of the
+kernel).
 
 The `KERNEL_OPTIONS` parameter lets you add launch arguments (e.g., `"-pwfile mathpass"`) used upon
 starting the Wolfram Language kernel. If the option is missing, it defaults to `"-noinit -noprompt"`.
@@ -785,7 +756,7 @@ The `SYSTEM_ID` option lets you set the System ID the frames are exported for. I
 value of `Mathematica_HOST_SYSTEM_ID`. The exported files can be used as custom `mprep` header and
 trailer code when cross-compiling on a different host platform then.
 
-E.g., exporting the MathLink mprep frames under 32-bit Windows will produce the files
+e.g., exporting the MathLink mprep frames under 32-bit Windows will produce the files
 `mprep_header_Windows.txt` and `mprep_trailer_Windows.txt`.
 
 This function is available if the MathLink executable `mprep` has been found.
@@ -866,11 +837,11 @@ class files. The J/Link JAR file is always added to the class path. The optional
 parameter specifies the Java class whose main method should be invoked.
 
 The text specified by the `INPUT` option is fed to the launched JAR as standard input. The
-`INPUT_FILE` option specifies a file that is fed to the launched JAR as standard input.
+`INPUT_FILE` option specifies a file fed to the launched JAR as standard input.
 
 The `SYSTEM_ID` option lets you override the Wolfram Language kernel executable used for running this
-test. E.g., on Linux-x86-64 set the `SYSTEM_ID` option to `"Linux"` to run the 32-bit version of the
-kernel.
+test (e.g., on Linux-x86-64 set the `SYSTEM_ID` option to `"Linux"` to run the 32-bit version of the
+kernel).
 
 The `KERNEL_OPTIONS` parameter lets you add launch arguments (e.g., `"-pwfile mathpass"`) used upon
 starting the Wolfram Language kernel. If the option is missing, it defaults to `"-noinit -noprompt"`.
@@ -921,18 +892,18 @@ The test is run with the Wolfram MUnit test package in the following way:
     TestRun[ <test script or notebook> ]
 
 The `LOGGERS` options is passed through to the TestRun function and specifies the list
-of MUnit loggers to use (E.g., `{VerbosePrintLogger[]}`).
+of MUnit loggers to use (e.g., `{VerbosePrintLogger[]}`).
 
 The function requires the Wolfram MUnit package to be available on the Wolfram Language `$Path`.
 
 The string specified by the `INPUT` option is fed to the Wolfram Language kernel as standard input.
-The `INPUT_FILE` option specifies a file that is fed to the Wolfram Language kernel as standard input.
+The `INPUT_FILE` option specifies a file fed to the Wolfram Language kernel as standard input.
 
 The `TIMEOUT` option will be used to initialize to `TIMEOUT` property of the generated CMake test.
 
 The `SYSTEM_ID` option lets you override the Wolfram Language kernel executable used for running this
-test. E.g., on 64-bit Windows you can set the `SYSTEM_ID` option to `"Windows"` to execute the
-32-bit version of the Wolfram Language kernel.
+test (e.g., on 64-bit Windows you can set the `SYSTEM_ID` option to `"Windows"` to execute the
+32-bit version of the Wolfram Language kernel).
 
 The `KERNEL_OPTIONS` parameter lets you add launch arguments (e.g., `"-pwfile mathpass"`) used upon
 starting the Wolfram Language kernel. If the option is missing, it defaults to `"-noinit -noprompt"`.
@@ -957,7 +928,7 @@ the MUnit package and the Wolfram Language kernel executable have been found.
       [ SOURCES src1 [ src2... ] ])
 
 This function adds a custom target which builds documentation from previously authored Wolfram Language
-documentation notebooks (e.g., guide pages, symbol pages and tutorial pages).
+documentation notebooks (e.g., guide pages, symbol pages, and tutorial pages).
 
 The function requires the Wolfram Language packages `DocumentationBuild` and `Transmogrify` to be
 available on the Wolfram Language `$Path`. The documentation is generated by invoking Apache Ant build
@@ -1000,11 +971,10 @@ Known Issues
 ------------
 
 * Each invocation of a Wolfram Language kernel through the FindMathematica module consumes one
-  controller kernel license. You may run out of controller kernel licenses, if you
+  controller kernel license. You may run out of free controller kernel licenses if you
   do a parallel build with CMake or run tests in parallel with CTest.
 
 [aant]:https://ant.apache.org/
-[cgwn]:https://www.cygwin.com/
 [cmtut]:https://cmake.org/cmake/help/latest/guide/tutorial/index.html
 [uuid]:https://linux.die.net/man/3/libuuid
 [mingw]:http://www.mingw.org/

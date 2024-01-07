@@ -8,7 +8,7 @@ Features
 --------
 
 * Works with Windows, Linux and OS X versions of the [Wolfram Language][wlang].
-* Supports Wolfram Language versions from 5.2 to 13.2.
+* Supports Wolfram Language versions from 5.2 to 14.0.
 * Supports Wolfram Language implementations [Wolfram Mathematica][wmma],
   [Wolfram|One][wone], [Wolfram Engine][weng] and [Wolfram gridMathematica][wgrid].
 * Finds include directories and libraries for [LibraryLink][wll] (version 8 or later).
@@ -35,8 +35,8 @@ Requirements
 
 * A [Wolfram Language][wlang] product (Wolfram Mathematica, Wolfram|One, Wolfram Engine, 
   Wolfram gridMathematica).
-* [CMake 2.8.12][cmk] or newer. The executable `cmake` should be on the system path.
-* [Visual Studio C++][vslstd], [MinGW][mingw] or [Cygwin][cgwn] under Windows.
+* [CMake 3.5.0][cmk] or newer. The executable `cmake` should be on the system path.
+* [Visual Studio C++][vslstd], [MinGW][mingw] under Windows.
 * [GCC][gcc] or [Clang][clang] under Linux or OS X.
 * [Xcode][xcdt] application or Xcode Command Line Tools under OS X.
 * [libuuid][uuid] under Linux.
@@ -69,7 +69,6 @@ project that provides modern C++ wrappers for conveniently wrapping Wolfram Libr
 [aant]:https://ant.apache.org/
 [ccg]:https://reference.wolfram.com/language/CCodeGenerator/guide/CCodeGenerator.html
 [ccrc]:https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/CrossCompiling
-[cgwn]:https://www.cygwin.com/
 [clang]:https://clang.llvm.org/
 [cmk]:https://cmake.org/download/
 [encd]:https://reference.wolfram.com/language/ref/Encode.html
