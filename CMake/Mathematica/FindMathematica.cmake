@@ -369,7 +369,7 @@ function (_add_launch_services_search_paths _outSearchPaths)
 				COMMAND "${Mathematica_LSRegister_EXECUTABLE}" "-dump"
 				COMMAND "grep" "--before-context=20" "--after-context=20" "${_bundleID}"
 				COMMAND "grep" "--only-matching" "/.*\\.app"
-				TIMEOUT 10 OUTPUT_VARIABLE _queryResult ERROR_QUIET)
+				TIMEOUT 20 OUTPUT_VARIABLE _queryResult ERROR_QUIET)
 			string (REPLACE ";" "\\;" _queryResult "${_queryResult}")
 			string (REPLACE "\n" ";" _appPaths "${_queryResult}")
 			if (_appPaths)
