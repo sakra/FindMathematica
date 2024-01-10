@@ -1,3 +1,10 @@
+## 4.0.0 (2024-01-10)
+
+* *Mathematica* 14.0 compatibility
+* *Mathematica* 13.3 compatibility
+* raise the minimum required CMake version to 3.5
+* manual updates
+
 ## 3.8.0 (2022-12-30)
 
 * *Mathematica* 13.2 compatibility
@@ -185,7 +192,7 @@
 * add J/Link examples
 * allow for both `CODE` and `SCRIPT` parameters to be present in functions that execute
   *Mathematica* code
-* correctly handle relative file path given as a `SCRIPT` parameter
+* correctly handle the relative file path given as a `SCRIPT` parameter
 * fix Cygwin compatibility problems
 
 ## 2.1.0 (2012-09-02)
@@ -286,7 +293,7 @@
 ## 1.2.3 (2011-11-08)
 
 * fix cache cleanup bug
-* use functions instead of macros to work around Windows backslash problem
+* use functions instead of macros to work around the Windows backslash problem
 * improve `Mathematica_ADD_CUSTOM_TARGET` documentation
 
 ## 1.2.2 (2011-11-07)
@@ -331,7 +338,7 @@
 ## 1.0.3 (2011-07-07)
 
 * work around `Splice::splict` message in `Mathematica_SPLICE_C_CODE`
-* fix build failures when build directory path contains white space characters
+* fix build failures when the build directory path contains space characters
 * use CMake `option` command for user overridable boolean module variables
 
 ## 1.0.2 (2011-07-02)
