@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project (Mathematica-project)
 
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/Mathematica")
+set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake/Mathematica")
 
 set (CMAKE_VERBOSE_MAKEFILE OFF)
 set (CMAKE_COLOR_MAKEFILE ON)
