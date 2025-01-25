@@ -3,7 +3,7 @@
 # See the FindMathematica manual for usage hints.
 #
 #=============================================================================
-# Copyright 2010-2024 Sascha Kratky
+# Copyright 2010-2025 Sascha Kratky
 #
 # Permission is hereby granted, free of charge, to any person)
 # obtaining a copy of this software and associated documentation)
@@ -28,80 +28,10 @@
 #=============================================================================
 
 # we need the CMakeParseArguments module
-# call cmake_minimum_required, but prevent modification of the CMake policy stack
-cmake_policy(PUSH)
-cmake_minimum_required(VERSION 3.5.0)
-cmake_policy(POP)
+cmake_minimum_required(VERSION 3.10..3.31)
 
 set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set (Mathematica_CMAKE_MODULE_VERSION "4.0.0")
-
-# activate select policies
-if (POLICY CMP0025)
-	# Compiler id for Apple Clang is now AppleClang
-	cmake_policy(SET CMP0025 NEW)
-endif()
-
-if (POLICY CMP0026)
-	# disallow use of the LOCATION target property
-	if (CYGWIN OR MSYS)
-		# Cygwin and MSYS do not produce workable Mathematica paths using
-		# the $<TARGET_FILE:...> notation
-		cmake_policy(SET CMP0026 OLD)
-	else()
-		cmake_policy(SET CMP0026 NEW)
-	endif()
-endif()
-
-if (POLICY CMP0038)
-	# targets may not link directly to themselves
-	cmake_policy(SET CMP0038 NEW)
-endif()
-
-if (POLICY CMP0039)
-	# utility targets may not have link dependencies
-	cmake_policy(SET CMP0039 NEW)
-endif()
-
-if (POLICY CMP0040)
-	# target in the TARGET signature of add_custom_command() must exist
-	cmake_policy(SET CMP0040 NEW)
-endif()
-
-if (POLICY CMP0045)
-	# error on non-existent target in get_target_property
-	cmake_policy(SET CMP0045 NEW)
-endif()
-
-if (POLICY CMP0046)
-	# error on non-existent dependency in add_dependencies
-	cmake_policy(SET CMP0046 NEW)
-endif()
-
-if (POLICY CMP0049)
-	# do not expand variables in target source entries
-	cmake_policy(SET CMP0049 NEW)
-endif()
-
-if (POLICY CMP0050)
-	# disallow add_custom_command SOURCE signatures
-	cmake_policy(SET CMP0050 NEW)
-endif()
-
-if (POLICY CMP0051)
-	# include TARGET_OBJECTS expressions in a target's SOURCES property
-	cmake_policy(SET CMP0051 NEW)
-endif()
-
-if (POLICY CMP0053)
-	# simplify variable reference and escape sequence evaluation
-	cmake_policy(SET CMP0053 NEW)
-endif()
-
-if (POLICY CMP0054)
-	# only interpret if() arguments as variables or keywords when unquoted
-	cmake_policy(SET CMP0054 NEW)
-endif()
+set (Mathematica_CMAKE_MODULE_VERSION "4.1.0")
 
 include(TestBigEndian)
 include(CMakeParseArguments)
