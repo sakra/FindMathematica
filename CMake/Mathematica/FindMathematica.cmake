@@ -136,11 +136,11 @@ endmacro()
 # internal macro to to compute front end paths (relative to installation directory)
 macro (_get_host_frontend_names _outFrontEndNames)
 	if (CMAKE_HOST_WIN32 OR CYGWIN)
-		set (${_outFrontEndNames} "Mathematica.exe")
+		set (${_outFrontEndNames} "WolframNB.exe" "Mathematica.exe")
 	elseif (CMAKE_HOST_APPLE)
-		set (${_outFrontEndNames} "Contents/MacOS/Mathematica")
+		set (${_outFrontEndNames} "Contents/MacOS/WolframNB" "Contents/MacOS/Mathematica")
 	elseif (CMAKE_HOST_UNIX)
-		set (${_outFrontEndNames}
+		set (${_outFrontEndNames} "Executables/wolframnb" "Executables/WolframNB"
 			"Executables/mathematica" "Executables/Mathematica")
 	endif()
 endmacro()
@@ -172,12 +172,12 @@ macro (_get_program_names _outProgramNames)
 	set (${_outProgramNames} "")
 	# Mathematica products in order of preference
 	set (_MathematicaApps
-		"Mathematica" "mathematica"
+		"Wolfram" "Mathematica" "mathematica"
 		"Wolfram Desktop" "Wolfram Engine"
 		"gridMathematica Server")
 	# Mathematica product versions in order of preference
 	set (_MathematicaVersions
-		"14.0"
+		"14.2" "14.1" "14.0"
 		"13.3" "13.2" "13.1" "13.0"
 		"12.3" "12.2" "12.1" "12.0"
 		"11.3" "11.2" "11.1" "11.0"
@@ -207,7 +207,7 @@ endmacro()
 # internal function to get Mathematica Windows installation directory for a registry entry
 function (_add_registry_search_path _registryKey _outSearchPaths)
 	set (_ProductNamePatterns
-		"Wolfram Mathematica [0-9.]+" "Wolfram Desktop [0-9.]+"
+		"Wolfram Mathematica [0-9.]+" "Wolfram [0-9.]+" "Wolfram Desktop [0-9.]+"
 		"Wolfram Engine [0-9.]+" "Wolfram Finance Platform")
 	get_filename_component (
 		_productName "[${_registryKey};ProductName]" NAME)
@@ -1230,11 +1230,13 @@ macro (_setup_mathematica_base_directory)
 		endif()
 	else ()
 		# guess Mathematica_BASE_DIR from environment
-		# environment variable MATHEMATICA_BASE may override default
+		# environment variable MATHEMATICA_BASE (or WOLFRAM_BASE) may override default
 		# $BaseDirectory, see
 		# https://reference.wolfram.com/language/tutorial/ConfigurationFiles.html
 		if (DEFINED ENV{MATHEMATICA_BASE})
 			set (Mathematica_BASE_DIR "$ENV{MATHEMATICA_BASE}")
+		elseif (DEFINED ENV{WOLFRAM_BASE})
+			set (Mathematica_BASE_DIR "$ENV{WOLFRAM_BASE}")
 		elseif (CMAKE_HOST_WIN32 OR CYGWIN)
 			if (DEFINED $ENV{PROGRAMDATA})
 				set (Mathematica_BASE_DIR "$ENV{PROGRAMDATA}\\Mathematica")
@@ -1282,11 +1284,13 @@ macro (_setup_mathematica_userbase_directory)
 		endif()
 	else ()
 		# guess Mathematica_USERBASE_DIR from environment
-		# environment variable MATHEMATICA_USERBASE may override default
+		# environment variable MATHEMATICA_USERBASE (or WOLFRAM_USERBASE) may override default
 		# $UserBaseDirectory, see
 		# https://reference.wolfram.com/language/tutorial/ConfigurationFiles.html
 		if (DEFINED ENV{MATHEMATICA_USERBASE})
 			set (Mathematica_USERBASE_DIR "$ENV{MATHEMATICA_USERBASE}")
+		elseif (DEFINED ENV{WOLFRAM_USERBASE})
+			set (Mathematica_USERBASE_DIR "$ENV{WOLFRAM_USERBASE}")
 		elseif (CMAKE_HOST_WIN32 OR CYGWIN)
 			if (DEFINED ENV{APPDATA})
 				set (Mathematica_USERBASE_DIR "$ENV{APPDATA}\\Mathematica")
