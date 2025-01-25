@@ -55,7 +55,7 @@ command:
 
 The FindMathematica module will look for a Wolfram Language installation in the default installation
 location of the used platform. Under Windows, it will also use installation locations from the
-Windows Registry. Under macOS, it will also query the Launch Services database.
+Windows Registry.
 
 By default, FindMathematica will return the newest Wolfram Language installation it can find.
 To find a minimum version of Wolfram Language, run the `find_package` command with a version

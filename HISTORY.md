@@ -1,3 +1,10 @@
+## 4.1.0 (2025-01-25)
+
+* Wolfram App 14.2 compatibility
+* Wolfram App 14.1 compatibility
+* raise the minimum required CMake version to 3.10
+* remove broken macOS LaunchServices database search
+
 ## 4.0.0 (2024-01-10)
 
 * *Mathematica* 14.0 compatibility

@@ -8,8 +8,8 @@ Features
 --------
 
 * Works with Windows, Linux and OS X versions of the [Wolfram Language][wlang].
-* Supports Wolfram Language versions from 5.2 to 14.0.
-* Supports Wolfram Language implementations [Wolfram Mathematica][wmma],
+* Supports Wolfram Language versions from 5.2 to 14.2.
+* Supports Wolfram Language implementations [Wolfram App][wmma], [Wolfram Mathematica][wmma],
   [Wolfram|One][wone], [Wolfram Engine][weng] and [Wolfram gridMathematica][wgrid].
 * Finds include directories and libraries for [LibraryLink][wll] (version 8 or later).
 * Finds include directories and libraries for [WSTP][wstp] (version 10 or later).
