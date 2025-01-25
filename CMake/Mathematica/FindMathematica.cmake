@@ -36,7 +36,6 @@ set (Mathematica_CMAKE_MODULE_VERSION "4.1.0")
 include(TestBigEndian)
 include(CMakeParseArguments)
 include(FindPackageHandleStandardArgs)
-include(CMakeFindFrameworks)
 
 # internal function to convert Windows path to Cygwin workable CMake path
 # E.g., "C:\Program Files" is converted to "/cygdrive/c/Program Files"
@@ -276,75 +275,6 @@ function (_add_registry_search_paths _outSearchPaths)
 	endif()
 endfunction()
 
-# internal function to determine Mathematica installation paths from macOS LaunchServices database
-function (_add_launch_services_search_paths _outSearchPaths)
-	if (CMAKE_HOST_APPLE)
-		# the lsregister executable is needed to search the LaunchServices database
-		# the executable usually resides in the LaunchServices framework Support directory
-		# The LaunchServices framework is a sub-framework of the CoreServices umbrella framework
-		cmake_find_frameworks(CoreServices)
-		find_program (Mathematica_LSRegister_EXECUTABLE
-			NAMES "lsregister"
-			PATH_SUFFIXES "/Frameworks/LaunchServices.framework/Support"
-			HINTS ${CoreServices_FRAMEWORKS})
-		mark_as_advanced(
-			Mathematica_CoreServices_DIR
-			Mathematica_LaunchServices_DIR
-			Mathematica_LSRegister_EXECUTABLE)
-		if (NOT Mathematica_LSRegister_EXECUTABLE)
-			message (STATUS "Skipping search of the LaunchServices database, because the lsregister executable could not be found.")
-			return()
-		endif()
-		foreach (_bundleID IN ITEMS ${ARGN})
-			execute_process(
-				COMMAND "${Mathematica_LSRegister_EXECUTABLE}" "-dump"
-				COMMAND "grep" "--before-context=20" "--after-context=20" "${_bundleID}"
-				COMMAND "grep" "--only-matching" "/.*\\.app"
-				TIMEOUT 20 OUTPUT_VARIABLE _queryResult ERROR_QUIET)
-			string (REPLACE ";" "\\;" _queryResult "${_queryResult}")
-			string (REPLACE "\n" ";" _appPaths "${_queryResult}")
-			if (_appPaths)
-				# put paths into canonical order
-				list (SORT _appPaths)
-				list (REVERSE _appPaths)
-			else()
-				message (STATUS "No Mathematica apps registered in macOS LaunchServices database.")
-			endif()
-			if (Mathematica_DEBUG)
-				message (STATUS "macOS LaunchServices database registered apps=${_appPaths}")
-			endif()
-			if (_appPaths)
-				set (_paths "")
-				set (_insertIndex 0)
-				foreach (_appPath IN LISTS _appPaths)
-					# ignore paths that no longer exist
-					if (EXISTS "${_appPath}")
-						_to_cmake_path("${_appPath}" _appPath)
-						if (Mathematica_FIND_VERSION AND Mathematica_FIND_VERSION_EXACT)
-							if ("${_appPath}" MATCHES "${Mathematica_FIND_VERSION_MAJOR}.${Mathematica_FIND_VERSION_MINOR}")
-								# insert in front of other versions if version matches requested one
-								list (LENGTH _paths _len)
-								if (_len EQUAL _insertIndex)
-									list (APPEND _paths "${_appPath}")
-								else()
-									list (INSERT _paths ${_insertIndex} "${_appPath}")
-								endif()
-								math(EXPR _insertIndex "${_insertIndex} + 1")
-							else()
-								list (APPEND _paths "${_appPath}")
-							endif()
-						else()
-							list (APPEND _paths "${_appPath}")
-						endif()
-					endif()
-				endforeach()
-				list (APPEND ${_outSearchPaths} ${_paths})
-			endif()
-		endforeach()
-		set (${_outSearchPaths} ${${_outSearchPaths}} PARENT_SCOPE)
-	endif()
-endfunction()
-
 # internal macro to determine default Mathematica installation (the one which is on the system search path)
 macro (_add_default_search_path _outSearchPaths)
 	set (_searchPaths "")
@@ -412,8 +342,6 @@ macro (_get_search_paths _outSearchPaths)
 		if (CMAKE_SYSTEM_APPBUNDLE_PATH)
 			list (APPEND ${_outSearchPaths} ${CMAKE_SYSTEM_APPBUNDLE_PATH})
 		endif()
-		# add non-standard installation paths from macOS LaunchServices database
-		_add_launch_services_search_paths(${_outSearchPaths} "com.wolfram.Mathematica")
 	elseif (CMAKE_HOST_UNIX)
 		# add standard Mathematica Unix installation paths
 		list (APPEND ${_outSearchPaths} "/usr/local/Wolfram" "/opt/Wolfram")
