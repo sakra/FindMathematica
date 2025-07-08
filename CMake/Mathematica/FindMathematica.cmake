@@ -398,6 +398,8 @@ macro (_systemNameToSystemID _systemName _systemProcessor _outSystemIDs)
 			set (${_outSystemIDs} "Linux-IA64")
 		elseif ("${_systemProcessor}" MATCHES "^arm")
 			set (${_outSystemIDs} "Linux-ARM")
+		elseif ("${_systemProcessor}" MATCHES "^aarch64")
+			set (${_outSystemIDs} "Linux-ARM64")
 		endif()
 	elseif ("${_systemName}" STREQUAL "SunOS")
 		if ("${_systemProcessor}" MATCHES "^sparc")
@@ -526,22 +528,22 @@ macro (_get_supported_systemIDs _version _outSystemIDs)
 	if (NOT "${_version}" VERSION_LESS "12.3")
 		set (${_outSystemIDs}
 			"Windows-x86-64"
-			"Linux-x86-64" "Linux-ARM"
+			"Linux-x86-64" "Linux-ARM" "Linux-ARM64"
 			"MacOSX-x86-64" "MacOSX-ARM64")
 	elseif (NOT "${_version}" VERSION_LESS "12.1")
 		set (${_outSystemIDs}
 			"Windows-x86-64"
-			"Linux-x86-64" "Linux-ARM"
+			"Linux-x86-64" "Linux-ARM" "Linux-ARM64"
 			"MacOSX-x86-64")
 	elseif (NOT "${_version}" VERSION_LESS "11.3")
 		set (${_outSystemIDs}
 			"Windows" "Windows-x86-64"
-			"Linux-x86-64" "Linux-ARM"
+			"Linux-x86-64" "Linux-ARM" "Linux-ARM64"
 			"MacOSX-x86-64")
 	elseif (NOT "${_version}" VERSION_LESS "10.0")
 		set (${_outSystemIDs}
 			"Windows" "Windows-x86-64"
-			"Linux" "Linux-x86-64" "Linux-ARM"
+			"Linux" "Linux-x86-64" "Linux-ARM" "Linux-ARM64"
 			"MacOSX-x86-64")
 	elseif (NOT "${_version}" VERSION_LESS "9.0")
 		set (${_outSystemIDs}
