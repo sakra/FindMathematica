@@ -31,7 +31,7 @@
 cmake_minimum_required(VERSION 3.10..3.31)
 
 set (Mathematica_CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set (Mathematica_CMAKE_MODULE_VERSION "4.1.0")
+set (Mathematica_CMAKE_MODULE_VERSION "4.2.0")
 
 include(TestBigEndian)
 include(CMakeParseArguments)
