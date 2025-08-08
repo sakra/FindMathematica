@@ -91,7 +91,7 @@ provided by the FindMathematica module:
 #### Visual Studio
 
 To build the FindMathematica project with Visual Studio C++ for 64-bit Windows, open a Visual
-Studio command prompt, change directory to the `FindMathematica` root directory and run the
+Studio command prompt, change directory to the `FindMathematica` root directory, and run the
 following commands:
 
     D:\FindMathematica>mkdir build
@@ -154,7 +154,7 @@ If you are using a 64-bit version of Linux, you can run the Wolfram Language ker
 executable or as a 32-bit executable.
 
 To cross-compile to 32-bit Linux under 64-bit Linux, the packages `ia32-libs` and `libc6-dev-i386`
-need to be installed. To force a 32-bit build then, run:
+need to be installed. To force a 32-bit build, run:
 
     $ cmake -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 ..
 
@@ -188,7 +188,7 @@ FindMathematica supports building MathLink executables and LibraryLink shared li
 macOS architecture type supported by the installed macOS version. 
 To select the build target architecture types, set the CMake `CMAKE_OSX_ARCHITECTURES` variable.
 
-E.g., to build a macOS universal binary use the following setting:
+E.g., to build a macOS universal binary, use the following setting:
 
     $ cmake "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" ..
 
@@ -365,7 +365,7 @@ function produces a compact Wolfram Language code representation using `Map` and
       [ ERROR_FILE <file> ])
 
 This function executes Wolfram Language code at CMake configuration time. The Wolfram Language code can
-be specified as a list of in-line Wolfram Language statements and/or as path to a Wolfram Language
+be specified as a list of in-line Wolfram Language statements and/or as a path to a Wolfram Language
 script file. Multiple in-line statements are wrapped inside a Wolfram Language `CompoundExpression`.
 
 If the optional `CACHE` argument is specified, the captured result of the executed Wolfram Language
@@ -399,7 +399,7 @@ available if the Wolfram Language kernel executable has been found.
       [ SOURCES src1 [ src2... ] ])
 
 This function adds a target that executes Wolfram Language code at build time. The Wolfram Language code
-can be specified as a list of in-line Wolfram Language statements and/or as path to a Wolfram Language
+can be specified as a list of in-line Wolfram Language statements and/or as a path to a Wolfram Language
 script file. Multiple in-line statements are wrapped inside a Wolfram Language `CompoundExpression`.
 
 The `SYSTEM_ID` option lets you override the Wolfram Language kernel executable architecture used.
@@ -424,7 +424,7 @@ available if the Wolfram Language kernel executable has been found.
 
 This function adds a target that executes Wolfram Language code to generate output files. The
 Wolfram Language code is responsible for generating the specified output files. The Wolfram Language code
-can be specified as a list of in-line Wolfram Language statements and/or as path to a Wolfram Language
+can be specified as a list of in-line Wolfram Language statements and/or as a path to a Wolfram Language
 script file. Multiple in-line statements are wrapped inside a Wolfram Language `CompoundExpression`.
 
 The `SYSTEM_ID` option lets you override the Wolfram Language kernel executable architecture used.
@@ -447,7 +447,7 @@ This function is available if the Wolfram Language kernel executable has been fo
 
 This function adds Wolfram Language code to an existing target which is run before or after building
 the target. The code will only execute when the target itself is built. The Wolfram Language
-code can be specified as a list of in-line Wolfram Language statements and/or as path to a
+code can be specified as a list of in-line Wolfram Language statements and/or as a path to a
 Wolfram Language script file. Multiple in-line statements are wrapped inside a Wolfram Language
 `CompoundExpression`.
 
@@ -581,7 +581,7 @@ produce a C source file and a C header file that contains the compiled Wolfram L
 
 The output files are created in the `CMAKE_CURRENT_BINARY_DIR`. The names of the source file and
 the header file are obtained by adding the extensions .c and .h to the Wolfram Language script file
-name respectively.
+name, respectively.
 
 The `DEPENDS` option specifies additional files on which the generated C code file depends.
 The `OUTPUT` option can be used to produce output files with different names.
@@ -624,7 +624,7 @@ This function finds the full CMake style path of the Wolfram Language package fi
 loaded by the command `Get[<package name>]`.
 
 A cache entry named by `<variable>` will be created to store the result. If the full path to the
-package file is found, the result is stored in the variable and the search will not be repeated
+package file is found, the result is stored in the variable, and the search will not be repeated
 unless the variable is cleared. If nothing is found, the result will be `<variable>-NOTFOUND`, and
 the search will be attempted again the next time `Mathematica_FIND_PACKAGE` is invoked with the same
 variable.
@@ -646,17 +646,17 @@ directory of the Wolfram Language package and returns it in `<variable>`.
     Mathematica_ABSOLUTIZE_LIBRARY_DEPENDENCIES(
       targetname [ targetname...])
 
-Under macOS, this function replaces the default install names used for the Wolfram Language shared
+Under macOS, this function replaces the default install-names used for the Wolfram Language shared
 libraries with absolute paths to those shared libraries for the given targets. 
 On other platforms, the function does not have an effect.
 
-e.g., in *Mathematica* 10, the default install name for the MathLink shared library is:
+e.g., in *Mathematica* 10, the default install-name for the MathLink shared library is:
 
     @executable_path/../Frameworks/mathlink.framework/Versions/4.25/mathlink
 
 This path won't work for stand-alone executables that link to the dynamic MathLink library, unless
 the mathlink framework directory is added to the `DYLD_LIBRARY_PATH` environment variable. This
-function replaces the reference to the default install name in the given target executable with the
+function replaces the reference to the default install-name in the given target executable with the
 absolute path to the MathLink library, which will work without requiring the `DYLD_LIBRARY_PATH`
 environment variable to be set.
 

@@ -8,8 +8,8 @@ Features
 --------
 
 * Works with Windows, Linux and OS X versions of the [Wolfram Language][wlang].
-* Supports Wolfram Language versions from 5.2 to 14.2.
-* Supports Wolfram Language implementations [Wolfram App][wmma], [Wolfram Mathematica][wmma],
+* Supports Wolfram Language versions from 5.2 to 14.3.
+* Supports Wolfram Language implementations [Wolfram Mathematica][wmma],
   [Wolfram|One][wone], [Wolfram Engine][weng] and [Wolfram gridMathematica][wgrid].
 * Finds include directories and libraries for [LibraryLink][wll] (version 8 or later).
 * Finds include directories and libraries for [WSTP][wstp] (version 10 or later).
@@ -35,7 +35,7 @@ Requirements
 
 * A [Wolfram Language][wlang] product (Wolfram Mathematica, Wolfram|One, Wolfram Engine, 
   Wolfram gridMathematica).
-* [CMake 3.5.0][cmk] or newer. The executable `cmake` should be on the system path.
+* [CMake 3.10.0][cmk] or newer. The executable `cmake` should be on the system path.
 * [Visual Studio C++][vslstd], [MinGW][mingw] under Windows.
 * [GCC][gcc] or [Clang][clang] under Linux or OS X.
 * [Xcode][xcdt] application or Xcode Command Line Tools under OS X.
