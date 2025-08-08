@@ -1,3 +1,9 @@
+## 4.2.0 (2025-08-08)
+
+* Wolfram App 14.3 compatibility
+* fix default system ID detection under macOS for Apple Silicon
+* add support for `Linux-ARM64`
+
 ## 4.1.0 (2025-01-25)
 
 * Wolfram App 14.2 compatibility
